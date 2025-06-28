@@ -12,7 +12,10 @@ class JournalApiService {
   JournalApiService(this._dio);
 
   Future<List<Journal>> getJournals() async {
-    final response = await _dio.get('journals');
+    // Some backends require a trailing slash and will respond with a redirect
+    // if it is missing. Using the correct path avoids an extra request and
+    // ensures `response.data` is in the expected JSON format.
+    final response = await _dio.get('journals/');
     return (response.data as List)
         .map((json) => Journal.fromJson(json))
         .toList();
@@ -20,7 +23,7 @@ class JournalApiService {
 
   Future<Journal> createJournal(CreateJournalRequest request) async {
     final response = await _dio.post(
-      'journals',
+      'journals/',
       data: request.toJson(),
     );
     return Journal.fromJson(response.data);
