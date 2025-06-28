@@ -31,7 +31,27 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   void watchJournals() {
-    // ... (kode fungsi ini tetap sama seperti sebelumnya)
+    emit(state.copyWith(status: HomeStatus.loading));
+
+    // Berhenti 'mendengarkan' stream lama sebelum memulai yang baru
+    _journalSubscription?.cancel();
+
+    _journalSubscription = _getJournalsUseCase().listen(
+      (journals) {
+        // Jika berhasil, perbarui state dengan data jurnal baru
+        emit(state.copyWith(
+          status: HomeStatus.success,
+          journals: journals,
+        ));
+      },
+      onError: (error) {
+        // Jika ada error dari stream, perbarui state kegagalan
+        emit(state.copyWith(
+          status: HomeStatus.failure,
+          errorMessage: 'Gagal memuat jurnal dari database.',
+        ));
+      },
+    );
   }
 
   @override
