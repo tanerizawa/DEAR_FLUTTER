@@ -22,6 +22,7 @@ import '../../domain/usecases/get_journals_usecase.dart' as _i738;
 import '../../domain/usecases/save_journal_usecase.dart' as _i415;
 import '../../domain/usecases/sync_journals_usecase.dart' as _i873;
 import '../../presentation/home/cubit/home_cubit.dart' as _i288;
+import '../../presentation/journal/cubit/journal_editor_cubit.dart' as _i826;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -54,6 +55,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i873.SyncJournalsUseCase>(
       () => _i873.SyncJournalsUseCase(gh<_i847.JournalRepository>()),
+    );
+    gh.factory<_i826.JournalEditorCubit>(
+      () => _i826.JournalEditorCubit(gh<_i415.SaveJournalUseCase>()),
     );
     gh.factory<_i288.HomeCubit>(
       () => _i288.HomeCubit(

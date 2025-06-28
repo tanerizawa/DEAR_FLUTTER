@@ -18,6 +18,18 @@ class HomeScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Beranda'),
         ),
+                // VVVV TAMBAHKAN KODE DI BAWAH INI VVVV
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const JournalEditorScreen(),
+              ),
+            );
+          },
+          child: const Icon(Icons.add),
+        ),
+        // ^^^^ SAMPAI DI SINI ^^^^
         body: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
             // Tampilkan UI berdasarkan status
