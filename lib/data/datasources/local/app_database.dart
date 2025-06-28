@@ -21,7 +21,13 @@ class AppDatabase extends _$AppDatabase {
 }
 
 LazyDatabase _openConnection() {
-  // ... (fungsi ini tetap sama)
+  return LazyDatabase(
+    () async {
+      final dbFolder = await getApplicationDocumentsDirectory();
+      final file = File(p.join(dbFolder.path, 'db.sqlite'));
+      return NativeDatabase(file);
+    },
+  );
 }
 
 // PASTIKAN KELAS DatabaseModule DI BAWAH INI SUDAH DIHAPUS
