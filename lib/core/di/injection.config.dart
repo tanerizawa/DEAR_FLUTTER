@@ -41,7 +41,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i847.JournalRepository>(
       () => _i625.JournalRepositoryImpl(
         gh<_i1020.JournalApiService>(),
-        gh<InvalidType>(),
+        gh<_i28.JournalDao>(),
       ),
     );
     gh.factory<_i738.GetJournalsUseCase>(

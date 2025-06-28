@@ -1,6 +1,7 @@
 // lib/data/repositories/journal_repository_impl.dart
 
 import 'package:dear_flutter/data/datasources/local/app_database.dart';
+import 'package:dear_flutter/data/datasources/local/journal_dao.dart';
 import 'package:dear_flutter/domain/entities/journal.dart';
 import 'package:dear_flutter/domain/repositories/journal_repository.dart';
 import 'package:dear_flutter/data/datasources/remote/journal_api_service.dart';
