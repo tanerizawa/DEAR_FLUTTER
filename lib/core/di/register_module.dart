@@ -2,7 +2,6 @@ import 'package:dear_flutter/core/api/auth_interceptor.dart';
 import 'package:dear_flutter/data/datasources/local/app_database.dart';
 import 'package:dear_flutter/data/datasources/local/chat_message_dao.dart';
 import 'package:dear_flutter/data/datasources/local/journal_dao.dart';
-import 'package:dear_flutter/data/datasources/local/user_preferences_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
