@@ -19,7 +19,7 @@
 /windows/
 /linux/
 /web/
-
+/backend/venv/
 # ============================================
 # 🔧 Flutter & Dart build/cache files
 # File sementara yang dibuat oleh Flutter dan Dart.
