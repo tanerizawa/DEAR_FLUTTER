@@ -42,7 +42,8 @@
 /.vscode/
 *.iml
 *.swp
-
+*.rdb
+*.db
 # ============================================
 # 🔒 Sistem & File Sensitif
 # File log, cache, database lokal, dan file environment.
