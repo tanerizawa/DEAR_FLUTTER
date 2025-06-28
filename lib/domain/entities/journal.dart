@@ -12,7 +12,7 @@ class Journal with _$Journal {
   // Konstruktor factory ini mendefinisikan struktur data kita.
   // Ini mirip dengan properti di data class Kotlin Anda.
   const factory Journal({
-    required String id,
+    required int id,
     required String title,
     required String content,
     required String mood,

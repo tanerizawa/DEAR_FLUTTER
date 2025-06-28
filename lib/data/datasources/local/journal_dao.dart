@@ -13,12 +13,12 @@ class JournalDao extends DatabaseAccessor<AppDatabase> with _$JournalDaoMixin {
   Stream<List<JournalEntry>> watchAllJournals() =>
       (select(journalEntries)..orderBy([(t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc)])).watch();
 
-  Stream<JournalEntry?> watchJournalById(String id) =>
+  Stream<JournalEntry?> watchJournalById(int id) =>
       (select(journalEntries)..where((tbl) => tbl.id.equals(id))).watchSingleOrNull();
 
   Future<void> insertJournal(JournalEntry journal) =>
       into(journalEntries).insert(journal, mode: InsertMode.replace);
 
-  Future<void> deleteJournalById(String id) =>
+  Future<void> deleteJournalById(int id) =>
       (delete(journalEntries)..where((tbl) => tbl.id.equals(id))).go();
 }

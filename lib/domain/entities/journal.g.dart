@@ -8,7 +8,7 @@ part of 'journal.dart';
 
 _$JournalImpl _$$JournalImplFromJson(Map<String, dynamic> json) =>
     _$JournalImpl(
-      id: json['id'] as String,
+      id: json['id'] as int,
       title: json['title'] as String,
       content: json['content'] as String,
       mood: json['mood'] as String,
