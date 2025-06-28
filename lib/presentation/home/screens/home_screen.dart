@@ -13,7 +13,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => getIt<HomeCubit>()..watchJournals(), // Menjalankan pemantauan jurnal
+      create: (context) => getIt<HomeCubit>(),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Beranda'),
