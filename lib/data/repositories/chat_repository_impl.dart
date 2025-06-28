@@ -75,6 +75,7 @@ class ChatRepositoryImpl implements ChatRepository {
       content: message.content,
       emotion: message.emotion,
       timestamp: message.timestamp,
+      isFlagged: false,
     );
   }
 }

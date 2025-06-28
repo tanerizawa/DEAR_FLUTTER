@@ -1,6 +1,7 @@
 // lib/domain/entities/journal.dart
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 // Baris-baris ini diperlukan untuk code generator.
 // Nama file harus cocok.

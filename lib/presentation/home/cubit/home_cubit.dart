@@ -5,6 +5,7 @@ import 'package:dear_flutter/domain/usecases/sync_journals_usecase.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:flutter/foundation.dart';
 
 @injectable
 class HomeCubit extends Cubit<HomeState> {
@@ -23,7 +24,7 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       await _syncJournalsUseCase();
     } catch (e) {
-      print("Sync failed: $e");
+      debugPrint('Sync failed: $e');
     }
   }
 
