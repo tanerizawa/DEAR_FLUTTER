@@ -24,8 +24,10 @@ def create_journal(
 
     journal = crud.journal.create_with_owner(db=db, obj_in=journal_in, owner_id=current_user.id)
 
+    background_tasks.add_task(analyze_profile_task, current_user.id)
+
     log.info(
-        "Jurnal dibuat, penjadwalan analisis ditangguhkan sementara",
+        "Jurnal dibuat",
         user_id=current_user.id,
         journal_id=journal.id,
     )

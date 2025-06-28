@@ -14,22 +14,32 @@ from app.services.music_keyword_service import MusicKeywordService
 router = APIRouter()
 log = structlog.get_logger(__name__)
 
-# --- Blok Inisialisasi yang Diperkuat (Sudah Benar) ---
-if not settings.SPOTIFY_CLIENT_ID or not settings.SPOTIFY_CLIENT_SECRET:
-    raise ValueError(
-        "SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET must be set in your .env file."
-    )
+# --- Spotify client will be initialized lazily ---
+spotify: Spotify | None = None
 
-try:
-    creds = SpotifyClientCredentials(
-        client_id=settings.SPOTIFY_CLIENT_ID,
-        client_secret=settings.SPOTIFY_CLIENT_SECRET,
-    )
-    spotify = Spotify(auth_manager=creds)
-    log.info("Spotify client initialized")
-except Exception as e:
-    log.error("Failed to initialize Spotify client", error=str(e))
-    raise e
+
+def get_spotify() -> Spotify:
+    """Return a Spotify client or raise 503 if credentials are missing."""
+    global spotify
+    if spotify is not None:
+        return spotify
+
+    if not settings.SPOTIFY_CLIENT_ID or not settings.SPOTIFY_CLIENT_SECRET:
+        log.warning("Spotify credentials missing")
+        raise HTTPException(status_code=503, detail="Spotify credentials missing")
+
+    try:
+        creds = SpotifyClientCredentials(
+            client_id=settings.SPOTIFY_CLIENT_ID,
+            client_secret=settings.SPOTIFY_CLIENT_SECRET,
+        )
+        spotify = Spotify(auth_manager=creds)
+        log.info("Spotify client initialized")
+        return spotify
+    except Exception as e:
+        log.error("Failed to initialize Spotify client", error=str(e))
+        raise HTTPException(status_code=503, detail="Spotify initialization failed")
+
 # --- Akhir Blok Inisialisasi ---
 
 
@@ -65,7 +75,8 @@ def search_music(
         raise HTTPException(status_code=400, detail="Mood parameter is required")
 
     try:
-        search_results = spotify.search(q=mood, type="track", limit=20)
+        client = get_spotify()
+        search_results = client.search(q=mood, type="track", limit=20)
         musics = _process_search_results(search_results)
     except Exception as e:
         log.error("Pencarian musik manual gagal", query=mood, error=str(e))
@@ -97,7 +108,8 @@ async def recommend_music(
 
             if cleaned_keyword:
                 log.info("Mencoba rekomendasi dengan kata kunci AI", keyword=cleaned_keyword)
-                search_results = spotify.search(q=cleaned_keyword, type="track", limit=20)
+                client = get_spotify()
+                search_results = client.search(q=cleaned_keyword, type="track", limit=20)
                 musics = _process_search_results(search_results)
 
             if not musics:
@@ -109,7 +121,8 @@ async def recommend_music(
                 }
                 fallback_keyword = fallback_map.get(mood, "musik instrumental santai")
                 log.info("Pencarian AI gagal, mencoba fallback", fallback_keyword=fallback_keyword)
-                search_results_fallback = spotify.search(q=fallback_keyword, type="track", limit=20)
+                client = get_spotify()
+                search_results_fallback = client.search(q=fallback_keyword, type="track", limit=20)
                 musics = _process_search_results(search_results_fallback)
         except Exception as e:
             log.error("Gagal mendapatkan rekomendasi cerdas", error=str(e))
@@ -117,7 +130,8 @@ async def recommend_music(
     if not musics:
         try:
             log.warning("Semua rekomendasi gagal, memberikan daftar default.")
-            default_search_results = spotify.search(q="top hits indonesia", type="track", limit=20)
+            client = get_spotify()
+            default_search_results = client.search(q="top hits indonesia", type="track", limit=20)
             musics = _process_search_results(default_search_results)
         except Exception as e:
             log.error("Gagal mendapatkan rekomendasi default", error=str(e))
