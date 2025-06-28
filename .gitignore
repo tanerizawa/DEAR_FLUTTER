@@ -1,58 +1,59 @@
 # ============================================
-# 🚫 Abaikan semua platform (jangan upload ke Git)
-ios/
-macos/
-windows/
-linux/
-web/
-android/
-web/
-test/
+# ✅ FOLDER UTAMA YANG DISIMPAN
+# JANGAN abaikan folder-folder ini agar proyek tetap berfungsi.
+#
+/android/
+# !/lib/
+# !/test/
+# !/pubspec.yaml
+# !/pubspec.lock
+# !/README.md
+#
+# ============================================
+
+# ============================================
+# 🚫 Abaikan platform lain yang tidak menjadi fokus
+# Ini akan membuat proyek lebih ramping untuk AI.
+/ios/
+/macos/
+/windows/
+/linux/
+/web/
 
 # ============================================
 # 🔧 Flutter & Dart build/cache files
-.dart_tool/
-.packages
-.pub/
-.pub-preload-cache/
-build/
-.flutter-plugins
-.flutter-plugins-dependencies
-generated_plugin_registrant.dart
+# File sementara yang dibuat oleh Flutter dan Dart.
+/build/
+/.dart_tool/
+/.packages
+/.pub-cache/
 
 # ============================================
-# 🧪 Testing & coverage
-coverage/
-**/test-output/
+# 🚀 File Generator (build_runner)
+# File yang dibuat otomatis dan wajib diabaikan.
+*.g.dart
+*.freezed.dart
+*.config.dart
 
 # ============================================
 # 💻 Editor & IDE
-.idea/
-.vscode/
+# Konfigurasi spesifik untuk lingkungan development setiap orang.
+/.idea/
+/.vscode/
 *.iml
 *.swp
 
 # ============================================
-# 🔒 Sistem & sementara
-*.lock
+# 🔒 Sistem & File Sensitif
+# File log, cache, database lokal, dan file environment.
 *.log
-*.tmp
 *.DS_Store
-*.class
-*.pyc
 *.env
-*.db
-*.cache
-
-# Python virtual environments
-venv/
-**/__pycache__/
-
-# Android
-.gradle/
 *.jks
-*.rdb
+*.cache
+local.properties
+
 # ============================================
-# ✅ Kecualikan file tertentu jika perlu (opsional)
-# !lib/**/*.dart
-# !develop/**/*.dart
+# 🧪 Testing & Coverage
+# Laporan hasil testing dan coverage tidak perlu disimpan di Git.
+/coverage/
