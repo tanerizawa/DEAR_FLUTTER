@@ -23,3 +23,4 @@ class UserProfile(Base):
     sentiment_trend = Column(String, comment="Tren sentimen pengguna. Cth: 'meningkat', 'menurun', 'stabil'")
 
     last_analyzed = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
