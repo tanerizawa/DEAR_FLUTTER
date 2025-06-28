@@ -1,16 +1,10 @@
-// lib/main.dart
-
-import 'package:flutter/material.dart';
 import 'package:dear_flutter/core/di/injection.dart';
-import 'package:dear_flutter/presentation/auth/screens/login_screen.dart'; // <-- Import login screen
+import 'package:dear_flutter/core/navigation/app_router.dart'; // <-- IMPORT BARU
+import 'package:flutter/material.dart';
 
 Future<void> main() async {
-  // Pastikan jembatan ke platform asli sudah siap
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Inisialisasi dependency injection
   await configureDependencies();
-
   runApp(const MyApp());
 }
 
@@ -19,13 +13,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // Gunakan MaterialApp.router
+    return MaterialApp.router(
+      routerConfig: router, // <-- Berikan konfigurasi router kita
+      debugShowCheckedModeBanner: false,
       title: 'Dear App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const LoginScreen(), // <-- Diganti ke LoginScreen
     );
   }
 }

@@ -1,23 +1,25 @@
 import 'package:dear_flutter/core/di/injection.dart';
-import 'package:dear_flutter/presentation/auth/cubit/login_cubit.dart';
-import 'package:dear_flutter/presentation/auth/cubit/login_state.dart';
+import 'package:dear_flutter/presentation/auth/cubit/register_cubit.dart';
+import 'package:dear_flutter/presentation/auth/cubit/register_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart'; // <-- Import baru
+import 'package:go_router/go_router.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -26,28 +28,33 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => getIt<LoginCubit>(),
-      child: BlocListener<LoginCubit, LoginState>(
+      create: (context) => getIt<RegisterCubit>(),
+      child: BlocListener<RegisterCubit, RegisterState>(
         listener: (context, state) {
-          if (state.status == LoginStatus.success) {
-            // Navigasi ke halaman home menggunakan go_router
+          if (state.status == AuthStatus.success) {
+            // Jika registrasi & login otomatis berhasil, pergi ke beranda
             context.go('/home');
           }
-          if (state.status == LoginStatus.failure) {
+          if (state.status == AuthStatus.failure) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
-                SnackBar(content: Text(state.errorMessage ?? 'Login Gagal')),
+                SnackBar(content: Text(state.errorMessage ?? 'Registrasi Gagal')),
               );
           }
         },
         child: Scaffold(
-          appBar: AppBar(title: const Text('Login')),
+          appBar: AppBar(title: const Text('Daftar Akun Baru')),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                TextField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(labelText: 'Username'),
+                ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: _emailController,
                   decoration: const InputDecoration(labelText: 'Email'),
@@ -60,29 +67,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: true,
                 ),
                 const SizedBox(height: 32),
-                BlocBuilder<LoginCubit, LoginState>(
+                BlocBuilder<RegisterCubit, RegisterState>(
                   builder: (context, state) {
-                    if (state.status == LoginStatus.loading) {
+                    if (state.status == AuthStatus.loading) {
                       return const CircularProgressIndicator();
                     }
                     return ElevatedButton(
                       onPressed: () {
-                        context.read<LoginCubit>().login(
+                        context.read<RegisterCubit>().register(
+                              username: _usernameController.text,
                               email: _emailController.text,
                               password: _passwordController.text,
                             );
                       },
-                      child: const Text('Login'),
+                      child: const Text('Daftar'),
                     );
                   },
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () {
-                    // Navigasi ke halaman register menggunakan go_router
-                    context.go('/register');
-                  },
-                  child: const Text('Belum punya akun? Daftar'),
                 ),
               ],
             ),

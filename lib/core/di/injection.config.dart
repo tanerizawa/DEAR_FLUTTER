@@ -25,9 +25,11 @@ import '../../domain/repositories/auth_repository.dart' as _i1073;
 import '../../domain/repositories/journal_repository.dart' as _i847;
 import '../../domain/usecases/get_journals_usecase.dart' as _i738;
 import '../../domain/usecases/login_usecase.dart' as _i253;
+import '../../domain/usecases/register_usecase.dart' as _i35;
 import '../../domain/usecases/save_journal_usecase.dart' as _i415;
 import '../../domain/usecases/sync_journals_usecase.dart' as _i873;
 import '../../presentation/auth/cubit/login_cubit.dart' as _i774;
+import '../../presentation/auth/cubit/register_cubit.dart' as _i887;
 import '../../presentation/home/cubit/home_cubit.dart' as _i288;
 import '../../presentation/journal/cubit/journal_editor_cubit.dart' as _i826;
 import '../api/auth_interceptor.dart' as _i577;
@@ -76,6 +78,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i28.JournalDao>(),
       ),
     );
+    gh.factory<_i35.RegisterUseCase>(
+      () => _i35.RegisterUseCase(gh<_i1073.AuthRepository>()),
+    );
     gh.factory<_i253.LoginUseCase>(
       () => _i253.LoginUseCase(gh<_i1073.AuthRepository>()),
     );
@@ -99,6 +104,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i774.LoginCubit>(
       () => _i774.LoginCubit(gh<_i253.LoginUseCase>()),
+    );
+    gh.factory<_i887.RegisterCubit>(
+      () => _i887.RegisterCubit(gh<_i35.RegisterUseCase>()),
     );
     return this;
   }
