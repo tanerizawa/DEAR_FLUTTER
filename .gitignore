@@ -58,5 +58,9 @@ local.properties
 # 🧪 Testing & Coverage
 # Laporan hasil testing dan coverage tidak perlu disimpan di Git.
 /coverage/
-*__pycache__
+*__pycache__/
+*__init__.py
+*.rpyc
 *build
+*cache
+/backend/migrations/
