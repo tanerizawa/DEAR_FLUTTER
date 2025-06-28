@@ -34,7 +34,7 @@ source venv/bin/activate
 2. Install dependencies:
 
 ```bash
-pip install -r backend/requirements.txt
+pip install -r requirements.txt
 ```
 
 3. Provide Spotify API credentials in a `.env` file inside `backend/`:
