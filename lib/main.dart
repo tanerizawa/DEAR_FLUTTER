@@ -1,10 +1,13 @@
-import 'package:dear_flutter/core/di/injection.dart';
-import 'package:dear_flutter/core/navigation/app_router.dart'; // <-- IMPORT BARU
 import 'package:flutter/material.dart';
+import 'package:dear_flutter/core/di/injection.dart';
+import 'package:dear_flutter/core/navigation/app_router.dart'; // Router konfigurasi
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi dependency injection (getIt, dll.)
   await configureDependencies();
+
   runApp(const MyApp());
 }
 
@@ -13,9 +16,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Gunakan MaterialApp.router
     return MaterialApp.router(
-      routerConfig: router, // <-- Berikan konfigurasi router kita
+      routerConfig: router, // Menggunakan GoRouter yang sudah dikonfigurasi
       debugShowCheckedModeBanner: false,
       title: 'Dear App',
       theme: ThemeData(
