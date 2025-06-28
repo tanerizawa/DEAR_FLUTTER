@@ -13,6 +13,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
+      // HomeCubit automatically starts monitoring journals
       create: (context) => getIt<HomeCubit>(),
       child: Scaffold(
         appBar: AppBar(
