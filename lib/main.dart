@@ -1,17 +1,14 @@
 // lib/main.dart
 
-import 'package:dear_flutter/core/di/injection.dart';
-import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:dear_flutter/core/di/injection.dart';
+import 'package:dear_flutter/presentation/auth/screens/login_screen.dart'; // <-- Import login screen
 
 void main() {
-  // VVVV  TAMBAHKAN BARIS INI  VVVV
-  // Baris ini memastikan "jembatan" ke platform asli sudah siap.
-  // Wajib ada sebelum memanggil plugin seperti path_provider.
+  // Pastikan jembatan ke platform asli sudah siap
   WidgetsFlutterBinding.ensureInitialized();
-  // ^^^^ SAMPAI DI SINI ^^^^
 
-  // Panggil ini setelah jembatan siap
+  // Inisialisasi dependency injection
   configureDependencies();
 
   runApp(const MyApp());
@@ -28,7 +25,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const LoginScreen(), // <-- Diganti ke LoginScreen
     );
   }
 }

@@ -3,6 +3,7 @@
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_state.dart';
+import 'package:dear_flutter/presentation/journal/screens/journal_editor_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -12,13 +13,11 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      // Ganti 'fetchJournals()' menjadi 'watchJournals()'
-      create: (context) => getIt<HomeCubit>()..watchJournals(), 
+      create: (context) => getIt<HomeCubit>()..watchJournals(), // Menjalankan pemantauan jurnal
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Beranda'),
         ),
-                // VVVV TAMBAHKAN KODE DI BAWAH INI VVVV
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             Navigator.of(context).push(
@@ -29,21 +28,22 @@ class HomeScreen extends StatelessWidget {
           },
           child: const Icon(Icons.add),
         ),
-        // ^^^^ SAMPAI DI SINI ^^^^
         body: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
-            // Tampilkan UI berdasarkan status
             switch (state.status) {
-              case HomeStatus.loading:
               case HomeStatus.initial:
+              case HomeStatus.loading:
                 return const Center(child: CircularProgressIndicator());
+
               case HomeStatus.failure:
-                return Center(child: Text(state.errorMessage ?? 'Terjadi kesalahan'));
+                return Center(
+                  child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
+                );
+
               case HomeStatus.success:
                 if (state.journals.isEmpty) {
                   return const Center(child: Text('Belum ada jurnal.'));
                 }
-                // Tampilkan daftar jurnal
                 return ListView.builder(
                   itemCount: state.journals.length,
                   itemBuilder: (context, index) {
