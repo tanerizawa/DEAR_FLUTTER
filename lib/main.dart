@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/presentation/auth/screens/login_screen.dart'; // <-- Import login screen
 
-void main() {
+Future<void> main() async {
   // Pastikan jembatan ke platform asli sudah siap
   WidgetsFlutterBinding.ensureInitialized();
 
   // Inisialisasi dependency injection
-  configureDependencies();
+  await configureDependencies();
 
   runApp(const MyApp());
 }
