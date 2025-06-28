@@ -8,7 +8,7 @@ import 'package:dear_flutter/data/datasources/remote/journal_api_service.dart';
 import 'package:dear_flutter/data/models/requests.dart';
 import 'package:injectable/injectable.dart';
 
-@Injectable(as: JournalRepository) // <-- PASTIKAN BARIS INI ADA
+@Injectable(as: JournalRepository)
 class JournalRepositoryImpl implements JournalRepository {
   final JournalApiService _apiService;
   final JournalDao _journalDao;
@@ -16,30 +16,61 @@ class JournalRepositoryImpl implements JournalRepository {
   JournalRepositoryImpl(this._apiService, this._journalDao);
 
   // --- MAPPERS ---
-  // Fungsi untuk mengubah dari format Database ke format Domain
   Journal _mapJournalEntryToDomain(JournalEntry entry) {
     return Journal(
-      id: entry.id,
-      title: entry.title,
-      content: entry.content,
-      mood: entry.mood,
-      createdAt: entry.createdAt,
+        id: entry.id,
+        title: entry.title,
+        content: entry.content,
+        mood: entry.mood,
+        createdAt: entry.createdAt);
+  }
+
+  // Mapper untuk mengubah dari format API (domain) ke format Database
+  JournalEntry _mapDomainToJournalEntry(Journal journal) {
+    return JournalEntry(
+      id: journal.id,
+      title: journal.title,
+      content: journal.content,
+      mood: journal.mood,
+      createdAt: journal.createdAt,
+      isSynced: true, // Asumsikan data dari API sudah tersinkronisasi
     );
   }
 
   @override
   Stream<List<Journal>> getJournals() {
-    // Panggil DAO, lalu ubah (map) setiap list yang datang
-    // dari format database ke format domain.
     return _journalDao
         .watchAllJournals()
         .map((entries) => entries.map(_mapJournalEntryToDomain).toList());
   }
 
   @override
-  Future<Journal> createJournal(CreateJournalRequest request) async {
-    final newJournal = await _apiService.createJournal(request);
-    // TODO: Simpan newJournal ke database lokal setelah dibuat.
-    return newJournal;
+  Future<void> createJournal(CreateJournalRequest request) async {
+    try {
+      // 1. Panggil API untuk membuat jurnal baru di server
+      final newJournalFromServer = await _apiService.createJournal(request);
+      // 2. Simpan jurnal yang baru dibuat ke database lokal
+      await _journalDao.insertJournal(_mapDomainToJournalEntry(newJournalFromServer));
+    } catch (e) {
+      // Tangani error jika gagal (misalnya, tidak ada koneksi internet)
+      print('Gagal membuat jurnal: $e');
+      // Di aplikasi nyata, kita bisa menyimpan ke lokal dulu dengan flag isSynced = false
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> syncJournals() async {
+    try {
+      // 1. Ambil semua jurnal dari server
+      final remoteJournals = await _apiService.getJournals();
+      // 2. Simpan setiap jurnal ke database lokal
+      for (final journal in remoteJournals) {
+        await _journalDao.insertJournal(_mapDomainToJournalEntry(journal));
+      }
+    } catch (e) {
+      print('Gagal sinkronisasi: $e');
+      rethrow;
+    }
   }
 }

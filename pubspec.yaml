@@ -28,6 +28,7 @@ dependencies:
   # Local Storage
   shared_preferences: ^2.2.2            # Untuk penyimpanan data sederhana (pengganti DataStore)
   drift: ^2.14.0                        # Database lokal (pengganti Room)
+  sqlite3_flutter_libs: ^0.5.20
   path_provider: ^2.0.11                # Menemukan lokasi file untuk Drift
   path: ^1.8.3                          # Manipulasi path file
 

@@ -1,24 +1,32 @@
 // lib/core/di/register_module.dart
 
-import 'package:dear_flutter/core/api/auth_interceptor.dart';
-import 'package:dear_flutter/core/api/dio_client.dart';
 import 'package:dear_flutter/data/datasources/local/app_database.dart';
 import 'package:dear_flutter/data/datasources/local/journal_dao.dart';
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
-// File ini akan menjadi SATU-SATUNYA sumber untuk anotasi @module
-
 @module
 abstract class RegisterModule {
   // --- NETWORK ---
-  @singleton
-  Dio get dio => createDioClient(UserPreferencesRepository());
+  @lazySingleton
+  Dio get dio {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: 'http://10.0.2.2:8000/api/v1/', // Pastikan URL ini benar
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 60),
+      ),
+    );
+    dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
+    return dio;
+  }
 
   // --- DATABASE ---
   @singleton
   AppDatabase get database => AppDatabase();
 
+  // INI BAGIAN PENTING:
+  // Secara eksplisit menyediakan JournalDao dari AppDatabase
   @lazySingleton
-  JournalDao provideJournalDao(AppDatabase db) => db.journalDao;
+  JournalDao journalDao(AppDatabase db) => db.journalDao;
 }

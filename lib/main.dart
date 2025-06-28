@@ -1,13 +1,19 @@
 // lib/main.dart
 
 import 'package:dear_flutter/core/di/injection.dart';
-import 'package:dear_flutter/presentation/home/screens/home_screen.dart'; // <-- Pastikan import ini ada
+import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  // Panggil ini sebelum runApp()
-  configureDependencies(); 
-  
+  // VVVV  TAMBAHKAN BARIS INI  VVVV
+  // Baris ini memastikan "jembatan" ke platform asli sudah siap.
+  // Wajib ada sebelum memanggil plugin seperti path_provider.
+  WidgetsFlutterBinding.ensureInitialized();
+  // ^^^^ SAMPAI DI SINI ^^^^
+
+  // Panggil ini setelah jembatan siap
+  configureDependencies();
+
   runApp(const MyApp());
 }
 
@@ -19,10 +25,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Dear App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const HomeScreen(), // <-- Ini sudah benar
+      home: const HomeScreen(),
     );
   }
 }

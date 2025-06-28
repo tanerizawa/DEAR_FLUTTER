@@ -19,6 +19,8 @@ import '../../data/datasources/remote/journal_api_service.dart' as _i1020;
 import '../../data/repositories/journal_repository_impl.dart' as _i625;
 import '../../domain/repositories/journal_repository.dart' as _i847;
 import '../../domain/usecases/get_journals_usecase.dart' as _i738;
+import '../../domain/usecases/save_journal_usecase.dart' as _i415;
+import '../../domain/usecases/sync_journals_usecase.dart' as _i873;
 import '../../presentation/home/cubit/home_cubit.dart' as _i288;
 import 'register_module.dart' as _i291;
 
@@ -30,13 +32,13 @@ extension GetItInjectableX on _i174.GetIt {
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final registerModule = _$RegisterModule();
-    gh.singleton<_i361.Dio>(() => registerModule.dio);
     gh.singleton<_i483.AppDatabase>(() => registerModule.database);
+    gh.lazySingleton<_i361.Dio>(() => registerModule.dio);
     gh.factory<_i1020.JournalApiService>(
       () => _i1020.JournalApiService(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i28.JournalDao>(
-      () => registerModule.provideJournalDao(gh<_i483.AppDatabase>()),
+      () => registerModule.journalDao(gh<_i483.AppDatabase>()),
     );
     gh.factory<_i847.JournalRepository>(
       () => _i625.JournalRepositoryImpl(
@@ -44,11 +46,20 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i28.JournalDao>(),
       ),
     );
+    gh.factory<_i415.SaveJournalUseCase>(
+      () => _i415.SaveJournalUseCase(gh<_i847.JournalRepository>()),
+    );
     gh.factory<_i738.GetJournalsUseCase>(
       () => _i738.GetJournalsUseCase(gh<_i847.JournalRepository>()),
     );
+    gh.factory<_i873.SyncJournalsUseCase>(
+      () => _i873.SyncJournalsUseCase(gh<_i847.JournalRepository>()),
+    );
     gh.factory<_i288.HomeCubit>(
-      () => _i288.HomeCubit(gh<_i738.GetJournalsUseCase>()),
+      () => _i288.HomeCubit(
+        gh<_i738.GetJournalsUseCase>(),
+        gh<_i873.SyncJournalsUseCase>(),
+      ),
     );
     return this;
   }
