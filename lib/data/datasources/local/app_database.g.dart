@@ -11,11 +11,11 @@ class $JournalEntriesTable extends JournalEntries
   $JournalEntriesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
     'id',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
@@ -190,7 +190,7 @@ class $JournalEntriesTable extends JournalEntries
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return JournalEntry(
       id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
+        DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
       title: attachedDatabase.typeMapping.read(
@@ -231,7 +231,7 @@ class $JournalEntriesTable extends JournalEntries
 }
 
 class JournalEntry extends DataClass implements Insertable<JournalEntry> {
-  final String id;
+  final int id;
   final String title;
   final String content;
   final String mood;
@@ -252,7 +252,7 @@ class JournalEntry extends DataClass implements Insertable<JournalEntry> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
+    map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
     map['content'] = Variable<String>(content);
     map['mood'] = Variable<String>(mood);
@@ -290,7 +290,7 @@ class JournalEntry extends DataClass implements Insertable<JournalEntry> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return JournalEntry(
-      id: serializer.fromJson<String>(json['id']),
+      id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       mood: serializer.fromJson<String>(json['mood']),
@@ -304,7 +304,7 @@ class JournalEntry extends DataClass implements Insertable<JournalEntry> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
+      'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
       'mood': serializer.toJson<String>(mood),
@@ -316,7 +316,7 @@ class JournalEntry extends DataClass implements Insertable<JournalEntry> {
   }
 
   JournalEntry copyWith({
-    String? id,
+    int? id,
     String? title,
     String? content,
     String? mood,
@@ -396,7 +396,7 @@ class JournalEntry extends DataClass implements Insertable<JournalEntry> {
 }
 
 class JournalEntriesCompanion extends UpdateCompanion<JournalEntry> {
-  final Value<String> id;
+  final Value<int> id;
   final Value<String> title;
   final Value<String> content;
   final Value<String> mood;
@@ -417,7 +417,7 @@ class JournalEntriesCompanion extends UpdateCompanion<JournalEntry> {
     this.rowid = const Value.absent(),
   });
   JournalEntriesCompanion.insert({
-    required String id,
+    required int id,
     required String title,
     required String content,
     required String mood,
@@ -433,7 +433,7 @@ class JournalEntriesCompanion extends UpdateCompanion<JournalEntry> {
        createdAt = Value(createdAt),
        isSynced = Value(isSynced);
   static Insertable<JournalEntry> custom({
-    Expression<String>? id,
+    Expression<int>? id,
     Expression<String>? title,
     Expression<String>? content,
     Expression<String>? mood,
@@ -457,7 +457,7 @@ class JournalEntriesCompanion extends UpdateCompanion<JournalEntry> {
   }
 
   JournalEntriesCompanion copyWith({
-    Value<String>? id,
+    Value<int>? id,
     Value<String>? title,
     Value<String>? content,
     Value<String>? mood,
@@ -484,7 +484,7 @@ class JournalEntriesCompanion extends UpdateCompanion<JournalEntry> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<String>(id.value);
+      map['id'] = Variable<int>(id.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -959,7 +959,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$JournalEntriesTableCreateCompanionBuilder =
     JournalEntriesCompanion Function({
-      required String id,
+      required int id,
       required String title,
       required String content,
       required String mood,
@@ -971,7 +971,7 @@ typedef $$JournalEntriesTableCreateCompanionBuilder =
     });
 typedef $$JournalEntriesTableUpdateCompanionBuilder =
     JournalEntriesCompanion Function({
-      Value<String> id,
+      Value<int> id,
       Value<String> title,
       Value<String> content,
       Value<String> mood,
@@ -1152,8 +1152,8 @@ class $$JournalEntriesTableTableManager
           createComputedFieldComposer: () =>
               $$JournalEntriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
+                ({
+                  Value<int> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> content = const Value.absent(),
                 Value<String> mood = const Value.absent(),
@@ -1175,7 +1175,7 @@ class $$JournalEntriesTableTableManager
               ),
           createCompanionCallback:
               ({
-                required String id,
+                required int id,
                 required String title,
                 required String content,
                 required String mood,

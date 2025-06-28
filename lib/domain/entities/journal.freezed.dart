@@ -21,7 +21,7 @@ Journal _$JournalFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Journal {
-  String get id => throw _privateConstructorUsedError;
+  int get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
   String get content => throw _privateConstructorUsedError;
   String get mood =>
@@ -46,7 +46,7 @@ abstract class $JournalCopyWith<$Res> {
       _$JournalCopyWithImpl<$Res, Journal>;
   @useResult
   $Res call({
-    String id,
+    int id,
     String title,
     String content,
     String mood,
@@ -80,7 +80,7 @@ class _$JournalCopyWithImpl<$Res, $Val extends Journal>
             id: null == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as int,
             title: null == title
                 ? _value.title
                 : title // ignore: cast_nullable_to_non_nullable
@@ -112,7 +112,7 @@ abstract class _$$JournalImplCopyWith<$Res> implements $JournalCopyWith<$Res> {
   @override
   @useResult
   $Res call({
-    String id,
+    int id,
     String title,
     String content,
     String mood,
@@ -145,7 +145,7 @@ class __$$JournalImplCopyWithImpl<$Res>
         id: null == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as int,
         title: null == title
             ? _value.title
             : title // ignore: cast_nullable_to_non_nullable
@@ -182,7 +182,7 @@ class _$JournalImpl implements _Journal {
       _$$JournalImplFromJson(json);
 
   @override
-  final String id;
+  final int id;
   @override
   final String title;
   @override
@@ -235,7 +235,7 @@ class _$JournalImpl implements _Journal {
 
 abstract class _Journal implements Journal {
   const factory _Journal({
-    required final String id,
+    required final int id,
     required final String title,
     required final String content,
     required final String mood,
@@ -245,7 +245,7 @@ abstract class _Journal implements Journal {
   factory _Journal.fromJson(Map<String, dynamic> json) = _$JournalImpl.fromJson;
 
   @override
-  String get id;
+  int get id;
   @override
   String get title;
   @override

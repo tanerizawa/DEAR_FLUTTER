@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 // Tabel ini adalah padanan dari JournalEntity.kt
 class JournalEntries extends Table {
   // Kolom-kolomnya
-  TextColumn get id => text()();
+  IntColumn get id => integer()();
   TextColumn get title => text()();
   TextColumn get content => text()();
   TextColumn get mood => text()();
