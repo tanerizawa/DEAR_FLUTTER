@@ -12,4 +12,8 @@ class UserApiService {
     final response = await _dio.get('users/me');
     return User.fromJson(response.data);
   }
+
+  Future<void> deleteAccount() async {
+    await _dio.delete('users/me');
+  }
 }

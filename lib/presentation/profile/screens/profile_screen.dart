@@ -42,6 +42,21 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(user.email, style: Theme.of(context).textTheme.bodyLarge),
                     const Spacer(),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await context.read<ProfileCubit>().deleteAccount();
+                        if (context.mounted) {
+                          context.go('/login');
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade100,
+                        foregroundColor: Colors.red.shade900,
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: const Text('Hapus Akun'),
+                    ),
+                    const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () async {
                         await context.read<ProfileCubit>().logout();
