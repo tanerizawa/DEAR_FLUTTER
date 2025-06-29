@@ -14,12 +14,16 @@ abstract class RegisterModule {
   // --- NETWORK ---
 @lazySingleton
 Dio dio(AuthInterceptor authInterceptor) {
+  // Ganti IP ini dengan IP lokal komputer Anda
+  const localIp = '10.0.2.2'; // <- Sesuaikan dengan IP lokal Anda
   const port = 8000;
 
-  // Use Android loopback when running on an emulator, otherwise default to
-  // localhost so the backend can be reached from web, iOS or desktop.
-  final host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
-  final baseUrl = 'http://$host:$port/api/v1/';
+  // Buat baseUrl berdasarkan platform
+  final baseUrl = kIsWeb
+      ? 'http://$localIp:$port/api/v1/'
+      : Platform.isAndroid
+          ? 'http://$localIp:$port/api/v1/' // Perangkat Android (fisik atau emulator AVD)
+          : 'http://$localIp:$port/api/v1/'; // iOS atau desktop
 
   final dio = Dio(
     BaseOptions(
