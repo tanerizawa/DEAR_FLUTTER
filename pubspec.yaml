@@ -41,6 +41,9 @@ dependencies:
   # JSON Serialization / DTOs
   freezed_annotation: ^2.4.1             # Untuk membuat model immutable
   json_annotation: ^4.8.1                # Untuk serialisasi model
+  url_launcher: ^6.2.6                  # Membuka tautan eksternal
+  share_plus: ^7.2.1                    # Berbagi konten
+  audioplayers: ^5.1.0                  # Pemutar audio sederhana
 
 dev_dependencies:
   flutter_test:
