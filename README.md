@@ -4,23 +4,12 @@
 
 **Dear Diary** is a personal journaling application consisting of:
 
-- **Android app**: Built with Kotlin, Jetpack Compose, and Hilt. The source lives under `app/`.
+- **Flutter frontend**: A cross-platform client written in Dart. The source lives under `lib/`.
 - **FastAPI backend**: Provides RESTful endpoints for authentication and journal management. The source is in `backend/app/`.
 
 ### Architecture
 
-The Android module follows the MVVM pattern and communicates with the backend using Retrofit. Room is used for local persistence and Hilt provides dependency injection. The backend is a FastAPI project using SQLAlchemy ORM and JWT based authentication.
-
-## Android Build
-
-1. Ensure you have the Android SDK installed.
-2. Build from the command line:
-
-```bash
-./gradlew assembleDebug
-```
-
-   or open the project in **Android Studio** and run the *app* configuration.
+The Flutter app follows the BLoC pattern and communicates with the backend using Dio. Drift is used for local persistence and dependency injection is handled via `get_it` and `injectable`. The backend is a FastAPI project using SQLAlchemy ORM and JWT based authentication.
 
 ## Flutter Setup
 
@@ -36,6 +25,12 @@ Generate the dependency injection configuration so `configureDependencies()` can
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
 If Flutter is not available you can also run `dart run build_runner build`.
+
+Run the application on an attached device or emulator:
+
+```bash
+flutter run
+```
 
 ## Backend Setup
 
@@ -150,9 +145,9 @@ This script ensures `OPENROUTER_API_KEY` and the Spotify credentials are defined
 ## Usage
 
 
-Run the backend and then launch the Android app. The base URL used by the Android app is provided via `BuildConfig`. Debug builds point to `http://10.0.2.2:8000/api/v1/` so the emulator can reach your machine, while release builds default to `https://yourdomain.com/api/v1/`.
+Start the backend and then run the Flutter app. By default the client expects the API to be available at `http://localhost:8000/api/v1/`.
 
-### Android Usage
+### App Usage
 
 Long‑press any message in the conversation to enter selection mode. A delete icon will appear in the top bar so you can remove the selected messages, similar to how WhatsApp handles chat message deletion. The home screen now automatically shows a recommended song based on your latest journals.
 
