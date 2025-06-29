@@ -11,12 +11,16 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
+import 'package:dear_flutter/presentation/home/screens/article_detail_screen.dart';
+import 'package:dear_flutter/presentation/home/screens/audio_player_screen.dart';
 import 'package:dear_flutter/domain/entities/article.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:dear_flutter/domain/entities/home_feed_item.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 
 final _sampleItems = [
   const HomeFeedItem.article(
@@ -41,8 +45,16 @@ class _FakeHomeFeedCubit extends Cubit<HomeFeedState> implements HomeFeedCubit {
   Future<void> fetchHomeFeed() async {}
 }
 
+class _MockNavigatorObserver extends Mock implements NavigatorObserver {}
+
+class _FakeRoute extends Fake implements Route<dynamic> {}
+
 void main() {
   final getIt = GetIt.instance;
+
+  setUpAll(() {
+    registerFallbackValue(_FakeRoute());
+  });
 
   setUp(() {
     getIt.reset();
@@ -59,5 +71,65 @@ void main() {
     expect(find.text('a'), findsOneWidget);
     expect(find.text('t'), findsOneWidget);
     expect(find.textContaining('q'), findsOneWidget);
+  });
+
+  testWidgets('ListView.builder renders correct number of cards',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+
+    // There should be one Card widget for each feed item
+    expect(find.byType(Card), findsNWidgets(_sampleItems.length));
+  });
+
+  testWidgets('Tapping an article card navigates to ArticleDetailScreen',
+      (WidgetTester tester) async {
+    final observer = _MockNavigatorObserver();
+    final router = GoRouter(
+      initialLocation: '/home',
+      observers: [observer],
+      routes: [
+        GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+        GoRoute(
+          path: '/article',
+          builder: (_, state) =>
+              ArticleDetailScreen(article: state.extra as Article),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.tap(find.text('a'));
+    await tester.pumpAndSettle();
+
+    verify(() => observer.didPush(any(that: predicate<Route<dynamic>>(
+            (route) => route.settings.name == '/article')), any()))
+        .called(1);
+    expect(find.byType(ArticleDetailScreen), findsOneWidget);
+  });
+
+  testWidgets('Tapping an audio card opens AudioPlayerScreen',
+      (WidgetTester tester) async {
+    final observer = _MockNavigatorObserver();
+    final router = GoRouter(
+      initialLocation: '/home',
+      observers: [observer],
+      routes: [
+        GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+        GoRoute(
+          path: '/audio',
+          builder: (_, state) =>
+              AudioPlayerScreen(track: state.extra as AudioTrack),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.tap(find.text('t'));
+    await tester.pumpAndSettle();
+
+    verify(() => observer.didPush(any(that: predicate<Route<dynamic>>(
+            (route) => route.settings.name == '/audio')), any()))
+        .called(1);
+    expect(find.byType(AudioPlayerScreen), findsOneWidget);
   });
 }
