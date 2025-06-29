@@ -63,3 +63,4 @@ local.properties
 *build
 *cache
 /backend/migrations/
+.flutter-plugins-dependencies
