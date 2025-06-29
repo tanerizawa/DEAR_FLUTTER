@@ -4,17 +4,21 @@ import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
 import 'package:dear_flutter/domain/entities/home_feed_item.dart';
+import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+
+import 'audio_player_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    const goldenRatio = 1.618;
-
     return BlocProvider(
       create: (context) => getIt<HomeFeedCubit>(),
       child: Scaffold(
@@ -31,24 +35,31 @@ class HomeScreen extends StatelessWidget {
                 child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
               );
             }
-            return ListView(
+            return ListView.builder(
               padding: const EdgeInsets.all(16),
-              children: [
-                Text(
-                  'Selamat datang!',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 16),
-                ...state.items.map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: _HomeFeedCard(
-                      item: item,
-                      height: screenHeight / goldenRatio,
-                    ),
+              itemCount: state.items.length + 1,
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Selamat datang!',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                }
+                final item = state.items[index - 1];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: _HomeFeedCard(
+                    item: item,
+                    onTap: () => _handleItemTap(context, item),
                   ),
-                ),
-              ],
+                );
+              },
             );
           },
         ),
@@ -58,43 +69,94 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _HomeFeedCard extends StatelessWidget {
-  const _HomeFeedCard({required this.item, required this.height});
+  const _HomeFeedCard({required this.item, required this.onTap});
 
   final HomeFeedItem item;
-  final double height;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: height,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: item.when(
-            article: (data) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Artikel'),
-                Text(data.title),
-              ],
-            ),
-            audio: (data) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Musik'),
-                Text(data.title),
-              ],
-            ),
-            quote: (data) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Quote'),
-                Text('"${data.text}" - ${data.author}'),
-              ],
-            ),
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        child: item.when(
+          article: (data) => ListTile(
+            leading: const Icon(Icons.article),
+            title: Text(data.title),
+            trailing: const Icon(Icons.chevron_right),
+          ),
+          audio: (data) => ListTile(
+            leading: const Icon(Icons.music_note),
+            title: Text(data.title),
+            trailing: const Icon(Icons.chevron_right),
+          ),
+          quote: (data) => ListTile(
+            leading: const Icon(Icons.format_quote),
+            title: Text('"${data.text}"'),
+            subtitle: Text(data.author),
+            trailing: const Icon(Icons.more_vert),
           ),
         ),
       ),
     );
   }
+}
+
+Future<void> _handleItemTap(BuildContext context, HomeFeedItem item) async {
+  await item.when(
+    article: (data) async {
+      final uri = Uri.parse(data.url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak dapat membuka tautan')),
+        );
+      }
+    },
+    audio: (data) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => AudioPlayerScreen(track: data)),
+      );
+    },
+    quote: (data) {
+      _showQuoteActions(context, data);
+    },
+  );
+}
+
+void _showQuoteActions(BuildContext context, MotivationalQuote quote) {
+  showModalBottomSheet(
+    context: context,
+    builder: (context) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.copy),
+              title: const Text('Copy'),
+              onTap: () {
+                Clipboard.setData(
+                  ClipboardData(text: '"${quote.text}" - ${quote.author}'),
+                );
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Disalin ke clipboard')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('Share'),
+              onTap: () {
+                Share.share('"${quote.text}" - ${quote.author}');
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
