@@ -6,5 +6,6 @@ abstract class AuthRepository {
   Future<void> register(RegisterRequest request);
   Future<void> logout();
   bool isLoggedIn();
-  Future<User> getProfile(); 
+  Future<User> getProfile();
+  Future<void> deleteAccount();
 }

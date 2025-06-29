@@ -49,4 +49,10 @@ class AuthRepositoryImpl implements AuthRepository {
     // Teruskan panggilan ke UserApiService
     return _userApiService.getProfile();
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    await _userApiService.deleteAccount();
+    await _prefs.clearAuthToken();
+  }
 }

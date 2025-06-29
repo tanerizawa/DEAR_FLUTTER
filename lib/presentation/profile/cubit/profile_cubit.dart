@@ -1,5 +1,6 @@
 import 'package:dear_flutter/domain/usecases/get_user_profile_usecase.dart';
 import 'package:dear_flutter/domain/usecases/logout_usecase.dart';
+import 'package:dear_flutter/domain/usecases/delete_account_usecase.dart';
 import 'package:dear_flutter/presentation/profile/cubit/profile_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
@@ -8,9 +9,13 @@ import 'package:injectable/injectable.dart';
 class ProfileCubit extends Cubit<ProfileState> {
   final GetUserProfileUseCase _getUserProfileUseCase;
   final LogoutUseCase _logoutUseCase;
+  final DeleteAccountUseCase _deleteAccountUseCase;
 
-  ProfileCubit(this._getUserProfileUseCase, this._logoutUseCase)
-      : super(const ProfileState()) {
+  ProfileCubit(
+      this._getUserProfileUseCase,
+      this._logoutUseCase,
+      this._deleteAccountUseCase,
+      ) : super(const ProfileState()) {
     fetchUserProfile();
   }
 
@@ -26,5 +31,9 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   Future<void> logout() async {
     await _logoutUseCase();
+  }
+
+  Future<void> deleteAccount() async {
+    await _deleteAccountUseCase();
   }
 }
