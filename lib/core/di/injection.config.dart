@@ -22,17 +22,21 @@ import '../../data/datasources/remote/auth_api_service.dart' as _i228;
 import '../../data/datasources/remote/chat_api_service.dart' as _i489;
 import '../../data/datasources/remote/journal_api_service.dart' as _i1020;
 import '../../data/datasources/remote/user_api_service.dart' as _i637;
+import '../../data/datasources/remote/home_api_service.dart' as _i2000;
 import '../../data/repositories/auth_repository_impl.dart' as _i895;
 import '../../data/repositories/chat_repository_impl.dart' as _i838;
 import '../../data/repositories/journal_repository_impl.dart' as _i625;
+import '../../data/repositories/home_repository_impl.dart' as _i2001;
 import '../../domain/repositories/auth_repository.dart' as _i1073;
 import '../../domain/repositories/chat_repository.dart' as _i1072;
 import '../../domain/repositories/journal_repository.dart' as _i847;
+import '../../domain/repositories/home_repository.dart' as _i2002;
 import '../../domain/usecases/delete_account_usecase.dart' as _i874;
 import '../../domain/usecases/get_auth_status_usecase.dart' as _i126;
 import '../../domain/usecases/get_chat_history_usecase.dart' as _i992;
 import '../../domain/usecases/get_journals_usecase.dart' as _i738;
 import '../../domain/usecases/get_user_profile_usecase.dart' as _i629;
+import '../../domain/usecases/get_home_feed_usecase.dart' as _i2003;
 import '../../domain/usecases/login_usecase.dart' as _i253;
 import '../../domain/usecases/logout_usecase.dart' as _i981;
 import '../../domain/usecases/register_usecase.dart' as _i35;
@@ -43,6 +47,7 @@ import '../../presentation/auth/cubit/login_cubit.dart' as _i774;
 import '../../presentation/auth/cubit/register_cubit.dart' as _i887;
 import '../../presentation/chat/cubit/chat_cubit.dart' as _i207;
 import '../../presentation/home/cubit/home_cubit.dart' as _i288;
+import '../../presentation/home/cubit/home_feed_cubit.dart' as _i2004;
 import '../../presentation/journal/cubit/journal_editor_cubit.dart' as _i826;
 import '../../presentation/profile/cubit/profile_cubit.dart' as _i107;
 import '../api/auth_interceptor.dart' as _i577;
@@ -88,6 +93,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i228.AuthApiService>(
       () => _i228.AuthApiService(gh<_i361.Dio>()),
     );
+    gh.factory<_i2000.HomeApiService>(
+      () => _i2000.HomeApiService(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i1072.ChatRepository>(
       () => _i838.ChatRepositoryImpl(
         gh<_i489.ChatApiService>(),
@@ -99,6 +107,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i955.SendMessageUseCase>(
       () => _i955.SendMessageUseCase(gh<_i1072.ChatRepository>()),
+    );
+    gh.lazySingleton<_i2002.HomeRepository>(
+      () => _i2001.HomeRepositoryImpl(gh<_i2000.HomeApiService>()),
     );
     gh.lazySingleton<_i847.JournalRepository>(
       () => _i625.JournalRepositoryImpl(
@@ -140,6 +151,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i415.SaveJournalUseCase>(
       () => _i415.SaveJournalUseCase(gh<_i847.JournalRepository>()),
     );
+    gh.factory<_i2003.GetHomeFeedUseCase>(
+      () => _i2003.GetHomeFeedUseCase(gh<_i2002.HomeRepository>()),
+    );
     gh.factory<_i738.GetJournalsUseCase>(
       () => _i738.GetJournalsUseCase(gh<_i847.JournalRepository>()),
     );
@@ -154,6 +168,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i738.GetJournalsUseCase>(),
         gh<_i873.SyncJournalsUseCase>(),
       ),
+    );
+    gh.factory<_i2004.HomeFeedCubit>(
+      () => _i2004.HomeFeedCubit(gh<_i2003.GetHomeFeedUseCase>()),
     );
     gh.factory<_i774.LoginCubit>(
       () => _i774.LoginCubit(gh<_i253.LoginUseCase>()),
