@@ -33,7 +33,6 @@
 # File yang dibuat otomatis dan wajib diabaikan.
 *.g.dart
 *.freezed.dart
-*.config.dart
 
 # ============================================
 # 💻 Editor & IDE
