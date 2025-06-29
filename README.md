@@ -22,6 +22,21 @@ The Android module follows the MVVM pattern and communicates with the backend us
 
    or open the project in **Android Studio** and run the *app* configuration.
 
+## Flutter Setup
+
+Install Flutter from the [official instructions](https://docs.flutter.dev/get-started/install) and fetch the project dependencies:
+
+```bash
+flutter pub get
+```
+
+Generate the dependency injection configuration so `configureDependencies()` can resolve providers at runtime:
+
+```bash
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+If Flutter is not available you can also run `dart run build_runner build`.
+
 ## Backend Setup
 
 1. Create and activate a Python virtual environment:
