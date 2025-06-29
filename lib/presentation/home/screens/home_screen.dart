@@ -4,15 +4,13 @@ import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
 import 'package:dear_flutter/domain/entities/home_feed_item.dart';
-import 'package:dear_flutter/domain/entities/audio_track.dart';
-import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:go_router/go_router.dart';
 
+import 'article_detail_screen.dart';
 import 'audio_player_screen.dart';
+import 'quote_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -94,7 +92,7 @@ class _HomeFeedCard extends StatelessWidget {
             leading: const Icon(Icons.format_quote),
             title: Text('"${data.text}"'),
             subtitle: Text(data.author),
-            trailing: const Icon(Icons.more_vert),
+            trailing: const Icon(Icons.chevron_right),
           ),
         ),
       ),
@@ -102,61 +100,17 @@ class _HomeFeedCard extends StatelessWidget {
   }
 }
 
-Future<void> _handleItemTap(BuildContext context, HomeFeedItem item) async {
-  await item.when(
-    article: (data) async {
-      final uri = Uri.parse(data.url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak dapat membuka tautan')),
-        );
-      }
+void _handleItemTap(BuildContext context, HomeFeedItem item) {
+  item.when(
+    article: (data) {
+      context.push('/article', extra: data);
     },
     audio: (data) {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => AudioPlayerScreen(track: data)),
-      );
+      context.push('/audio', extra: data);
     },
     quote: (data) {
-      _showQuoteActions(context, data);
+      context.push('/quote', extra: data);
     },
   );
 }
 
-void _showQuoteActions(BuildContext context, MotivationalQuote quote) {
-  showModalBottomSheet(
-    context: context,
-    builder: (context) {
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.copy),
-              title: const Text('Copy'),
-              onTap: () {
-                Clipboard.setData(
-                  ClipboardData(text: '"${quote.text}" - ${quote.author}'),
-                );
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Disalin ke clipboard')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.share),
-              title: const Text('Share'),
-              onTap: () {
-                Share.share('"${quote.text}" - ${quote.author}');
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
