@@ -12,25 +12,33 @@ import 'package:shared_preferences/shared_preferences.dart';
 @module
 abstract class RegisterModule {
   // --- NETWORK ---
-  @lazySingleton
-  Dio dio(AuthInterceptor authInterceptor) {
-    final baseUrl = kIsWeb
-        ? 'http://localhost:8000/api/v1/'
-        : Platform.isAndroid
-            ? 'http://10.0.2.2:8000/api/v1/'
-            : 'http://localhost:8000/api/v1/';
+@lazySingleton
+Dio dio(AuthInterceptor authInterceptor) {
+  // Ganti IP ini dengan IP lokal komputer Anda
+  const localIp = '10.0.2.2'; // <- Sesuaikan dengan IP lokal Anda
+  const port = 8000;
 
-    final dio = Dio(
-      BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 60),
-      ),
-    );
-    dio.interceptors.add(authInterceptor);
-    dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
-    return dio;
-  }
+  // Buat baseUrl berdasarkan platform
+  final baseUrl = kIsWeb
+      ? 'http://$localIp:$port/api/v1/'
+      : Platform.isAndroid
+          ? 'http://$localIp:$port/api/v1/' // Perangkat Android (fisik atau emulator AVD)
+          : 'http://$localIp:$port/api/v1/'; // iOS atau desktop
+
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 60),
+    ),
+  );
+
+  dio.interceptors.add(authInterceptor);
+  dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
+
+  return dio;
+}
+
 
   // --- DATABASE ---
   @singleton
