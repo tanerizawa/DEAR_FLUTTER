@@ -6,7 +6,7 @@ part 'audio_track.g.dart';
 @freezed
 class AudioTrack with _$AudioTrack {
   const factory AudioTrack({
-    required String id,
+    required int id,
     required String title,
     required String url,
   }) = _AudioTrack;
