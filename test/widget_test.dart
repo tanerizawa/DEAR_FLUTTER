@@ -11,17 +11,34 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
-import 'package:dear_flutter/presentation/home/cubit/home_cubit.dart';
-import 'package:dear_flutter/presentation/home/cubit/home_state.dart';
+import 'package:dear_flutter/domain/entities/article.dart';
+import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/domain/entities/motivational_quote.dart';
+import 'package:dear_flutter/domain/entities/home_feed_item.dart';
+import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
+import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
 
-class _FakeHomeCubit extends Cubit<HomeState> implements HomeCubit {
-  _FakeHomeCubit() : super(const HomeState());
+final _sampleItems = [
+  const HomeFeedItem.article(
+    data: Article(id: 1, title: 'a', url: 'u'),
+  ),
+  const HomeFeedItem.audio(
+    data: AudioTrack(id: 2, title: 't', url: 'm'),
+  ),
+  const HomeFeedItem.quote(
+    data: MotivationalQuote(id: 3, text: 'q', author: 'au'),
+  ),
+];
+
+class _FakeHomeFeedCubit extends Cubit<HomeFeedState> implements HomeFeedCubit {
+  _FakeHomeFeedCubit()
+      : super(const HomeFeedState(
+          status: HomeFeedStatus.success,
+          items: _sampleItems,
+        ));
 
   @override
-  Future<void> syncJournals() async {}
-
-  @override
-  void watchJournals() {}
+  Future<void> fetchHomeFeed() async {}
 }
 
 void main() {
@@ -29,15 +46,18 @@ void main() {
 
   setUp(() {
     getIt.reset();
-    getIt.registerFactory<HomeCubit>(() => _FakeHomeCubit());
+    getIt.registerFactory<HomeFeedCubit>(() => _FakeHomeFeedCubit());
   });
 
   tearDown(getIt.reset);
 
-  testWidgets('HomeScreen renders without error', (WidgetTester tester) async {
+  testWidgets('HomeScreen renders feed cards', (WidgetTester tester) async {
     await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
 
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(find.text('Beranda'), findsOneWidget);
+    expect(find.text('a'), findsOneWidget);
+    expect(find.text('t'), findsOneWidget);
+    expect(find.textContaining('q'), findsOneWidget);
   });
 }
