@@ -5,47 +5,57 @@ import 'package:dear_flutter/presentation/auth/screens/register_screen.dart';
 import 'package:dear_flutter/presentation/chat/screens/chat_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
 import 'package:dear_flutter/presentation/main/main_screen.dart';
+import 'package:dear_flutter/presentation/profile/screens/profile_screen.dart'; // Sudah ditambahkan
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// Kunci Global untuk ShellRoute agar state tetap terjaga
+// Navigator key utama
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(
   initialLocation: '/home',
   navigatorKey: _rootNavigatorKey,
   routes: [
-    // Rute untuk alur utama (dengan BottomNavigationBar)
+    // ShellRoute dengan 3 tab utama
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
-        // "Bungkus" semua halaman utama dengan MainScreen
         return MainScreen(child: navigationShell);
       },
       branches: [
-        // Branch untuk tab pertama (Beranda)
+        // Tab 0: Beranda
         StatefulShellBranch(
-          navigatorKey: _shellNavigatorKey,
           routes: [
             GoRoute(
               path: '/home',
-              builder: (context, state) => const HomeScreen(),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: HomeScreen()),
             ),
           ],
         ),
-        // Branch untuk tab kedua (Chat)
+        // Tab 1: Chat
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: '/chat',
-              builder: (context, state) => const ChatScreen(),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: ChatScreen()),
+            ),
+          ],
+        ),
+        // Tab 2: Profil (tambahan)
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/profile',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: ProfileScreen()),
             ),
           ],
         ),
       ],
     ),
 
-    // Rute untuk halaman yang tidak memiliki BottomNavigationBar
+    // Route luar shell (autentikasi)
     GoRoute(
       path: '/login',
       builder: (context, state) => const LoginScreen(),
@@ -55,21 +65,21 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const RegisterScreen(),
     ),
   ],
+
+  // Redirect berdasarkan status login
   redirect: (context, state) {
     final isLoggedIn = getIt<GetAuthStatusUseCase>().call();
-    final isGoingToLogin = state.matchedLocation == '/login';
+    final isGoingToAuthRoutes =
+        state.matchedLocation == '/login' || state.matchedLocation == '/register';
 
-    // Jika belum login dan tidak sedang menuju halaman login, belokkan ke /login
-    if (!isLoggedIn && !isGoingToLogin) {
+    if (!isLoggedIn && !isGoingToAuthRoutes) {
       return '/login';
     }
 
-    // Jika sudah login dan mencoba ke halaman login, belokkan ke /home
-    if (isLoggedIn && isGoingToLogin) {
+    if (isLoggedIn && isGoingToAuthRoutes) {
       return '/home';
     }
 
-    return null; // Lanjutkan ke tujuan
+    return null;
   },
 );
-
