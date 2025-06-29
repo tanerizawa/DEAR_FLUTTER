@@ -6,6 +6,12 @@ import 'package:dear_flutter/presentation/chat/screens/chat_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
 import 'package:dear_flutter/presentation/main/main_screen.dart';
 import 'package:dear_flutter/presentation/profile/screens/profile_screen.dart'; // Sudah ditambahkan
+import 'package:dear_flutter/presentation/home/screens/article_detail_screen.dart';
+import 'package:dear_flutter/presentation/home/screens/audio_player_screen.dart';
+import 'package:dear_flutter/presentation/home/screens/quote_detail_screen.dart';
+import 'package:dear_flutter/domain/entities/article.dart';
+import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -53,6 +59,23 @@ final GoRouter router = GoRouter(
           ],
         ),
       ],
+    ),
+
+    // Detail routes di luar shell
+    GoRoute(
+      path: '/article',
+      builder: (context, state) =>
+          ArticleDetailScreen(article: state.extra as Article),
+    ),
+    GoRoute(
+      path: '/audio',
+      builder: (context, state) =>
+          AudioPlayerScreen(track: state.extra as AudioTrack),
+    ),
+    GoRoute(
+      path: '/quote',
+      builder: (context, state) =>
+          QuoteDetailScreen(quote: state.extra as MotivationalQuote),
     ),
 
     // Route luar shell (autentikasi)
