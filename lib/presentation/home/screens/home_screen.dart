@@ -3,6 +3,7 @@
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
+import 'package:dear_flutter/domain/entities/home_feed_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
