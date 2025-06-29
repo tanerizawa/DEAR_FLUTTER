@@ -25,7 +25,7 @@ class _FakeAuthRepository implements AuthRepository {
   bool isLoggedIn() => false;
 
   @override
-  Future<User> getProfile() async => const User(id: '1', username: 'u', email: 'e');
+  Future<User> getProfile() async => const User(id: 1, username: 'u', email: 'e');
 }
 
 void main() {
