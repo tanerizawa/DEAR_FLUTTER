@@ -145,7 +145,10 @@ This script ensures `OPENROUTER_API_KEY` and the Spotify credentials are defined
 ## Usage
 
 
-Start the backend and then run the Flutter app. By default the client expects the API to be available at `http://localhost:8000/api/v1/`.
+Start the backend and then run the Flutter app. By default the client expects the
+API to be available at `http://localhost:8000/api/v1/`. When running on an Android
+emulator the app automatically switches to `http://10.0.2.2:8000/api/v1/` so the
+backend can still be reached from the virtual device.
 
 ### App Usage
 
