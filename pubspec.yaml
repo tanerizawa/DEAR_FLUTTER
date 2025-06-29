@@ -58,6 +58,7 @@ dev_dependencies:
   injectable_generator: ^2.4.1           # Codegen untuk dependency injection
   json_serializable: ^6.7.1              # Codegen untuk JSON
   drift_dev: ^2.14.0                     # Codegen untuk ORM Drift
+  mocktail: ^1.0.1                       # Untuk mocking di unit test
 
 flutter:
   uses-material-design: true
