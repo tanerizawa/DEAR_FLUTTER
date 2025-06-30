@@ -79,3 +79,24 @@ def test_quotes_endpoint_returns_items(client):
     data = resp.json()
     assert isinstance(data, list)
     assert len(data) == 2
+
+
+def test_quotes_latest_endpoint_returns_latest_item(client):
+    client_app, session_local = client
+    db = session_local()
+    try:
+        crud.motivational_quote.create(
+            db,
+            obj_in=schemas.MotivationalQuoteCreate(text="old", author="anon"),
+        )
+        crud.motivational_quote.create(
+            db,
+            obj_in=schemas.MotivationalQuoteCreate(text="new", author="anon"),
+        )
+    finally:
+        db.close()
+
+    resp = client_app.get("/api/v1/quotes/latest")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["text"] == "new"
