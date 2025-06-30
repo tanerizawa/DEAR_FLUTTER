@@ -33,6 +33,7 @@
 # File yang dibuat otomatis dan wajib diabaikan.
 *.g.dart
 *.freezed.dart
+.pubspec.lock
 
 # ============================================
 # 💻 Editor & IDE

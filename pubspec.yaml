@@ -44,8 +44,8 @@ dependencies:
   share_plus: ^7.2.1                    # Berbagi konten
   webview_flutter: ^4.4.1              # Menampilkan halaman web dalam aplikasi
   audioplayers: ^5.1.0                  # Pemutar audio sederhana
-  flutter_local_notifications: ^15.1.1
-
+  flutter_local_notifications: ^19.3.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
