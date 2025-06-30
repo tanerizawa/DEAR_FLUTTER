@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class RegisterModule {
   // --- NETWORK ---
 @lazySingleton
+<<<<<<< Updated upstream
 Dio dio(
   AuthInterceptor authInterceptor,
   LoggingInterceptor loggingInterceptor,
@@ -28,6 +29,11 @@ Dio dio(
       : Platform.isAndroid
           ? 'http://$localIp:$port/api/v1/' // Perangkat Android (fisik atau emulator AVD)
           : 'http://$localIp:$port/api/v1/'; // iOS atau desktop
+=======
+Dio dio(AuthInterceptor authInterceptor) {
+  // Mengarahkan ke URL backend di Render.com
+  final baseUrl = 'https://server-qp6y.onrender.com/api/v1/';
+>>>>>>> Stashed changes
 
   final dio = Dio(
     BaseOptions(

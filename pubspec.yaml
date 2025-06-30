@@ -26,7 +26,6 @@ dependencies:
   # Networking
   dio: ^5.4.1                            # HTTP client modern dengan interceptor
   uuid: ^4.0.0                           # Untuk generate ID unik (misal: ID pesan/chat)
-
   # Routing
   go_router: ^13.2.0                     # Navigator 2.0 berbasis deklaratif
 
