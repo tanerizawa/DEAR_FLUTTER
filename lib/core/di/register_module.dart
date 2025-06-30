@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:dear_flutter/core/api/auth_interceptor.dart';
+import 'package:dear_flutter/core/api/logging_interceptor.dart';
 import 'package:dear_flutter/data/datasources/local/app_database.dart';
 import 'package:dear_flutter/data/datasources/local/chat_message_dao.dart';
 import 'package:dear_flutter/data/datasources/local/journal_dao.dart';
@@ -13,7 +14,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class RegisterModule {
   // --- NETWORK ---
 @lazySingleton
-Dio dio(AuthInterceptor authInterceptor) {
+Dio dio(
+  AuthInterceptor authInterceptor,
+  LoggingInterceptor loggingInterceptor,
+) {
   // Ganti IP ini dengan IP lokal komputer Anda
   const localIp = '10.0.2.2'; // <- Sesuaikan dengan IP lokal Anda
   const port = 8000;
@@ -34,7 +38,7 @@ Dio dio(AuthInterceptor authInterceptor) {
   );
 
   dio.interceptors.add(authInterceptor);
-  dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
+  dio.interceptors.add(loggingInterceptor);
 
   return dio;
 }
