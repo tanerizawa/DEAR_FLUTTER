@@ -16,7 +16,7 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<AudioTrack> getLatestMusic() {
+  Future<AudioTrack?> getLatestMusic() {
     return _apiService.getLatestMusic();
   }
 }
