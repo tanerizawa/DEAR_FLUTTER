@@ -76,3 +76,22 @@ def test_quotes_latest_endpoint_returns_latest_item(client):
     assert resp.status_code == 200
     data = resp.json()
     assert data["text"] == "new"
+
+
+def test_music_latest_endpoint_returns_none_by_default(client):
+    client_app, _ = client
+    resp = client_app.get("/api/v1/music/latest")
+    assert resp.status_code == 200
+    assert resp.json() is None
+
+
+def test_music_latest_endpoint_returns_track(client):
+    from app.state.music import set_latest_music
+    from app.schemas.audio import AudioTrack
+
+    set_latest_music(AudioTrack(id=1, title="t", youtube_id="y"))
+    client_app, _ = client
+    resp = client_app.get("/api/v1/music/latest")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["title"] == "t"

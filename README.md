@@ -63,6 +63,8 @@ Local notifications are powered by `flutter_local_notifications`. The
 `NotificationService` is initialized in `main.dart` and automatically polls the
 `/quotes/latest` endpoint every 15 minutes. When a new quote is found a
 notification is shown and tapping it opens the quote detail screen.
+The app also polls `/music/latest` every 10 minutes to update the home screen
+with the newest song recommendation.
 
 On Android the default app icon is used for the notification. No additional
 configuration is required other than granting notification permissions on first
@@ -109,6 +111,9 @@ curl "http://localhost:8000/api/v1/music?mood=happy" -H "Authorization: Bearer <
 # get a song based on your last five journals
     curl http://localhost:8000/api/v1/music/recommend \
      -H "Authorization: Bearer <token>"
+
+# fetch the most recently scheduled recommendation
+curl http://localhost:8000/api/v1/music/latest
 ```
 
 ### Spotify Web API

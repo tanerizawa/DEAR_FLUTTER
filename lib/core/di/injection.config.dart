@@ -37,6 +37,7 @@ import '../../domain/usecases/get_chat_history_usecase.dart' as _i992;
 import '../../domain/usecases/get_home_feed_usecase.dart' as _i1028;
 import '../../domain/usecases/get_journals_usecase.dart' as _i738;
 import '../../domain/usecases/get_latest_quote_usecase.dart' as _i789;
+import '../../domain/usecases/get_latest_music_usecase.dart' as _i1080;
 import '../../domain/usecases/get_user_profile_usecase.dart' as _i629;
 import '../../domain/usecases/login_usecase.dart' as _i253;
 import '../../domain/usecases/logout_usecase.dart' as _i981;
@@ -53,6 +54,7 @@ import '../../presentation/journal/cubit/journal_editor_cubit.dart' as _i826;
 import '../../presentation/profile/cubit/profile_cubit.dart' as _i107;
 import '../../services/notification_service.dart' as _i85;
 import '../../services/quote_update_service.dart' as _i642;
+import '../../services/music_update_service.dart' as _i1100;
 import '../../services/youtube_audio_service.dart' as _i221;
 import '../api/auth_interceptor.dart' as _i577;
 import '../api/logging_interceptor.dart' as _i427;
@@ -119,6 +121,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i789.GetLatestQuoteUseCase>(
       () => _i789.GetLatestQuoteUseCase(gh<_i826.HomeRepository>()),
     );
+    gh.factory<_i1080.GetLatestMusicUseCase>(
+      () => _i1080.GetLatestMusicUseCase(gh<_i826.HomeRepository>()),
+    );
     gh.factory<_i1028.GetHomeFeedUseCase>(
       () => _i1028.GetHomeFeedUseCase(gh<_i826.HomeRepository>()),
     );
@@ -147,6 +152,11 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i642.QuoteUpdateService(
         gh<_i1004.HomeApiService>(),
         gh<_i85.NotificationService>(),
+      ),
+    );
+    gh.lazySingleton<_i1100.MusicUpdateService>(
+      () => _i1100.MusicUpdateService(
+        gh<_i1004.HomeApiService>(),
       ),
     );
     gh.lazySingleton<_i1073.AuthRepository>(

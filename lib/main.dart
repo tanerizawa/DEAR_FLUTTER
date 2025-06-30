@@ -3,6 +3,7 @@ import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/core/navigation/app_router.dart'; // Router konfigurasi
 import 'package:dear_flutter/services/notification_service.dart';
 import 'package:dear_flutter/services/quote_update_service.dart';
+import 'package:dear_flutter/services/music_update_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +12,7 @@ Future<void> main() async {
   await configureDependencies();
   await getIt<NotificationService>().init();
   getIt<QuoteUpdateService>().start();
+  getIt<MusicUpdateService>().start();
 
   runApp(const MyApp());
 }
