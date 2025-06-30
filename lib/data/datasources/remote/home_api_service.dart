@@ -9,7 +9,7 @@ class HomeApiService {
   HomeApiService(this._dio);
 
   Future<List<HomeFeedItem>> getHomeFeed() async {
-    final response = await _dio.get('home-feed');
+    final response = await _dio.get('home-feed/');
     final data = response.data as List<dynamic>;
     return data
         .map((item) => HomeFeedItem.fromJson(item as Map<String, dynamic>))
@@ -17,7 +17,7 @@ class HomeApiService {
   }
 
   Future<MotivationalQuote> getLatestQuote() async {
-    final response = await _dio.get('quotes/latest');
+    final response = await _dio.get('quotes/latest/');
     return MotivationalQuote.fromJson(
         response.data as Map<String, dynamic>);
   }
