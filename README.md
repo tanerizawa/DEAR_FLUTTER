@@ -130,10 +130,10 @@ alembic upgrade head
 ```
 ### Loading Sample Data
 
-After applying migrations you can populate some example articles, audio tracks and motivational quotes. Run:
+After applying migrations you can populate some example articles, audio tracks and motivational quotes. Run the seeding script:
 
 ```bash
-make seed
+python backend/app/db/seed.py
 ```
 
 
