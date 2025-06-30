@@ -53,6 +53,7 @@ import '../../presentation/journal/cubit/journal_editor_cubit.dart' as _i826;
 import '../../presentation/profile/cubit/profile_cubit.dart' as _i107;
 import '../../services/notification_service.dart' as _i85;
 import '../../services/quote_update_service.dart' as _i642;
+import '../../services/youtube_audio_service.dart' as _i221;
 import '../api/auth_interceptor.dart' as _i577;
 import '../api/logging_interceptor.dart' as _i427;
 import 'register_module.dart' as _i291;
@@ -84,6 +85,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i109.ChatMessageDao>(
       () => registerModule.chatMessageDao(gh<_i483.AppDatabase>()),
+    );
+    gh.lazySingleton<_i221.AudioInfo>(
+      () => _i221.AudioInfo(gh<int>(), gh<Uri>()),
     );
     gh.factory<_i577.AuthInterceptor>(
       () => _i577.AuthInterceptor(gh<_i324.UserPreferencesRepository>()),

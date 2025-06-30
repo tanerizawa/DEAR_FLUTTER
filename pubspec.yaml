@@ -45,7 +45,7 @@ dependencies:
   webview_flutter: ^4.4.1              # Menampilkan halaman web dalam aplikasi
   audioplayers: ^5.1.0                  # Pemutar audio sederhana
   flutter_local_notifications: ^19.3.0
-  youtube_explode_dart: ^1.12.4
+  youtube_explode_dart: ^2.4.2
   
 dev_dependencies:
   flutter_test:

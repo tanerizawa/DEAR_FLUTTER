@@ -62,5 +62,4 @@ local.properties
 *.rpyc
 *build
 *cache
-/backend/migrations/
 *.flutter-plugins-dependencies
