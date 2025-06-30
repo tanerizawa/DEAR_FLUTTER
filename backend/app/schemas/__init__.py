@@ -12,7 +12,12 @@ from .chat import (
 from .article import ArticleBase, ArticleCreate, ArticleUpdate, Article
 from .journal import JournalBase, JournalCreate, JournalUpdate, JournalInDB
 from .journal import JournalInDB as Journal
-from .user_profile import UserProfileBase, UserProfileUpdate, UserProfile, UserProfileInDB
+from .user_profile import (
+    UserProfileBase,
+    UserProfileUpdate,
+    UserProfile,
+    UserProfileInDB,
+)
 from .motivational_quote import (
     MotivationalQuoteBase,
     MotivationalQuoteCreate,
@@ -20,6 +25,12 @@ from .motivational_quote import (
     MotivationalQuote,
 )
 from .plan import ConversationPlan, CommunicationTechnique
+from .audio import (
+    AudioTrackBase,
+    AudioTrackCreate,
+    AudioTrackUpdate,
+    AudioTrack,
+)
 
 __all__ = [
     "UserBase",
@@ -56,4 +67,8 @@ __all__ = [
     "MotivationalQuote",
     "ConversationPlan",
     "CommunicationTechnique",
+    "AudioTrackBase",
+    "AudioTrackCreate",
+    "AudioTrackUpdate",
+    "AudioTrack",
 ]
