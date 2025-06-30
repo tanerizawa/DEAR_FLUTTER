@@ -14,8 +14,10 @@ class HomeApiService {
         response.data as Map<String, dynamic>);
   }
 
-  Future<AudioTrack> getLatestMusic() async {
+  Future<AudioTrack?> getLatestMusic() async {
     final response = await _dio.get('music/latest/');
-    return AudioTrack.fromJson(response.data as Map<String, dynamic>);
+    final data = response.data;
+    if (data == null) return null;
+    return AudioTrack.fromJson(data as Map<String, dynamic>);
   }
 }

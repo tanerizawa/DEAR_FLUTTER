@@ -7,5 +7,5 @@ class GetLatestMusicUseCase {
   final HomeRepository _repository;
   GetLatestMusicUseCase(this._repository);
 
-  Future<AudioTrack> call() => _repository.getLatestMusic();
+  Future<AudioTrack?> call() => _repository.getLatestMusic();
 }
