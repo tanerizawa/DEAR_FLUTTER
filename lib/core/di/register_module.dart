@@ -14,32 +14,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class RegisterModule {
   // --- NETWORK ---
 @lazySingleton
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 Dio dio(
   AuthInterceptor authInterceptor,
   LoggingInterceptor loggingInterceptor,
 ) {
-  // Ganti IP ini dengan IP lokal komputer Anda
-  const localIp = '10.0.2.2'; // <- Sesuaikan dengan IP lokal Anda
-  const port = 8000;
-
-  // Buat baseUrl berdasarkan platform
-  final baseUrl = kIsWeb
-      ? 'http://$localIp:$port/api/v1/'
-      : Platform.isAndroid
-          ? 'http://$localIp:$port/api/v1/' // Perangkat Android (fisik atau emulator AVD)
-          : 'http://$localIp:$port/api/v1/'; // iOS atau desktop
-=======
-Dio dio(AuthInterceptor authInterceptor) {
-  // Mengarahkan ke URL backend di Render.com
-  final baseUrl = 'https://server-qp6y.onrender.com/api/v1/';
->>>>>>> Stashed changes
-=======
-Dio dio(AuthInterceptor authInterceptor) {
-  // Mengarahkan ke URL backend di Render.com
-  final baseUrl = 'https://server-qp6y.onrender.com/api/v1/';
->>>>>>> Stashed changes
+  const baseUrl = 'https://server-qp6y.onrender.com/api/v1/'; // <-- gunakan ini!
 
   final dio = Dio(
     BaseOptions(

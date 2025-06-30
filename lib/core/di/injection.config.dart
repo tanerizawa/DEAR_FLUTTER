@@ -51,7 +51,7 @@ import '../../presentation/home/cubit/home_feed_cubit.dart' as _i39;
 import '../../presentation/journal/cubit/journal_editor_cubit.dart' as _i826;
 import '../../presentation/profile/cubit/profile_cubit.dart' as _i107;
 import '../api/auth_interceptor.dart' as _i577;
-import '../api/logging_interceptor.dart' as _i2001;
+import '../api/logging_interceptor.dart' as _i427;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -67,6 +67,9 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.prefs,
       preResolve: true,
     );
+    gh.lazySingleton<_i427.LoggingInterceptor>(
+      () => _i427.LoggingInterceptor(),
+    );
     gh.lazySingleton<_i324.UserPreferencesRepository>(
       () => _i324.UserPreferencesRepository(gh<_i460.SharedPreferences>()),
     );
@@ -79,13 +82,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i577.AuthInterceptor>(
       () => _i577.AuthInterceptor(gh<_i324.UserPreferencesRepository>()),
     );
-    gh.lazySingleton<_i2001.LoggingInterceptor>(
-      () => _i2001.LoggingInterceptor(),
-    );
     gh.lazySingleton<_i361.Dio>(
       () => registerModule.dio(
         gh<_i577.AuthInterceptor>(),
-        gh<_i2001.LoggingInterceptor>(),
+        gh<_i427.LoggingInterceptor>(),
       ),
     );
     gh.factory<_i1004.HomeApiService>(
