@@ -122,6 +122,19 @@ Music search now relies on the [Spotify Web API](https://developer.spotify.com/d
 Create a developer application on the Spotify dashboard and provide its
 client credentials in your `.env` file as shown above.
 
+### YouTube Audio Service
+
+Recommended tracks returned by the backend include a `youtube_id` field. The
+Flutter client resolves this ID to a playable stream using
+`lib/services/youtube_audio_service.dart`. The service fetches the available
+audio streams with `youtube_explode_dart`, sorts them by bitrate and returns the
+highest quality URL. No additional YouTube API key is required.
+
+Audio suggestions come from the `/music/recommend` endpoint which analyses the
+latest journal entries through OpenRouter to generate a search keyword. That
+keyword is used to query Spotify and the resulting track IDs are then passed to
+`YoutubeAudioService` for playback.
+
 ### Database Migrations
 
 Alembic handles schema migrations. Common commands:
