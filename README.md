@@ -128,6 +128,9 @@ alembic revision --autogenerate -m "<description>"
 # apply migrations
 alembic upgrade head
 ```
+Ensure the `DATABASE_URL` environment variable is set before running
+`alembic upgrade head`; the migration script reads this value to connect
+to your database.
 ### Loading Sample Data
 
 After applying migrations you can populate some example articles, audio tracks and motivational quotes. Run the seeding script:
