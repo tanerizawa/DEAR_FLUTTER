@@ -10,6 +10,7 @@ import re
 from app import crud, models, schemas, dependencies
 from app.core.config import settings
 from app.services.music_keyword_service import MusicKeywordService
+from app.state.music import get_latest_music as _get_latest_music
 
 router = APIRouter()
 log = structlog.get_logger(__name__)
@@ -158,3 +159,9 @@ async def recommend_music(
             musics = []
 
     return musics
+
+
+@router.get("/latest", response_model=schemas.AudioTrack | None)
+def get_latest_music() -> schemas.AudioTrack | None:
+    """Return the most recently generated music recommendation."""
+    return _get_latest_music()
