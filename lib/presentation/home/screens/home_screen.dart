@@ -1,16 +1,14 @@
 // lib/presentation/home/screens/home_screen.dart
 
 import 'package:dear_flutter/core/di/injection.dart';
-import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
-import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
-import 'package:dear_flutter/domain/entities/home_feed_item.dart';
+import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
+import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import 'article_detail_screen.dart';
 import 'audio_player_screen.dart';
-import 'quote_detail_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,46 +16,37 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => getIt<HomeFeedCubit>(),
+      create: (_) => getIt<LatestMusicCubit>(),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Beranda'),
         ),
-        body: BlocBuilder<HomeFeedCubit, HomeFeedState>(
+        body: BlocBuilder<LatestMusicCubit, LatestMusicState>(
           builder: (context, state) {
-            if (state.status == HomeFeedStatus.loading) {
+            if (state.status == LatestMusicStatus.loading) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (state.status == HomeFeedStatus.failure) {
+            if (state.status == LatestMusicStatus.failure) {
               return Center(
                 child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
               );
             }
-            return ListView.builder(
+            if (state.track == null) {
+              return const SizedBox.shrink();
+            }
+            return ListView(
               padding: const EdgeInsets.all(16),
-              itemCount: state.items.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Selamat datang!',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                  );
-                }
-                final item = state.items[index - 1];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: _HomeFeedCard(
-                    item: item,
-                    onTap: () => _handleItemTap(context, item),
-                  ),
-                );
-              },
+              children: [
+                Text(
+                  'Rekomendasi Musik',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 16),
+                _MusicCard(
+                  track: state.track!,
+                  onTap: () => context.push('/audio', extra: state.track),
+                ),
+              ],
             );
           },
         ),
@@ -66,51 +55,21 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _HomeFeedCard extends StatelessWidget {
-  const _HomeFeedCard({required this.item, required this.onTap});
+class _MusicCard extends StatelessWidget {
+  const _MusicCard({required this.track, required this.onTap});
 
-  final HomeFeedItem item;
+  final AudioTrack track;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: InkWell(
+      child: ListTile(
+        leading: const Icon(Icons.music_note),
+        title: Text(track.title),
+        trailing: const Icon(Icons.chevron_right),
         onTap: onTap,
-        child: item.when(
-          article: (data) => ListTile(
-            leading: const Icon(Icons.article),
-            title: Text(data.title),
-            trailing: const Icon(Icons.chevron_right),
-          ),
-          audio: (data) => ListTile(
-            leading: const Icon(Icons.music_note),
-            title: Text(data.title),
-            trailing: const Icon(Icons.chevron_right),
-          ),
-          quote: (data) => ListTile(
-            leading: const Icon(Icons.format_quote),
-            title: Text('"${data.text}"'),
-            subtitle: Text(data.author),
-            trailing: const Icon(Icons.chevron_right),
-          ),
-        ),
       ),
     );
   }
 }
-
-void _handleItemTap(BuildContext context, HomeFeedItem item) {
-  item.when(
-    article: (data) {
-      context.push('/article', extra: data);
-    },
-    audio: (data) {
-      context.push('/audio', extra: data);
-    },
-    quote: (data) {
-      context.push('/quote', extra: data);
-    },
-  );
-}
-
