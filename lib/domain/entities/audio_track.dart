@@ -8,7 +8,7 @@ class AudioTrack with _$AudioTrack {
   const factory AudioTrack({
     required int id,
     required String title,
-    required String url,
+    @JsonKey(name: 'youtube_id') required String youtubeId,
   }) = _AudioTrack;
 
   factory AudioTrack.fromJson(Map<String, dynamic> json) => _$AudioTrackFromJson(json);

@@ -39,7 +39,9 @@ def test_audio_endpoint_returns_items(client):
     client_app, session_local = client
     db = session_local()
     try:
-        crud.audio_track.create(db, obj_in=schemas.AudioTrackCreate(title="a1", url="u1"))
+        crud.audio_track.create(
+            db, obj_in=schemas.AudioTrackCreate(title="a1", youtube_id="u1")
+        )
     finally:
         db.close()
 

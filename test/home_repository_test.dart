@@ -19,7 +19,7 @@ class _FakeInterceptor extends Interceptor {
           },
           {
             'type': 'audio',
-            'data': {'id': 2, 'title': 't', 'url': 'm'}
+            'data': {'id': 2, 'title': 't', 'youtube_id': 'm'}
           },
           {
             'type': 'quote',
@@ -44,7 +44,8 @@ void main() {
 
     expect(items.length, 3);
     expect(items[0], const HomeFeedItem.article(data: Article(id: 1, title: 'a', url: 'u')));
-    expect(items[1], const HomeFeedItem.audio(data: AudioTrack(id: 2, title: 't', url: 'm')));
+    expect(
+        items[1], const HomeFeedItem.audio(data: AudioTrack(id: 2, title: 't', youtubeId: 'm')));
     expect(items[2], const HomeFeedItem.quote(data: MotivationalQuote(id: 3, text: 'q', author: 'au')));
   });
 }
