@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/services/youtube_audio_service.dart';
 
 class AudioPlayerScreen extends StatefulWidget {
   const AudioPlayerScreen({super.key, required this.track});
@@ -13,12 +14,15 @@ class AudioPlayerScreen extends StatefulWidget {
 
 class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   late final AudioPlayer _player;
+  late final YoutubeAudioService _youtube;
+  String? _resolvedUrl;
   bool _isPlaying = false;
 
   @override
   void initState() {
     super.initState();
     _player = AudioPlayer();
+    _youtube = YoutubeAudioService();
     _player.onPlayerStateChanged.listen((state) {
       setState(() {
         _isPlaying = state == PlayerState.playing;
@@ -29,6 +33,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   @override
   void dispose() {
     _player.dispose();
+    _youtube.close();
     super.dispose();
   }
 
@@ -36,7 +41,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     if (_isPlaying) {
       await _player.pause();
     } else {
-      await _player.play(UrlSource(widget.track.url));
+      _resolvedUrl ??= await _youtube.getAudioUrl(widget.track.youtubeId);
+      if (_resolvedUrl != null) {
+        await _player.play(UrlSource(_resolvedUrl!));
+      }
     }
   }
 

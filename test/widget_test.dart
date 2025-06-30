@@ -27,7 +27,7 @@ final _sampleItems = [
     data: Article(id: 1, title: 'a', url: 'u'),
   ),
   const HomeFeedItem.audio(
-    data: AudioTrack(id: 2, title: 't', url: 'm'),
+    data: AudioTrack(id: 2, title: 't', youtubeId: 'm'),
   ),
   const HomeFeedItem.quote(
     data: MotivationalQuote(id: 3, text: 'q', author: 'au'),

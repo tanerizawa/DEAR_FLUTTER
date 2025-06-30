@@ -15,6 +15,7 @@ def test_music_endpoint_returns_list(client, monkeypatch):
     monkeypatch.setattr(settings, "SPOTIFY_CLIENT_ID", "id")
     monkeypatch.setattr(settings, "SPOTIFY_CLIENT_SECRET", "secret")
     monkeypatch.setattr(music, "spotify", None)
+
     # Return fake Spotify search payload
     def fake_search(self, q, type="track", limit=20):
         return {"tracks": {"items": [{"name": "Song", "id": "abc123"}]}}
@@ -28,7 +29,7 @@ def test_music_endpoint_returns_list(client, monkeypatch):
     assert resp.status_code == 200
     data = resp.json()
     assert isinstance(data, list)
-    assert data[0]["url"] == "abc123"
+    assert data[0]["youtube_id"] == "abc123"
 
 
 def test_music_recommend_uses_keyword_and_journals(client, monkeypatch):
@@ -38,7 +39,9 @@ def test_music_recommend_uses_keyword_and_journals(client, monkeypatch):
     captured = {}
 
     # --- PERBAIKAN 2: Menambahkan `order_by` ke mock ---
-    def fake_get_multi_by_owner(db, owner_id: int, skip: int = 0, limit: int = 100, order_by: str = None):
+    def fake_get_multi_by_owner(
+        db, owner_id: int, skip: int = 0, limit: int = 100, order_by: str = None
+    ):
         captured["limit"] = limit
         # Memastikan mock mengembalikan objek Journal yang valid
         return [Journal(id=i, content=f"j{i}", owner_id=owner_id) for i in range(3)]
@@ -68,8 +71,11 @@ def test_music_recommend_returns_empty_list_when_no_results(client, monkeypatch)
     monkeypatch.setattr(settings, "SPOTIFY_CLIENT_ID", "id")
     monkeypatch.setattr(settings, "SPOTIFY_CLIENT_SECRET", "secret")
     monkeypatch.setattr(music, "spotify", None)
+
     # --- PERBAIKAN 3: Menambahkan `order_by` ke mock ---
-    def fake_get_multi_by_owner(db, owner_id: int, skip: int = 0, limit: int = 100, order_by: str = None):
+    def fake_get_multi_by_owner(
+        db, owner_id: int, skip: int = 0, limit: int = 100, order_by: str = None
+    ):
         # Mengembalikan jurnal untuk memicu logika fallback
         return [Journal(id=1, content="test", mood="Netral", owner_id=owner_id)]
 
@@ -97,4 +103,3 @@ def test_music_endpoint_returns_503_without_credentials(client, monkeypatch):
     client_app, _ = client
     resp = client_app.get("/api/v1/music?mood=test")
     assert resp.status_code == 503
-
