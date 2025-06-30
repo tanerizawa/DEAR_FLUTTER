@@ -18,6 +18,8 @@ Install Flutter from the [official instructions](https://docs.flutter.dev/get-st
 ```bash
 flutter pub get
 ```
+If packages appear outdated, run `flutter pub upgrade` to refresh cached
+dependencies, especially for `flutter_local_notifications`.
 
 Generate the dependency injection configuration so `configureDependencies()` can resolve providers at runtime:
 
