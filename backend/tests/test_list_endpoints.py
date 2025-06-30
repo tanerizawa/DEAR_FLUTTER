@@ -26,32 +26,6 @@ def test_articles_endpoint_returns_items(client):
     assert len(data) == 2
 
 
-def test_audio_endpoint_empty_returns_list(client):
-    client_app, _ = client
-    resp = client_app.get("/api/v1/audio")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data == []
-    assert isinstance(data, list)
-
-
-def test_audio_endpoint_returns_items(client):
-    client_app, session_local = client
-    db = session_local()
-    try:
-        crud.audio_track.create(
-            db, obj_in=schemas.AudioTrackCreate(title="a1", youtube_id="u1")
-        )
-    finally:
-        db.close()
-
-    resp = client_app.get("/api/v1/audio")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert isinstance(data, list)
-    assert len(data) == 1
-
-
 def test_quotes_endpoint_empty_returns_list(client):
     client_app, _ = client
     resp = client_app.get("/api/v1/quotes")

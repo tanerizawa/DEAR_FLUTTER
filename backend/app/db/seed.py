@@ -9,16 +9,6 @@ ARTICLES = [
     {"title": "Dealing with Stress", "url": "https://example.com/stress"},
 ]
 
-AUDIO_TRACKS = [
-    {
-        "title": "Relaxing Piano",
-        "youtube_id": "6xGruZOHLs39ZbVccQTuPZ",
-    },
-    {
-        "title": "Nature Sounds",
-        "youtube_id": "1DWoCzCRlaKY9cRkZZEwQp",
-    },
-]
 
 QUOTES = [
     {"text": "Keep going no matter what.", "author": "Unknown"},
@@ -31,9 +21,6 @@ def seed() -> None:
     try:
         for data in ARTICLES:
             crud.article.create(db, obj_in=schemas.ArticleCreate(**data))
-
-        for data in AUDIO_TRACKS:
-            crud.audio_track.create(db, obj_in=schemas.AudioTrackCreate(**data))
 
         for data in QUOTES:
             crud.motivational_quote.create(

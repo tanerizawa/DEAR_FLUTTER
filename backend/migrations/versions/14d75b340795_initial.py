@@ -28,13 +28,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_articles_id'), 'articles', ['id'], unique=False)
-    op.create_table('audiotracks',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('title', sa.String(), nullable=True),
-    sa.Column('url', sa.String(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_audiotracks_id'), 'audiotracks', ['id'], unique=False)
     op.create_table('motivationalquotes',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('text', sa.String(), nullable=True),
@@ -96,8 +89,3 @@ def downgrade() -> None:
     op.drop_table('users')
     op.drop_index(op.f('ix_motivationalquotes_id'), table_name='motivationalquotes')
     op.drop_table('motivationalquotes')
-    op.drop_index(op.f('ix_audiotracks_id'), table_name='audiotracks')
-    op.drop_table('audiotracks')
-    op.drop_index(op.f('ix_articles_id'), table_name='articles')
-    op.drop_table('articles')
-    # ### end Alembic commands ###
