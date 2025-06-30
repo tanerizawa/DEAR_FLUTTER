@@ -34,6 +34,29 @@ Run the application on an attached device or emulator:
 flutter run
 ```
 
+### Android build issues
+
+If the build fails with an error such as:
+
+```
+Dependency ':flutter_local_notifications' requires desugar_jdk_libs version to be 2.1.4 or above
+```
+
+Edit `android/app/build.gradle` and ensure desugaring is enabled:
+
+```gradle
+android {
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+    }
+}
+
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
+}
+```
+Then run `flutter clean` followed by `flutter run`.
+
 ## Notifications
 
 Local notifications are powered by `flutter_local_notifications`. The
