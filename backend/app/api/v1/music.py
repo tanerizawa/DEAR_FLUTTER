@@ -7,8 +7,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import structlog
 import re
 
-from app import crud, models, dependencies
-from app.schemas.audio import AudioTrack
+from app import crud, models, schemas, dependencies
 from app.core.config import settings
 from app.services.music_keyword_service import MusicKeywordService
 
@@ -46,12 +45,12 @@ def get_spotify() -> Spotify:
 
 
 # --- PERBAIKAN LOGIKA FUNDAMENTAL DI SINI ---
-def _process_search_results(search_results: dict) -> list[AudioTrack]:
+def _process_search_results(search_results: dict) -> list[schemas.AudioTrack]:
     """
     Helper function to process search results and return a list of AudioTrack.
     Tugas fungsi ini HANYA untuk memformat hasil pencarian, BUKAN untuk mendapatkan URL stream.
     """
-    musics: list[AudioTrack] = []
+    musics: list[schemas.AudioTrack] = []
     if not search_results:
         return musics
 
@@ -62,7 +61,9 @@ def _process_search_results(search_results: dict) -> list[AudioTrack]:
         external = track.get("external_urls", {}).get("spotify")
         youtube_id = preview or external or track.get("id")
         if youtube_id and title:
-            musics.append(AudioTrack(id=idx, title=title, youtube_id=youtube_id))
+            musics.append(
+                schemas.AudioTrack(id=idx, title=title, youtube_id=youtube_id)
+            )
 
     return musics
 
@@ -70,7 +71,7 @@ def _process_search_results(search_results: dict) -> list[AudioTrack]:
 # --- AKHIR PERBAIKAN ---
 
 
-@router.get("/", response_model=list[AudioTrack])
+@router.get("/", response_model=list[schemas.AudioTrack])
 def search_music(
     mood: str = Query(..., min_length=1),
     current_user: models.User = Depends(dependencies.get_current_user),
@@ -94,7 +95,7 @@ def search_music(
     return musics
 
 
-@router.get("/recommend", response_model=list[AudioTrack])
+@router.get("/recommend", response_model=list[schemas.AudioTrack])
 async def recommend_music(
     *,
     db: Session = Depends(dependencies.get_db),
