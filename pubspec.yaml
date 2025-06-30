@@ -39,12 +39,12 @@ dependencies:
 
   # JSON Serialization / DTOs
   freezed_annotation: ^2.4.1             # Untuk membuat model immutable
-  json_annotation: ^4.8.1                # Untuk serialisasi model
+  json_annotation: ^4.9.0                # Untuk serialisasi model
   url_launcher: ^6.2.6                  # Membuka tautan eksternal
   share_plus: ^7.2.1                    # Berbagi konten
   webview_flutter: ^4.4.1              # Menampilkan halaman web dalam aplikasi
   audioplayers: ^5.1.0                  # Pemutar audio sederhana
-  flutter_local_notifications: ^16.1.0  # Notifikasi lokal
+  flutter_local_notifications: ^15.1.1
 
 dev_dependencies:
   flutter_test:
