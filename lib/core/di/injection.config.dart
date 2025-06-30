@@ -34,7 +34,6 @@ import '../../domain/repositories/journal_repository.dart' as _i847;
 import '../../domain/usecases/delete_account_usecase.dart' as _i874;
 import '../../domain/usecases/get_auth_status_usecase.dart' as _i126;
 import '../../domain/usecases/get_chat_history_usecase.dart' as _i992;
-import '../../domain/usecases/get_home_feed_usecase.dart' as _i1028;
 import '../../domain/usecases/get_journals_usecase.dart' as _i738;
 import '../../domain/usecases/get_latest_quote_usecase.dart' as _i789;
 import '../../domain/usecases/get_latest_music_usecase.dart' as _i1080;
@@ -49,7 +48,7 @@ import '../../presentation/auth/cubit/login_cubit.dart' as _i774;
 import '../../presentation/auth/cubit/register_cubit.dart' as _i887;
 import '../../presentation/chat/cubit/chat_cubit.dart' as _i207;
 import '../../presentation/home/cubit/home_cubit.dart' as _i288;
-import '../../presentation/home/cubit/home_feed_cubit.dart' as _i39;
+import '../../presentation/home/cubit/latest_music_cubit.dart' as _i39;
 import '../../presentation/journal/cubit/journal_editor_cubit.dart' as _i826;
 import '../../presentation/profile/cubit/profile_cubit.dart' as _i107;
 import '../../services/notification_service.dart' as _i85;
@@ -124,11 +123,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i1080.GetLatestMusicUseCase>(
       () => _i1080.GetLatestMusicUseCase(gh<_i826.HomeRepository>()),
     );
-    gh.factory<_i1028.GetHomeFeedUseCase>(
-      () => _i1028.GetHomeFeedUseCase(gh<_i826.HomeRepository>()),
-    );
-    gh.factory<_i39.HomeFeedCubit>(
-      () => _i39.HomeFeedCubit(gh<_i1028.GetHomeFeedUseCase>()),
+    gh.factory<_i39.LatestMusicCubit>(
+      () => _i39.LatestMusicCubit(gh<_i1080.GetLatestMusicUseCase>()),
     );
     gh.lazySingleton<_i1072.ChatRepository>(
       () => _i838.ChatRepositoryImpl(
