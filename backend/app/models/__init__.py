@@ -3,7 +3,6 @@ from .user_profile import UserProfile
 from .chat import ChatMessage
 from .journal import Journal
 from .article import Article
-from .audio import AudioTrack
 from .motivational_quote import MotivationalQuote
 
 __all__ = [
@@ -12,6 +11,5 @@ __all__ = [
     "ChatMessage",
     "Journal",
     "Article",
-    "AudioTrack",
     "MotivationalQuote",
 ]

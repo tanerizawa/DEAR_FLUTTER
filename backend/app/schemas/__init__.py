@@ -13,7 +13,6 @@ from .article import ArticleBase, ArticleCreate, ArticleUpdate, Article
 from .journal import JournalBase, JournalCreate, JournalUpdate, JournalInDB
 from .journal import JournalInDB as Journal
 from .user_profile import UserProfileBase, UserProfileUpdate, UserProfile, UserProfileInDB
-from .audio import AudioTrackBase, AudioTrackCreate, AudioTrackUpdate, AudioTrack
 from .motivational_quote import (
     MotivationalQuoteBase,
     MotivationalQuoteCreate,
@@ -51,10 +50,6 @@ __all__ = [
     "UserProfileUpdate",
     "UserProfile",
     "UserProfileInDB",
-    "AudioTrackBase",
-    "AudioTrackCreate",
-    "AudioTrackUpdate",
-    "AudioTrack",
     "MotivationalQuoteBase",
     "MotivationalQuoteCreate",
     "MotivationalQuoteUpdate",
