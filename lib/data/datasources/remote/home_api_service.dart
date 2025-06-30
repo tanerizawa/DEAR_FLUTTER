@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dear_flutter/domain/entities/home_feed_item.dart';
+import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 
 @injectable
 class HomeApiService {
@@ -13,5 +14,11 @@ class HomeApiService {
     return data
         .map((item) => HomeFeedItem.fromJson(item as Map<String, dynamic>))
         .toList();
+  }
+
+  Future<MotivationalQuote> getLatestQuote() async {
+    final response = await _dio.get('quotes/latest');
+    return MotivationalQuote.fromJson(
+        response.data as Map<String, dynamic>);
   }
 }
