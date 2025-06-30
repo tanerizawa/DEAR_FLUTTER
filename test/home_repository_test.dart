@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 class _FakeInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    if (options.path == 'home-feed') {
+    if (options.path == 'home-feed/') {
       handler.resolve(
         Response(requestOptions: options, data: [
           {
