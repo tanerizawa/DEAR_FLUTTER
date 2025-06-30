@@ -32,6 +32,17 @@ Run the application on an attached device or emulator:
 flutter run
 ```
 
+## Notifications
+
+Local notifications are powered by `flutter_local_notifications`. The
+`NotificationService` is initialized in `main.dart` and automatically polls the
+`/quotes/latest` endpoint every 15 minutes. When a new quote is found a
+notification is shown and tapping it opens the quote detail screen.
+
+On Android the default app icon is used for the notification. No additional
+configuration is required other than granting notification permissions on first
+launch.
+
 ## Backend Setup
 
 1. Create and activate a Python virtual environment:

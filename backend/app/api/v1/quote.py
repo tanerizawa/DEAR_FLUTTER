@@ -8,3 +8,8 @@ router = APIRouter()
 @router.get("/", response_model=list[schemas.MotivationalQuote])
 def get_quotes(db: Session = Depends(get_db)):
     return crud.motivational_quote.get_multi(db)
+
+
+@router.get("/latest", response_model=schemas.MotivationalQuote | None)
+def get_latest_quote(db: Session = Depends(get_db)):
+    return crud.motivational_quote.get_latest(db)
