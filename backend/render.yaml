@@ -1,0 +1,37 @@
+# render.yaml - Versi Final
+
+services:
+  - type: pserv
+    name: db
+    runtime: postgres
+    plan: free
+    postgres:
+      version: 15
+
+  - type: pserv
+    name: redis
+    runtime: redis
+    plan: free
+
+  - type: web
+    name: web
+    runtime: docker
+    repo: https://github.com/tanerizawa/server.git
+    autoDeploy: true
+    healthCheckPath: /docs
+    buildCommand: "./build.sh"
+    dockerCommand: "gunicorn -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT app.main:app"
+    envVars:
+      - fromGroup: dear-diary-secrets
+
+  - type: worker
+    name: worker
+    runtime: docker
+    repo: https://github.com/tanerizawa/server.git
+    autoDeploy: true
+    dockerCommand: "celery -A app.celery_app worker --loglevel=info"
+    envVars:
+      - fromGroup: dear-diary-secrets
+
+envVarGroups:
+  - name: dear-diary-secrets
