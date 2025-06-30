@@ -1,5 +1,3 @@
-# backend/requirements.txt
-
 # --- Core Framework ---
 fastapi
 uvicorn
@@ -9,6 +7,7 @@ alembic
 pydantic>=2.7.0
 pydantic-settings
 passlib[bcrypt]
+bcrypt==3.2.2
 python-jose[cryptography]
 email-validator
 httpx>=0.27.0
