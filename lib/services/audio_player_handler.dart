@@ -59,12 +59,10 @@ class AudioPlayerHandler extends BaseAudioHandler {
   Future<void> pause() => _player.pause();
 
   @override
-  Future<void> stop() => _player.stop();
-
-  @override
-  Future<void> close() async {
+  Future<void> stop() async {
     await _player.dispose();
     _youtube.close();
-    await super.close();
+    return super.stop();
   }
+
 }
