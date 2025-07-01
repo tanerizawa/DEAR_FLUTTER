@@ -19,4 +19,7 @@ class ChatMessageDao extends DatabaseAccessor<AppDatabase> with _$ChatMessageDao
   // Menghapus pesan berdasarkan ID
   Future<void> deleteMessageById(String id) =>
       (delete(chatMessages)..where((tbl) => tbl.id.equals(id))).go();
+
+  Future<void> deleteAllMessages() =>
+      delete(chatMessages).go();
 }

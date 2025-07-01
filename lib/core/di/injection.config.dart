@@ -217,6 +217,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i629.GetUserProfileUseCase>(),
         gh<_i981.LogoutUseCase>(),
         gh<_i874.DeleteAccountUseCase>(),
+        gh<_i483.AppDatabase>(),
       ),
     );
     return this;
