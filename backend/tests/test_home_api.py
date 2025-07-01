@@ -19,10 +19,17 @@ def test_home_feed_structure_and_ordering(client, monkeypatch):
     finally:
         db.close()
 
-    async def fake_recommend_music(**kwargs):
+    async def fake_recommend_music(*, mood: str, **kwargs):
+        assert mood == "lofi"
         return [AudioTrack(id=99, title="rec", youtube_id="y1")]
 
+    async def fake_generate_keyword(self, journals):
+        return "lofi"
+
     monkeypatch.setattr(home_api, "recommend_music", fake_recommend_music)
+    monkeypatch.setattr(
+        home_api.MusicKeywordService, "generate_keyword", fake_generate_keyword
+    )
 
     resp = client_app.get("/api/v1/home-feed")
     assert resp.status_code == 200
