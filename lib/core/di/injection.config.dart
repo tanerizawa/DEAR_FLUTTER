@@ -206,12 +206,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i873.SyncJournalsUseCase>(),
       ),
     );
-    gh.factory<_i774.LoginCubit>(
-      () => _i774.LoginCubit(gh<_i253.LoginUseCase>()),
-    );
-    gh.factory<_i887.RegisterCubit>(
-      () => _i887.RegisterCubit(gh<_i35.RegisterUseCase>()),
-    );
     gh.factory<_i107.ProfileCubit>(
       () => _i107.ProfileCubit(
         gh<_i629.GetUserProfileUseCase>(),
@@ -219,6 +213,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i874.DeleteAccountUseCase>(),
         gh<_i483.AppDatabase>(),
       ),
+    );
+    gh.factory<_i774.LoginCubit>(
+      () => _i774.LoginCubit(gh<_i253.LoginUseCase>()),
+    );
+    gh.factory<_i887.RegisterCubit>(
+      () => _i887.RegisterCubit(gh<_i35.RegisterUseCase>()),
     );
     return this;
   }
