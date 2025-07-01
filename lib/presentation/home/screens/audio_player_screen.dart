@@ -1,7 +1,8 @@
-import 'package:audioplayers/audioplayers.dart';
+import 'dart:async';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
-import 'package:dear_flutter/services/youtube_audio_service.dart';
+import 'package:dear_flutter/services/audio_player_handler.dart';
 import 'package:dear_flutter/core/di/injection.dart';
 
 class AudioPlayerScreen extends StatefulWidget {
@@ -14,38 +15,30 @@ class AudioPlayerScreen extends StatefulWidget {
 }
 
 class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
-  late final AudioPlayer _player;
-  late final YoutubeAudioService _youtube;
-  String? _resolvedUrl;
+  late final AudioPlayerHandler _handler;
+  late final StreamSubscription<PlaybackState> _sub;
   bool _isPlaying = false;
 
   @override
   void initState() {
     super.initState();
-    _player = AudioPlayer();
-    _youtube = getIt<YoutubeAudioService>();
-    _player.onPlayerStateChanged.listen((state) {
-      setState(() {
-        _isPlaying = state == PlayerState.playing;
-      });
+    _handler = getIt<AudioPlayerHandler>();
+    _sub = _handler.playbackState.listen((state) {
+      setState(() => _isPlaying = state.playing);
     });
   }
 
   @override
   void dispose() {
-    _player.dispose();
-    _youtube.close();
+    _sub.cancel();
     super.dispose();
   }
 
   Future<void> _toggle() async {
     if (_isPlaying) {
-      await _player.pause();
+      await _handler.pause();
     } else {
-      _resolvedUrl ??= await _youtube.getAudioUrl(widget.track.youtubeId);
-      if (_resolvedUrl != null) {
-        await _player.play(UrlSource(_resolvedUrl!));
-      }
+      await _handler.playFromYoutubeId(widget.track.youtubeId);
     }
   }
 

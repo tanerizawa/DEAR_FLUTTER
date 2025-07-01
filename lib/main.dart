@@ -4,12 +4,25 @@ import 'package:dear_flutter/core/navigation/app_router.dart'; // Router konfigu
 import 'package:dear_flutter/services/notification_service.dart';
 import 'package:dear_flutter/services/quote_update_service.dart';
 import 'package:dear_flutter/services/music_update_service.dart';
+import 'package:audio_service/audio_service.dart';
+import 'services/audio_player_handler.dart';
+import 'services/youtube_audio_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Inisialisasi dependency injection (getIt, dll.)
   await configureDependencies();
+  final handler = await AudioService.init(
+    builder: () => AudioPlayerHandler(getIt<YoutubeAudioService>()),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.example.dear.audio',
+      androidNotificationChannelName: 'Audio Playback',
+    ),
+  );
+  if (!getIt.isRegistered<AudioPlayerHandler>()) {
+    getIt.registerSingleton<AudioPlayerHandler>(handler);
+  }
   await getIt<NotificationService>().init();
   getIt<QuoteUpdateService>().start();
   getIt<MusicUpdateService>().start();
