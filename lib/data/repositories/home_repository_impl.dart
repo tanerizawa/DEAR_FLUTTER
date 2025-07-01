@@ -22,7 +22,7 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<List<SongSuggestion>> getMusicSuggestions() {
-    return _apiService.getSuggestedMusic();
+  Future<List<SongSuggestion>> getMusicSuggestions(String mood) {
+    return _apiService.getSuggestedMusic(mood);
   }
 }
