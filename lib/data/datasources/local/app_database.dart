@@ -19,6 +19,11 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 4;
+
+  Future<void> clearAllData() async {
+    await journalDao.deleteAllJournals();
+    await chatMessageDao.deleteAllMessages();
+  }
 }
 
 LazyDatabase _openConnection() {
