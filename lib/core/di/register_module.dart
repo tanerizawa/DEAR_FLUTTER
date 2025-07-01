@@ -1,3 +1,4 @@
+//register_module.dart
 import 'dart:io' show Platform;
 
 import 'package:dear_flutter/core/api/auth_interceptor.dart';
