@@ -21,7 +21,7 @@ celery_app.conf.beat_schedule = {
     },
     "generate-music": {
         "task": "app.tasks.generate_music_recommendation_task",
-        "schedule": 60 * 10,
+        "schedule": 60 * 15,
     },
 }
 celery_app.conf.timezone = "UTC"

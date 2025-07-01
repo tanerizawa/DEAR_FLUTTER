@@ -16,7 +16,7 @@ class MusicUpdateService {
   void start() {
     _timer?.cancel();
     _fetch();
-    _timer = Timer.periodic(const Duration(minutes: 10), (_) => _fetch());
+    _timer = Timer.periodic(const Duration(minutes: 15), (_) => _fetch());
   }
 
   List<SongSuggestion> get latest => _latest;

@@ -40,5 +40,5 @@ celery -A app.celery_app.celery_app beat --loglevel=info
 ```
 
 The scheduled task `generate_quote_task` runs every 15 minutes and inserts a new quote based on recent journal moods.
-The `generate_music_recommendation_task` runs every 10 minutes and stores the latest
+The `generate_music_recommendation_task` runs every 15 minutes and stores the latest
 recommended track in memory for the `/music/latest` endpoint.
