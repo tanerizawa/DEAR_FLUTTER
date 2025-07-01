@@ -7,9 +7,12 @@ import 'package:dear_flutter/services/music_update_service.dart';
 import 'package:audio_service/audio_service.dart';
 import 'services/audio_player_handler.dart';
 import 'services/youtube_audio_service.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
 
   // Inisialisasi dependency injection (getIt, dll.)
   await configureDependencies();

@@ -28,6 +28,10 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ```
 If Flutter is not available you can also run `dart run build_runner build`.
 
+Hive is used to store playback history. The box is opened automatically when
+`main()` runs, so no manual setup is required beyond ensuring the generated
+code is built.
+
 Run the application on an attached device or emulator:
 
 ```bash

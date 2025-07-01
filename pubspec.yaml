@@ -47,6 +47,8 @@ dependencies:
   audio_service: ^0.18.18               # Layanan audio latar belakang
   flutter_local_notifications: ^19.3.0
   youtube_explode_dart: ^2.4.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
   
 dev_dependencies:
   flutter_test:

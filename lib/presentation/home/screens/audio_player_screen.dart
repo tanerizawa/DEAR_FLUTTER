@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
 import 'package:dear_flutter/core/di/injection.dart';
+import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 
 class AudioPlayerScreen extends StatefulWidget {
   const AudioPlayerScreen({super.key, required this.track});
@@ -38,6 +39,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     if (_isPlaying) {
       await _handler.pause();
     } else {
+      await getIt<SongHistoryRepository>().addTrack(widget.track);
       await _handler.playFromYoutubeId(widget.track.youtubeId);
     }
   }

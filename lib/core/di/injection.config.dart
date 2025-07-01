@@ -58,6 +58,9 @@ import '../../services/quote_update_service.dart' as _i642;
 import '../../services/youtube_audio_service.dart' as _i221;
 import '../api/auth_interceptor.dart' as _i577;
 import '../api/logging_interceptor.dart' as _i427;
+import 'package:hive/hive.dart' as _i1108;
+import '../../domain/repositories/song_history_repository.dart' as _i1109;
+import '../../data/repositories/song_history_repository_impl.dart' as _i1110;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -81,6 +84,10 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i324.UserPreferencesRepository>(
       () => _i324.UserPreferencesRepository(gh<_i460.SharedPreferences>()),
+    );
+    await gh.lazySingletonAsync<_i1108.Box<_i1108.Map>>(
+      () => registerModule.songBox,
+      preResolve: true,
     );
     gh.lazySingleton<_i28.JournalDao>(
       () => registerModule.journalDao(gh<_i483.AppDatabase>()),
@@ -134,6 +141,11 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i838.ChatRepositoryImpl(
         gh<_i489.ChatApiService>(),
         gh<_i109.ChatMessageDao>(),
+      ),
+    );
+    gh.lazySingleton<_i1109.SongHistoryRepository>(
+      () => _i1110.SongHistoryRepositoryImpl(
+        gh<_i1108.Box<_i1108.Map>>(),
       ),
     );
     gh.factory<_i992.GetChatHistoryUseCase>(
