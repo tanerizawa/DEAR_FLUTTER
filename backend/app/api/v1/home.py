@@ -16,10 +16,16 @@ async def get_home_feed(
     """Return combined recent content for the home screen."""
     articles = crud.article.get_multi(db)
     quotes = crud.motivational_quote.get_multi(db)
+
+    journals = crud.journal.get_multi_by_owner(
+        db=db, owner_id=current_user.id, limit=5, order_by="created_at desc"
+    )
+    keyword = await MusicKeywordService().generate_keyword(journals)
+
     audio_tracks = await recommend_music(
+        mood=keyword,
         db=db,
         current_user=current_user,
-        keyword_service=MusicKeywordService(),
     )
 
     items = []
