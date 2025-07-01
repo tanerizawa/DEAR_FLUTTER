@@ -43,7 +43,8 @@ dependencies:
   url_launcher: ^6.2.6                  # Membuka tautan eksternal
   share_plus: ^7.2.1                    # Berbagi konten
   webview_flutter: ^4.4.1              # Menampilkan halaman web dalam aplikasi
-  audioplayers: ^5.1.0                  # Pemutar audio sederhana
+  just_audio: ^0.10.4                   # Pemutar audio lanjutan
+  audio_service: ^0.18.18               # Layanan audio latar belakang
   flutter_local_notifications: ^19.3.0
   youtube_explode_dart: ^2.4.2
   
