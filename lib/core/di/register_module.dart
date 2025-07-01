@@ -9,6 +9,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive/hive.dart';
 
 @module
 abstract class RegisterModule {
@@ -49,4 +50,8 @@ Dio dio(
   @preResolve
   @lazySingleton
   Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
+
+  @preResolve
+  @lazySingleton
+  Future<Box<Map>> get songBox => Hive.openBox<Map>('song_history');
 }
