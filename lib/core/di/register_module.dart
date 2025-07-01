@@ -10,6 +10,8 @@ import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive/hive.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:just_audio/just_audio.dart';
 
 @module
 abstract class RegisterModule {
@@ -54,4 +56,11 @@ Dio dio(
   @preResolve
   @lazySingleton
   Future<Box<Map>> get songBox => Hive.openBox<Map>('song_history');
+
+  // --- AUDIO ---
+  @lazySingleton
+  YoutubeExplode youtubeExplode() => YoutubeExplode();
+
+  @lazySingleton
+  AudioPlayer audioPlayer() => AudioPlayer();
 }
