@@ -140,15 +140,18 @@ latest journal entries through OpenRouter to generate a search keyword. That
 keyword is used to query Spotify and the resulting track IDs are then passed to
 `YoutubeAudioService` for playback.
 
-To play the resolved URL with `AudioPlayer`:
+To play the resolved URL using `just_audio` through `audio_service`:
 
 ```dart
-final player = AudioPlayer();
-final url = await YoutubeAudioService().getAudioUrl(track.youtubeId);
-await player.play(UrlSource(url));
+final handler = getIt<AudioPlayerHandler>();
+await handler.playFromYoutubeId(track.youtubeId);
 ```
 
-The `AudioPlayerScreen` widget implements this behavior in the app.
+The `AudioPlayerScreen` widget obtains an `AudioPlayerHandler` instance and
+triggers playback as above. Background audio is enabled in `main.dart` by
+initializing `AudioService` with an `AudioServiceConfig` that defines the
+Android notification channel. Ensure `just_audio` and `audio_service` are listed
+as dependencies in `pubspec.yaml`.
 
 ### Database Migrations
 
