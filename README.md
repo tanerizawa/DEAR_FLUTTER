@@ -136,6 +136,16 @@ latest journal entries through OpenRouter to generate a search keyword. That
 keyword is used to query Spotify and the resulting track IDs are then passed to
 `YoutubeAudioService` for playback.
 
+To play the resolved URL with `AudioPlayer`:
+
+```dart
+final player = AudioPlayer();
+final url = await YoutubeAudioService().getAudioUrl(track.youtubeId);
+await player.play(UrlSource(url));
+```
+
+The `AudioPlayerScreen` widget implements this behavior in the app.
+
 ### Database Migrations
 
 Alembic handles schema migrations. Common commands:
