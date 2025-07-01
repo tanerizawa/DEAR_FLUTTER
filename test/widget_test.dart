@@ -4,28 +4,24 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
-import 'package:dear_flutter/presentation/home/screens/audio_player_screen.dart';
-import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/domain/entities/song_suggestion.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
-const _sampleTrack = AudioTrack(id: 1, title: 't', youtubeId: 'm');
+const _sampleSuggestion = SongSuggestion(title: 't', artist: 'a');
 
 class _FakeLatestMusicCubit extends Cubit<LatestMusicState>
     implements LatestMusicCubit {
   _FakeLatestMusicCubit()
       : super(const LatestMusicState(
           status: LatestMusicStatus.success,
-          track: _sampleTrack,
+          suggestions: [_sampleSuggestion],
         ));
 
   @override
   Future<void> fetchLatestMusic() async {}
 }
-
-class _MockNavigatorObserver extends Mock implements NavigatorObserver {}
 
 class _FakeRoute extends Fake implements Route<dynamic> {}
 
@@ -50,31 +46,4 @@ void main() {
     expect(find.text('t'), findsOneWidget);
   });
 
-  testWidgets('Tapping music card opens AudioPlayerScreen',
-      (WidgetTester tester) async {
-    final observer = _MockNavigatorObserver();
-    final router = GoRouter(
-      initialLocation: '/home',
-      observers: [observer],
-      routes: [
-        GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
-        GoRoute(
-          path: '/audio',
-          builder: (_, state) =>
-              AudioPlayerScreen(track: state.extra as AudioTrack),
-        ),
-      ],
-    );
-
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
-    await tester.tap(find.text('t'));
-    await tester.pumpAndSettle();
-
-    verify(() => observer.didPush(
-            any(that: predicate<Route<dynamic>>(
-                (route) => route.settings.name == '/audio')),
-            any()))
-        .called(1);
-    expect(find.byType(AudioPlayerScreen), findsOneWidget);
-  });
 }

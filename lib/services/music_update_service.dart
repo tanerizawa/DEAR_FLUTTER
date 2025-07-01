@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dear_flutter/data/datasources/remote/home_api_service.dart';
-import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/domain/entities/song_suggestion.dart';
 import 'package:injectable/injectable.dart';
 
 @LazySingleton()
@@ -9,7 +9,7 @@ class MusicUpdateService {
   final HomeApiService _apiService;
 
   Timer? _timer;
-  AudioTrack? _latest;
+  List<SongSuggestion> _latest = const [];
 
   MusicUpdateService(this._apiService);
 
@@ -19,12 +19,12 @@ class MusicUpdateService {
     _timer = Timer.periodic(const Duration(minutes: 10), (_) => _fetch());
   }
 
-  AudioTrack? get latest => _latest;
+  List<SongSuggestion> get latest => _latest;
 
   Future<void> _fetch() async {
     try {
-      final track = await _apiService.getLatestMusic();
-      _latest = track;
+      final suggestions = await _apiService.getSuggestedMusic();
+      _latest = suggestions;
     } catch (_) {
       // ignore errors
     }

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/domain/entities/song_suggestion.dart';
 
 @injectable
 class HomeApiService {
@@ -19,5 +20,13 @@ class HomeApiService {
     final data = response.data;
     if (data == null) return null;
     return AudioTrack.fromJson(data as Map<String, dynamic>);
+  }
+
+  Future<List<SongSuggestion>> getSuggestedMusic() async {
+    final response = await _dio.get('music/recommend/');
+    final data = response.data as List<dynamic>;
+    return data
+        .map((e) => SongSuggestion.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 }
