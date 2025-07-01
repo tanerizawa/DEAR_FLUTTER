@@ -22,8 +22,11 @@ class HomeApiService {
     return AudioTrack.fromJson(data as Map<String, dynamic>);
   }
 
-  Future<List<SongSuggestion>> getSuggestedMusic() async {
-    final response = await _dio.get('music/recommend/');
+  Future<List<SongSuggestion>> getSuggestedMusic(String mood) async {
+    final response = await _dio.get(
+      'music/recommend/',
+      queryParameters: {'mood': mood},
+    );
     final data = response.data as List<dynamic>;
     return data
         .map((e) => SongSuggestion.fromJson(e as Map<String, dynamic>))

@@ -15,7 +15,7 @@ class LatestMusicCubit extends Cubit<LatestMusicState> {
   Future<void> fetchLatestMusic() async {
     emit(state.copyWith(status: LatestMusicStatus.loading));
     try {
-      final suggestions = await _getMusicSuggestionsUseCase();
+      final suggestions = await _getMusicSuggestionsUseCase('Netral');
       emit(state.copyWith(
           status: LatestMusicStatus.success, suggestions: suggestions));
     } catch (_) {

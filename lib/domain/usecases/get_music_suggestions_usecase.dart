@@ -7,5 +7,6 @@ class GetMusicSuggestionsUseCase {
   final HomeRepository _repository;
   GetMusicSuggestionsUseCase(this._repository);
 
-  Future<List<SongSuggestion>> call() => _repository.getMusicSuggestions();
+  Future<List<SongSuggestion>> call(String mood) =>
+      _repository.getMusicSuggestions(mood);
 }

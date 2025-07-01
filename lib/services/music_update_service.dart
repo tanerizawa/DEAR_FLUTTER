@@ -23,7 +23,7 @@ class MusicUpdateService {
 
   Future<void> _fetch() async {
     try {
-      final suggestions = await _apiService.getSuggestedMusic();
+      final suggestions = await _apiService.getSuggestedMusic('Netral');
       _latest = suggestions;
     } catch (_) {
       // ignore errors
