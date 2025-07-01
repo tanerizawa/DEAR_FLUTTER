@@ -2,7 +2,6 @@ import 'package:injectable/injectable.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// Service to obtain playable audio streams from YouTube videos.
-@LazySingleton()
 class AudioInfo {
   final int bitrate;
   final Uri url;
@@ -11,6 +10,7 @@ class AudioInfo {
 
 typedef _AudioFetcher = Future<List<AudioInfo>> Function(String id);
 
+@LazySingleton()
 class YoutubeAudioService {
   YoutubeAudioService({YoutubeExplode? client, _AudioFetcher? fetcher})
       : _yt = client ?? YoutubeExplode(),
