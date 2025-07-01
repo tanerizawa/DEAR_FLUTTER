@@ -2,6 +2,8 @@
 
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/entities/song_suggestion.dart';
+import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
 import 'package:flutter/material.dart';
@@ -63,6 +65,14 @@ class _MusicCard extends StatelessWidget {
         leading: const Icon(Icons.music_note),
         title: Text(suggestion.title),
         subtitle: Text(suggestion.artist),
+        onTap: () {
+          final track = AudioTrack(
+            id: 0,
+            title: suggestion.title,
+            youtubeId: suggestion.title,
+          );
+          context.go('/audio', extra: track);
+        },
       ),
     );
   }
