@@ -31,6 +31,7 @@ from .audio import (
     AudioTrackUpdate,
     AudioTrack,
 )
+from .song import SongSuggestion
 
 __all__ = [
     "UserBase",
@@ -71,4 +72,5 @@ __all__ = [
     "AudioTrackCreate",
     "AudioTrackUpdate",
     "AudioTrack",
+    "SongSuggestion",
 ]

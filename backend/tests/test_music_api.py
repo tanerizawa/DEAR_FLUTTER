@@ -1,14 +1,13 @@
 # tests/test_music_api.py (Versi Perbaikan)
 
 import pytest
-from unittest.mock import AsyncMock
 from spotipy import Spotify
 from app.core.config import settings
 from app.api.v1 import music
 
-from app import crud
-from app.models.journal import Journal
-from app.services.music_keyword_service import MusicKeywordService
+from app import crud, models
+from app.services.music_suggestion_service import MusicSuggestionService
+from app.schemas.song import SongSuggestion
 
 
 def test_music_endpoint_returns_list(client, monkeypatch):
@@ -32,68 +31,60 @@ def test_music_endpoint_returns_list(client, monkeypatch):
     assert data[0]["youtube_id"] == "abc123"
 
 
-def test_music_recommend_uses_keyword_and_journals(client, monkeypatch):
-    monkeypatch.setattr(settings, "SPOTIFY_CLIENT_ID", "id")
-    monkeypatch.setattr(settings, "SPOTIFY_CLIENT_SECRET", "secret")
-    monkeypatch.setattr(music, "spotify", None)
+@pytest.mark.asyncio
+async def test_music_suggestion_service_builds_prompt(monkeypatch):
     captured = {}
 
-    # --- PERBAIKAN 2: Menambahkan `order_by` ke mock ---
-    def fake_get_multi_by_owner(
-        db, owner_id: int, skip: int = 0, limit: int = 100, order_by: str = None
-    ):
-        captured["limit"] = limit
-        # Memastikan mock mengembalikan objek Journal yang valid
-        return [Journal(id=i, content=f"j{i}", owner_id=owner_id) for i in range(3)]
+    async def fake_call(self, model, messages):
+        captured["prompt"] = messages[0]["content"]
+        return {
+            "choices": [{"message": {"content": '[{"title": "t", "artist": "a"}]'}}]
+        }
 
-    async def fake_generate_keyword(self, journals):
-        captured["journals"] = journals
-        return "lofi"
+    monkeypatch.setattr(MusicSuggestionService, "_call_openrouter", fake_call)
 
-    def fake_search(self, q, type="track", limit=20):
-        captured["query"] = q
-        return {"tracks": {"items": [{"name": "Song", "id": "xyz"}]}}
+    from datetime import datetime
+    from app.schemas.user_profile import UserProfile
 
-    # Mock ini tidak lagi dipanggil oleh logika utama, tetapi kita biarkan untuk keamanan.
-    monkeypatch.setattr(crud.journal, "get_multi_by_owner", fake_get_multi_by_owner)
-    monkeypatch.setattr(MusicKeywordService, "generate_keyword", fake_generate_keyword)
-    monkeypatch.setattr(Spotify, "search", fake_search)
+    service = MusicSuggestionService(settings=settings)
+    profile = UserProfile(
+        emerging_themes={"rock": 1.0},
+        sentiment_trend="menurun",
+        id=1,
+        user_id=1,
+        last_analyzed=datetime.utcnow(),
+    )
 
-    client_app, _ = client
-    resp = client_app.get("/api/v1/music/recommend")
+    result = await service.suggest_songs("happy", profile)
+
+    assert result[0].title == "t"
+    assert "happy" in captured["prompt"]
+    assert "rock" in captured["prompt"]
+
+
+def test_music_recommend_returns_suggestions(client, monkeypatch):
+    captured = {}
+
+    async def fake_suggest(self, mood, user_profile=None):
+        captured["mood"] = mood
+        captured["profile"] = user_profile
+        return [SongSuggestion(title="t", artist="a")]
+
+    monkeypatch.setattr(MusicSuggestionService, "suggest_songs", fake_suggest)
+
+    client_app, session_local = client
+    db = session_local()
+    try:
+        user = db.query(models.User).first()
+        crud.user_profile.create_with_user(db, user_id=user.id)
+    finally:
+        db.close()
+
+    resp = client_app.get("/api/v1/music/recommend?mood=joy")
     assert resp.status_code == 200
-    assert captured["limit"] == 5
-    assert len(captured["journals"]) == 3
-    assert captured["query"] == "lofi"
-
-
-def test_music_recommend_returns_empty_list_when_no_results(client, monkeypatch):
-    monkeypatch.setattr(settings, "SPOTIFY_CLIENT_ID", "id")
-    monkeypatch.setattr(settings, "SPOTIFY_CLIENT_SECRET", "secret")
-    monkeypatch.setattr(music, "spotify", None)
-
-    # --- PERBAIKAN 3: Menambahkan `order_by` ke mock ---
-    def fake_get_multi_by_owner(
-        db, owner_id: int, skip: int = 0, limit: int = 100, order_by: str = None
-    ):
-        # Mengembalikan jurnal untuk memicu logika fallback
-        return [Journal(id=1, content="test", mood="Netral", owner_id=owner_id)]
-
-    async def fake_generate_keyword(self, journals):
-        return "keyword_yang_tidak_ada_hasilnya"
-
-    # Mock search sekarang mengembalikan list kosong untuk semua query
-    def fake_search(self, q, type="track", limit=20):
-        return {"tracks": {"items": []}}
-
-    monkeypatch.setattr(crud.journal, "get_multi_by_owner", fake_get_multi_by_owner)
-    monkeypatch.setattr(MusicKeywordService, "generate_keyword", fake_generate_keyword)
-    monkeypatch.setattr(Spotify, "search", fake_search)
-
-    client_app, _ = client
-    resp = client_app.get("/api/v1/music/recommend")
-    assert resp.status_code == 200
-    assert resp.json() == []
+    assert resp.json()[0]["title"] == "t"
+    assert captured["mood"] == "joy"
+    assert captured["profile"] is not None
 
 
 def test_music_endpoint_returns_503_without_credentials(client, monkeypatch):
