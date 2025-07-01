@@ -1,14 +1,11 @@
 // lib/presentation/home/screens/home_screen.dart
 
 import 'package:dear_flutter/core/di/injection.dart';
-import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/domain/entities/song_suggestion.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-
-import 'audio_player_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -31,7 +28,7 @@ class HomeScreen extends StatelessWidget {
                 child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
               );
             }
-            if (state.track == null) {
+            if (state.suggestions.isEmpty) {
               return const SizedBox.shrink();
             }
             return ListView(
@@ -42,10 +39,9 @@ class HomeScreen extends StatelessWidget {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 16),
-                _MusicCard(
-                  track: state.track!,
-                  onTap: () => context.push('/audio', extra: state.track),
-                ),
+                ...state.suggestions
+                    .map((s) => _MusicCard(suggestion: s))
+                    .toList(),
               ],
             );
           },
@@ -56,19 +52,17 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _MusicCard extends StatelessWidget {
-  const _MusicCard({required this.track, required this.onTap});
+  const _MusicCard({required this.suggestion});
 
-  final AudioTrack track;
-  final VoidCallback onTap;
+  final SongSuggestion suggestion;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
         leading: const Icon(Icons.music_note),
-        title: Text(track.title),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
+        title: Text(suggestion.title),
+        subtitle: Text(suggestion.artist),
       ),
     );
   }
