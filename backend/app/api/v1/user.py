@@ -6,6 +6,7 @@ from app.dependencies import get_current_user, get_db
 
 router = APIRouter()
 
+
 @router.get("/users/me", response_model=schemas.UserPublic)
 def read_users_me(current_user: models.User = Depends(get_current_user)):
     return current_user

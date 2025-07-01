@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from app.crud.base import CRUDBase
 from app.models.journal import Journal
 from app.schemas.journal import JournalCreate, JournalUpdate
-from sqlalchemy import desc # Pastikan `desc` diimpor
+from sqlalchemy import desc  # Pastikan `desc` diimpor
+
 
 class CRUDJournal(CRUDBase[Journal, JournalCreate, JournalUpdate]):
     def create_with_owner(
@@ -17,7 +18,13 @@ class CRUDJournal(CRUDBase[Journal, JournalCreate, JournalUpdate]):
         return db_obj
 
     def get_multi_by_owner(
-        self, db: Session, *, owner_id: int, skip: int = 0, limit: int = 100, order_by: str = None
+        self,
+        db: Session,
+        *,
+        owner_id: int,
+        skip: int = 0,
+        limit: int = 100,
+        order_by: str = None
     ) -> list[Journal]:
         # --- PERBAIKAN DI SINI ---
         # Membangun query secara bertahap untuk stabilitas
@@ -31,5 +38,6 @@ class CRUDJournal(CRUDBase[Journal, JournalCreate, JournalUpdate]):
         journals = query.offset(skip).limit(limit).all()
 
         return journals
+
 
 journal = CRUDJournal(Journal)

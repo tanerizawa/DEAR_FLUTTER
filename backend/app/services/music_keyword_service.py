@@ -17,14 +17,11 @@ class MusicKeywordService:
         self.api_base_url = "https://openrouter.ai/api/v1"
         self.log = structlog.get_logger(__name__)
 
-    async def _call_openrouter(self, model: str, messages: List[Dict[str, str]]) -> Dict:
-        headers = {
-            "Authorization": f"Bearer {self.settings.OPENROUTER_API_KEY}"
-        }
-        json_data = {
-            "model": model,
-            "messages": messages
-        }
+    async def _call_openrouter(
+        self, model: str, messages: List[Dict[str, str]]
+    ) -> Dict:
+        headers = {"Authorization": f"Bearer {self.settings.OPENROUTER_API_KEY}"}
+        json_data = {"model": model, "messages": messages}
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.api_base_url}/chat/completions",

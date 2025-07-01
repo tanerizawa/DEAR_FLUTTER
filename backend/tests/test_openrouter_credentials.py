@@ -2,7 +2,7 @@ import pytest
 import httpx
 from app.services.planner_service import PlannerService
 from app.services.generator_service import GeneratorService
-from app.schemas.plan import CommunicationTechnique, ConversationPlan
+from app.schemas.plan import CommunicationTechnique
 from app.core.config import Settings
 
 
@@ -25,4 +25,3 @@ async def test_services_handle_invalid_credentials(monkeypatch, api_key):
 
     result = await generator.generate_response(plan, [], None)
     assert "listen" in result.lower()
-

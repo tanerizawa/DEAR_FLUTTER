@@ -3,12 +3,12 @@ from .base import CRUDBase
 from app.models.chat import ChatMessage
 from app.schemas.chat import ChatMessageCreate, ChatMessageUpdate
 
+
 class CRUDChatMessage(CRUDBase[ChatMessage, ChatMessageCreate, ChatMessageUpdate]):
-    def create_with_owner(self, db, *, obj_in: ChatMessageCreate, owner_id: int) -> ChatMessage:
-        db_obj = ChatMessage(
-            **obj_in.model_dump(),
-            owner_id=owner_id
-        )
+    def create_with_owner(
+        self, db, *, obj_in: ChatMessageCreate, owner_id: int
+    ) -> ChatMessage:
+        db_obj = ChatMessage(**obj_in.model_dump(), owner_id=owner_id)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
@@ -49,5 +49,6 @@ class CRUDChatMessage(CRUDBase[ChatMessage, ChatMessageCreate, ChatMessageUpdate
             db.commit()
             db.refresh(obj)
         return obj
+
 
 chat_message = CRUDChatMessage(ChatMessage)

@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from app import crud, models
 import logging
 from typing import Dict
-import json
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -13,10 +12,14 @@ class ProfileAnalyzerService:
         try:
             logger.info(f"[PROFILE] Starting analysis for user_id: {user.id}")
 
-            all_journals = crud.journal.get_multi_by_owner(db=db, owner_id=user.id, limit=1000)
+            all_journals = crud.journal.get_multi_by_owner(
+                db=db, owner_id=user.id, limit=1000
+            )
 
             if not all_journals:
-                logger.info(f"[PROFILE] No journals found for user_id: {user.id}. Skipping.")
+                logger.info(
+                    f"[PROFILE] No journals found for user_id: {user.id}. Skipping."
+                )
                 return
 
             mood_counts: Dict[str, int] = {}
@@ -32,8 +35,12 @@ class ProfileAnalyzerService:
             themes = {mood: count / total for mood, count in mood_counts.items()}
             logger.info(f"[PROFILE] Computed themes for user_id {user.id}: {themes}")
 
-            sorted_journals = sorted(all_journals, key=lambda j: j.created_at, reverse=True)
-            recent_mood = sorted_journals[0].mood.lower() if sorted_journals[0].mood else ""
+            sorted_journals = sorted(
+                all_journals, key=lambda j: j.created_at, reverse=True
+            )
+            recent_mood = (
+                sorted_journals[0].mood.lower() if sorted_journals[0].mood else ""
+            )
 
             sentiment_trend = "stabil"
             if recent_mood in {"happy", "good", "great"}:
@@ -60,7 +67,9 @@ class ProfileAnalyzerService:
             logger.info(f"[PROFILE] Analysis complete for user_id: {user.id}")
 
         except Exception as e:
-            logger.error(f"[PROFILE] Error during analysis for user_id: {user.id} - {str(e)}")
+            logger.error(
+                f"[PROFILE] Error during analysis for user_id: {user.id} - {str(e)}"
+            )
 
 
 profile_analyzer = ProfileAnalyzerService()

@@ -1,8 +1,6 @@
 # backend/tests/test_chat_api.py
 
-import pytest
 from datetime import datetime
-from fastapi.encoders import jsonable_encoder
 from app.schemas.plan import CommunicationTechnique, ConversationPlan
 from app.services.planner_service import PlannerService
 from app.services.generator_service import GeneratorService
@@ -14,14 +12,22 @@ dummy_profile = UserProfile(
     sentiment_trend="negatif",
     id=1,
     user_id=1,
-    last_analyzed=datetime.utcnow()
+    last_analyzed=datetime.utcnow(),
 )
+
 
 def test_chat_flow_success(client):
     client_app, session_local = client
 
     class DummyPlanner:
-        async def get_plan(self, user_message, chat_history, latest_journal, user_profile, emotion_label):
+        async def get_plan(
+            self,
+            user_message,
+            chat_history,
+            latest_journal,
+            user_profile,
+            emotion_label,
+        ):
             # Pastikan user_profile adalah objek yang benar atau None
             assert user_profile is None or isinstance(user_profile, UserProfile)
             return ConversationPlan(technique=CommunicationTechnique.INFORMATION)
@@ -31,14 +37,12 @@ def test_chat_flow_success(client):
             return "hello from ai"
 
     from app.main import app
+
     app.dependency_overrides[PlannerService] = lambda: DummyPlanner()
     app.dependency_overrides[GeneratorService] = lambda: DummyGenerator()
 
     # Kirim payload HANYA dengan 'message'
-    response = client_app.post(
-        "/api/v1/chat/",
-        json={"message": "Hi"}
-    )
+    response = client_app.post("/api/v1/chat/", json={"message": "Hi"})
 
     assert response.status_code == 200
     data = response.json()
@@ -47,6 +51,7 @@ def test_chat_flow_success(client):
     assert data["ai_technique"] == "information"
 
     from app.models.chat import ChatMessage
+
     db = session_local()
     try:
         msgs = db.query(ChatMessage).all()
@@ -70,12 +75,12 @@ def test_get_latest_journal_returns_newest_entry(client):
         crud.journal.create_with_owner(
             db=db,
             obj_in=schemas.JournalCreate(title="old", content="first", mood="ok"),
-            owner_id=user.id
+            owner_id=user.id,
         )
         crud.journal.create_with_owner(
             db=db,
             obj_in=schemas.JournalCreate(title="new", content="second", mood="ok"),
-            owner_id=user.id
+            owner_id=user.id,
         )
 
         # Panggil fungsi untuk mendapatkan konten jurnal terbaru
@@ -97,14 +102,12 @@ def test_flag_and_delete_message(client):
             return "hi ai"
 
     from app.main import app
+
     app.dependency_overrides[PlannerService] = lambda: DummyPlanner()
     app.dependency_overrides[GeneratorService] = lambda: DummyGenerator()
 
     # Kirim payload HANYA dengan 'message'
-    response = client_app.post(
-        "/api/v1/chat/",
-        json={"message": "Hello"}
-    )
+    response = client_app.post("/api/v1/chat/", json={"message": "Hello"})
     assert response.status_code == 200
     msg_id = response.json().get("id")
     assert msg_id is not None
@@ -117,6 +120,7 @@ def test_flag_and_delete_message(client):
     assert delete_resp.status_code == 200
 
     from app.models.chat import ChatMessage
+
     db = session_local()
     try:
         assert db.query(ChatMessage).filter(ChatMessage.id == msg_id).first() is None

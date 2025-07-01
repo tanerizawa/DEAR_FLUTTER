@@ -7,6 +7,7 @@ from app.dependencies import get_db
 
 router = APIRouter()
 
+
 @router.post("/register", response_model=schemas.UserPublic)
 def register(
     *,
@@ -18,6 +19,7 @@ def register(
         raise HTTPException(status_code=400, detail="Email already registered")
     user = crud.user.create(db, obj_in=user_in)
     return user
+
 
 @router.post("/login", response_model=schemas.Token)
 def login(

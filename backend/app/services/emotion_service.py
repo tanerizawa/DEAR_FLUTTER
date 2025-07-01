@@ -1,13 +1,28 @@
 from typing import Set
 
+
 class EmotionService:
     """Simple rule-based emotion classifier."""
 
     POSITIVE_WORDS: Set[str] = {
-        "happy", "glad", "good", "great", "excited", "love", "wonderful", "awesome",
+        "happy",
+        "glad",
+        "good",
+        "great",
+        "excited",
+        "love",
+        "wonderful",
+        "awesome",
     }
     NEGATIVE_WORDS: Set[str] = {
-        "sad", "unhappy", "bad", "terrible", "angry", "upset", "hate", "depressing",
+        "sad",
+        "unhappy",
+        "bad",
+        "terrible",
+        "angry",
+        "upset",
+        "hate",
+        "depressing",
     }
 
     def detect_emotion(self, text: str) -> str:

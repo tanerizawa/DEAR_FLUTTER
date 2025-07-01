@@ -15,4 +15,3 @@ async def test_get_plan_accepts_four_args(monkeypatch):
 
     plan = await planner.get_plan("hello", ["hi"], "", None, "neutral")
     assert plan.technique == CommunicationTechnique.INFORMATION
-

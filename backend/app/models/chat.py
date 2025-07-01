@@ -1,12 +1,22 @@
 from enum import Enum
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum as SQLAlchemyEnum, Boolean
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    ForeignKey,
+    Enum as SQLAlchemyEnum,
+    Boolean,
+)
 from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 import datetime
 
+
 class SenderType(str, Enum):
     USER = "user"
     AI = "ai"
+
 
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
