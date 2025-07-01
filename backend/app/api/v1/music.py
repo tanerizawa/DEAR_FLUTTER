@@ -5,11 +5,10 @@ from sqlalchemy.orm import Session
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 import structlog
-import re
 
 from app import crud, models, schemas, dependencies
 from app.core.config import settings
-from app.services.music_keyword_service import MusicKeywordService
+from app.services.music_suggestion_service import MusicSuggestionService
 from app.state.music import get_latest_music as _get_latest_music
 
 router = APIRouter()
@@ -96,69 +95,16 @@ def search_music(
     return musics
 
 
-@router.get("/recommend", response_model=list[schemas.AudioTrack])
+@router.get("/recommend", response_model=list[schemas.SongSuggestion])
 async def recommend_music(
     *,
+    mood: str = Query(..., min_length=1),
     db: Session = Depends(dependencies.get_db),
     current_user: models.User = Depends(dependencies.get_current_user),
-    keyword_service: MusicKeywordService = Depends(),
+    suggestion_service: MusicSuggestionService = Depends(),
 ):
-    journals = crud.journal.get_multi_by_owner(
-        db=db, owner_id=current_user.id, limit=5, order_by="created_at desc"
-    )
-
-    musics = []
-
-    if journals:
-        try:
-            raw_ai_keyword = await keyword_service.generate_keyword(journals)
-            cleaned_keyword = re.sub(r"[^a-zA-Z0-9\s]", "", raw_ai_keyword).strip()
-
-            if cleaned_keyword:
-                log.info(
-                    "Mencoba rekomendasi dengan kata kunci AI", keyword=cleaned_keyword
-                )
-                client = get_spotify()
-                search_results = client.search(
-                    q=cleaned_keyword, type="track", limit=20
-                )
-                musics = _process_search_results(search_results)
-
-            if not musics:
-                mood = journals[0].mood
-                fallback_map = {
-                    "Sangat Negatif": "lagu sedih",
-                    "Negatif": "lagu galau",
-                    "Netral": "lofi hip hop instrumental",
-                    "Positif": "lagu semangat",
-                    "Sangat Positif": "lagu ceria playlist",
-                }
-                fallback_keyword = fallback_map.get(mood, "musik instrumental santai")
-                log.info(
-                    "Pencarian AI gagal, mencoba fallback",
-                    fallback_keyword=fallback_keyword,
-                )
-                client = get_spotify()
-                search_results_fallback = client.search(
-                    q=fallback_keyword, type="track", limit=20
-                )
-                musics = _process_search_results(search_results_fallback)
-        except Exception as e:
-            log.error("Gagal mendapatkan rekomendasi cerdas", error=str(e))
-
-    if not musics:
-        try:
-            log.warning("Semua rekomendasi gagal, memberikan daftar default.")
-            client = get_spotify()
-            default_search_results = client.search(
-                q="top hits indonesia", type="track", limit=20
-            )
-            musics = _process_search_results(default_search_results)
-        except Exception as e:
-            log.error("Gagal mendapatkan rekomendasi default", error=str(e))
-            musics = []
-
-    return musics
+    profile = crud.user_profile.get_by_user_id(db, user_id=current_user.id)
+    return await suggestion_service.suggest_songs(mood=mood, user_profile=profile)
 
 
 @router.get("/latest", response_model=schemas.AudioTrack | None)
