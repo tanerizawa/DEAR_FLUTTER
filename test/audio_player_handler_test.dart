@@ -50,4 +50,19 @@ void main() {
     final state = await future;
     expect(state.playing, isTrue);
   });
+
+  test('stop disposes player and closes youtube', () async {
+    final player = _MockAudioPlayer();
+    final yt = _MockYoutubeService();
+
+    when(player.dispose).thenAnswer((_) async {});
+    when(() => yt.close()).thenReturn(null);
+
+    final handler = AudioPlayerHandler(yt, player: player);
+
+    await handler.stop();
+
+    verify(player.dispose).called(1);
+    verify(() => yt.close()).called(1);
+  });
 }
