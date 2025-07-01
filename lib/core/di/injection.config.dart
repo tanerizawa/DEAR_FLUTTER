@@ -88,8 +88,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i109.ChatMessageDao>(
       () => registerModule.chatMessageDao(gh<_i483.AppDatabase>()),
     );
-    gh.lazySingleton<_i221.AudioInfo>(
-      () => _i221.AudioInfo(gh<int>(), gh<Uri>()),
+    gh.lazySingleton<_i221.YoutubeAudioService>(
+      () => _i221.YoutubeAudioService(),
     );
     gh.factory<_i577.AuthInterceptor>(
       () => _i577.AuthInterceptor(gh<_i324.UserPreferencesRepository>()),
