@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 import structlog
 
 from app import models, schemas, crud, dependencies
@@ -26,13 +25,13 @@ def get_latest_journal(db: Session, user: models.User) -> str:
 
 @router.post("/", response_model=schemas.chat.ChatMessage)
 async def handle_chat_message(
-        *,
-        db: Session = Depends(dependencies.get_db),
-        chat_in: schemas.chat.ChatRequest,
-        current_user: models.User = Depends(dependencies.get_current_user),
-        planner: PlannerService = Depends(),
-        generator: GeneratorService = Depends(),
-        emotion_service: EmotionService = Depends(),
+    *,
+    db: Session = Depends(dependencies.get_db),
+    chat_in: schemas.chat.ChatRequest,
+    current_user: models.User = Depends(dependencies.get_current_user),
+    planner: PlannerService = Depends(),
+    generator: GeneratorService = Depends(),
+    emotion_service: EmotionService = Depends(),
 ):
     log.info("handle_chat_message:start", user_id=current_user.id)
 
@@ -52,16 +51,12 @@ async def handle_chat_message(
         emotion=emotion_label,
     )
     crud.chat_message.create_with_owner(
-        db=db,
-        obj_in=user_message_obj,
-        owner_id=current_user.id
+        db=db, obj_in=user_message_obj, owner_id=current_user.id
     )
 
     # Ambil 10 riwayat pesan terakhir (dalam urutan kronologis)
     history_db = crud.chat_message.get_multi_by_owner(
-        db=db,
-        owner_id=current_user.id,
-        limit=10
+        db=db, owner_id=current_user.id, limit=10
     )
     history_db_reversed = history_db[::-1]  # kronologis dari paling awal ke akhir
 
@@ -94,9 +89,7 @@ async def handle_chat_message(
         ai_technique=conversation_plan.technique.value,
     )
     ai_message_db = crud.chat_message.create_with_owner(
-        db=db,
-        obj_in=ai_message_obj,
-        owner_id=current_user.id
+        db=db, obj_in=ai_message_obj, owner_id=current_user.id
     )
 
     log.info(

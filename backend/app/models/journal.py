@@ -4,6 +4,7 @@ from app.db.base_class import Base
 from app.models.user import User
 import datetime
 
+
 class Journal(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
@@ -14,4 +15,6 @@ class Journal(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="journals")
+
+
 User.journals = relationship("Journal", order_by=Journal.id, back_populates="owner")

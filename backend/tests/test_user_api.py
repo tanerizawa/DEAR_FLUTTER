@@ -22,4 +22,3 @@ def test_delete_current_user(client):
         assert db.query(User).filter_by(id=1).first() is None
     finally:
         db.close()
-

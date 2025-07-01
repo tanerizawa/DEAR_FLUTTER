@@ -1,16 +1,20 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
+
 class JournalBase(BaseModel):
     title: str
     content: str
     mood: str
 
+
 class JournalCreate(JournalBase):
     pass
 
+
 class JournalUpdate(JournalBase):
     pass
+
 
 class JournalInDB(JournalBase):
     id: int

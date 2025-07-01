@@ -26,15 +26,12 @@ class GeneratorService:
             "unknown": "Ask a simple open question like 'Could you tell me more?'",
         }
 
-    async def _call_openrouter(self, model: str, messages: List[Dict[str, str]]) -> Dict:
+    async def _call_openrouter(
+        self, model: str, messages: List[Dict[str, str]]
+    ) -> Dict:
         """Kirim permintaan ke OpenRouter API"""
-        headers = {
-            "Authorization": f"Bearer {self.settings.OPENROUTER_API_KEY}"
-        }
-        json_data = {
-            "model": model,
-            "messages": messages
-        }
+        headers = {"Authorization": f"Bearer {self.settings.OPENROUTER_API_KEY}"}
+        json_data = {"model": model, "messages": messages}
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -47,10 +44,10 @@ class GeneratorService:
             return response.json()
 
     async def generate_response(
-            self,
-            plan: ConversationPlan,
-            history: List[Dict[str, str]],
-            emotion: str,
+        self,
+        plan: ConversationPlan,
+        history: List[Dict[str, str]],
+        emotion: str,
     ) -> str:
         """Menghasilkan respons dari model berdasarkan riwayat chat dan teknik yang dipilih"""
         self.log.info("generating_response", technique=plan.technique.value)
@@ -90,7 +87,11 @@ class GeneratorService:
             content = data["choices"][0]["message"]["content"].strip()
 
             if not content:
-                self.log.error("generator_empty_response", prompt=prompt, technique=plan.technique.value)
+                self.log.error(
+                    "generator_empty_response",
+                    prompt=prompt,
+                    technique=plan.technique.value,
+                )
                 return "Maaf, aku belum bisa memberikan tanggapan. Bisa kamu ceritakan sedikit lagi?"
 
             return content

@@ -13,16 +13,18 @@ log = structlog.get_logger(__name__)
 
 @router.post("/", response_model=schemas.JournalInDB)
 def create_journal(
-        *,
-        db: Session = Depends(get_db),
-        journal_in: schemas.JournalCreate,
-        current_user: models.User = Depends(get_current_user),
-        background_tasks: BackgroundTasks,
+    *,
+    db: Session = Depends(get_db),
+    journal_in: schemas.JournalCreate,
+    current_user: models.User = Depends(get_current_user),
+    background_tasks: BackgroundTasks,
 ):
     if not journal_in.content.strip():
         raise HTTPException(status_code=400, detail="Konten jurnal tidak boleh kosong.")
 
-    journal = crud.journal.create_with_owner(db=db, obj_in=journal_in, owner_id=current_user.id)
+    journal = crud.journal.create_with_owner(
+        db=db, obj_in=journal_in, owner_id=current_user.id
+    )
 
     background_tasks.add_task(analyze_profile_task, current_user.id)
 
@@ -34,12 +36,13 @@ def create_journal(
 
     return journal
 
+
 @router.get("/", response_model=list[schemas.JournalInDB])
 def read_journals(
-        db: Session = Depends(get_db),
-        skip: int = 0,
-        limit: int = 100,
-        current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    current_user: models.User = Depends(get_current_user),
 ):
     limit = min(limit, 100)
     journals = crud.journal.get_multi_by_owner(
@@ -53,4 +56,3 @@ def read_journals(
         return []
 
     return journals
-

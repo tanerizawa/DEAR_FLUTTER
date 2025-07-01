@@ -16,10 +16,7 @@ if settings.DATABASE_URL and settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
 # Buat engine dengan argumen yang sudah disesuaikan
-engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args=connect_args
-)
+engine = create_engine(settings.DATABASE_URL, connect_args=connect_args)
 # --- Akhir Revisi ---
 
 

@@ -5,6 +5,7 @@ from .base import CRUDBase
 from app.models.user_profile import UserProfile
 from app.schemas.user_profile import UserProfileUpdate
 
+
 class CRUDUserProfile(CRUDBase[UserProfile, None, UserProfileUpdate]):
     def get_by_user_id(self, db: Session, *, user_id: int) -> UserProfile | None:
         """Mengambil profil berdasarkan ID pengguna."""
@@ -17,5 +18,6 @@ class CRUDUserProfile(CRUDBase[UserProfile, None, UserProfileUpdate]):
         db.commit()
         db.refresh(db_obj)
         return db_obj
+
 
 user_profile = CRUDUserProfile(UserProfile)

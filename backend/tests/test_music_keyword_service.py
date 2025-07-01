@@ -11,7 +11,7 @@ async def test_generate_keyword_uses_latest_journals(monkeypatch):
     captured = {}
 
     async def fake_call(self, model, messages):
-        captured['messages'] = messages
+        captured["messages"] = messages
         return {"choices": [{"message": {"content": "lofi"}}]}
 
     monkeypatch.setattr(MusicKeywordService, "_call_openrouter", fake_call)
@@ -26,7 +26,7 @@ async def test_generate_keyword_uses_latest_journals(monkeypatch):
     result = await service.generate_keyword(journals)
 
     assert result == "lofi"
-    system_prompt = captured['messages'][0]['content']
+    system_prompt = captured["messages"][0]["content"]
     assert "j5" not in system_prompt  # oldest excluded
     for i in range(5):
         assert f"j{i}" in system_prompt
