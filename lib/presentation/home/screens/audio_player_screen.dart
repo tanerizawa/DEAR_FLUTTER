@@ -5,6 +5,7 @@ import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class AudioPlayerScreen extends StatefulWidget {
   const AudioPlayerScreen({super.key, required this.track});
@@ -60,7 +61,25 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       await _handler.pause();
     } else {
       await getIt<SongHistoryRepository>().addTrack(widget.track);
-      await _handler.playFromYoutubeId(widget.track.youtubeId);
+      try {
+        await _handler.playFromYoutubeId(widget.track.youtubeId);
+      } on YoutubeExplodeException catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(content: Text('Gagal memutar audio dari YouTube')),
+            );
+        }
+      } on StateError catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(content: Text('Audio tidak tersedia')), 
+            );
+        }
+      }
     }
   }
 
