@@ -3,9 +3,12 @@
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/entities/song_suggestion.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
+import 'package:dear_flutter/presentation/home/cubit/latest_quote_cubit.dart';
+import 'package:dear_flutter/presentation/home/cubit/latest_quote_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -14,38 +17,64 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<LatestMusicCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => getIt<LatestMusicCubit>()),
+        BlocProvider(create: (_) => getIt<LatestQuoteCubit>()),
+      ],
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Beranda'),
         ),
-        body: BlocBuilder<LatestMusicCubit, LatestMusicState>(
-          builder: (context, state) {
-            if (state.status == LatestMusicStatus.loading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (state.status == LatestMusicStatus.failure) {
-              return Center(
-                child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
-              );
-            }
-            if (state.suggestions.isEmpty) {
-              return const SizedBox.shrink();
-            }
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Text(
-                  'Rekomendasi Musik',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 16),
-                ...state.suggestions
-                    .map((s) => _MusicCard(suggestion: s)),
-              ],
-            );
-          },
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            BlocBuilder<LatestQuoteCubit, LatestQuoteState>(
+              builder: (context, state) {
+                if (state.status == LatestQuoteStatus.loading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state.status == LatestQuoteStatus.failure) {
+                  return Center(
+                    child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
+                  );
+                }
+                final quote = state.quote;
+                if (quote == null) {
+                  return const SizedBox.shrink();
+                }
+                return _QuoteCard(quote: quote);
+              },
+            ),
+            const SizedBox(height: 24),
+            BlocBuilder<LatestMusicCubit, LatestMusicState>(
+              builder: (context, state) {
+                if (state.status == LatestMusicStatus.loading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state.status == LatestMusicStatus.failure) {
+                  return Center(
+                    child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
+                  );
+                }
+                if (state.suggestions.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Rekomendasi Musik',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 16),
+                    ...state.suggestions
+                        .map((s) => _MusicCard(suggestion: s)),
+                  ],
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -72,6 +101,24 @@ class _MusicCard extends StatelessWidget {
           );
           context.go('/audio', extra: track);
         },
+      ),
+    );
+  }
+}
+
+class _QuoteCard extends StatelessWidget {
+  const _QuoteCard({required this.quote});
+
+  final MotivationalQuote quote;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.format_quote),
+        title: Text('"${quote.text}"'),
+        subtitle: Text(quote.author),
+        onTap: () => context.go('/quote', extra: quote),
       ),
     );
   }
