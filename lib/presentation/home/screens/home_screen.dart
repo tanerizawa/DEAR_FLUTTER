@@ -12,6 +12,8 @@ import 'package:dear_flutter/presentation/home/cubit/latest_quote_state.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
@@ -112,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     const _QuoteSection(),
                     const SizedBox(height: 24),
-                    const _MusicSection(),
+                    _MusicSection(onPlay: _playSuggestion),
                   ],
                 ),
               ),
@@ -174,7 +176,9 @@ class _ShimmerQuoteCard extends StatelessWidget {
 
 // Widget for displaying music cards
 class _MusicSection extends StatelessWidget {
-  const _MusicSection();
+  const _MusicSection({required this.onPlay});
+
+  final Future<void> Function(SongSuggestion) onPlay;
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +208,7 @@ class _MusicSection extends StatelessWidget {
             const SizedBox(height: 16),
             _MusicCard(
               suggestion: suggestion,
-              onTap: () => _playSuggestion(suggestion),
+              onTap: () => onPlay(suggestion),
             ),
           ],
         );
