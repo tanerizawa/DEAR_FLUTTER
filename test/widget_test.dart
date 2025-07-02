@@ -10,6 +10,8 @@ import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
 import 'package:dear_flutter/services/youtube_search_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/services/audio_player_handler.dart';
+import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 const _sampleSuggestion = SongSuggestion(title: 't', artist: 'a');
@@ -27,6 +29,14 @@ class _FakeLatestMusicCubit extends Cubit<LatestMusicState>
 }
 
 class _MockSearchService extends Mock implements YoutubeSearchService {}
+class _MockHandler extends Mock implements AudioPlayerHandler {}
+class _FakeSongHistoryRepository implements SongHistoryRepository {
+  @override
+  Future<void> addTrack(AudioTrack track) async {}
+
+  @override
+  List<AudioTrack> getHistory() => [];
+}
 
 class _FakeRoute extends Fake implements Route<dynamic> {}
 
@@ -56,25 +66,21 @@ void main() {
     expect(find.text('t'), findsOneWidget);
   });
 
-  testWidgets('tapping music card resolves id and navigates',
+  testWidgets('tapping music card resolves id and plays',
       (WidgetTester tester) async {
-    final router = GoRouter(routes: [
-      GoRoute(path: '/', builder: (_, __) => const HomeScreen()),
-      GoRoute(
-        path: '/audio',
-        builder: (_, state) {
-          final track = state.extra as AudioTrack;
-          return Text(track.youtubeId);
-        },
-      ),
-    ]);
+    final handler = _MockHandler();
+    when(() => handler.playbackState).thenAnswer((_) => const Stream.empty());
+    when(() => handler.playFromYoutubeId(any())).thenAnswer((_) async {});
+    getIt.registerSingleton<AudioPlayerHandler>(handler);
+    getIt.registerSingleton<SongHistoryRepository>(
+        _FakeSongHistoryRepository());
 
-    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
 
     await tester.tap(find.text('t'));
-    await tester.pumpAndSettle();
+    await tester.pump();
 
-    expect(find.text('id'), findsOneWidget);
+    verify(() => handler.playFromYoutubeId('id')).called(1);
   });
 
 }
