@@ -25,6 +25,8 @@ typedef AudioFetcher = Future<List<AudioInfo>> Function(String id);
 @injectable
 /// A small wrapper around [YoutubeExplode] to obtain audio-only streams.
 class YoutubeAudioService {
+  /// Maximum bitrate (in kbps) allowed for playback.
+  static const int maxBitrateKbps = 160;
   /// Client used to communicate with the YouTube API.
   final YoutubeExplode yt;
 
@@ -34,17 +36,24 @@ class YoutubeAudioService {
   /// Creates an instance with an optional [fetcher] for dependency injection.
   YoutubeAudioService(this.yt, {@factoryParam this.fetcher});
 
-  /// Returns the URL to the highest bitrate audio-only stream of a video.
+  /// Returns the URL to the best available audio-only stream that does not
+  /// exceed [maxBitrateKbps].
   ///
   /// [videoIdOrUrl] can be either the ID of a YouTube video or a full URL. The
-  /// function resolves available audio streams and picks the one with the
-  /// highest [AudioInfo.bitrate].
+  /// function resolves available audio streams and picks the highest bitrate
+  /// within the allowed range.
   Future<String> getAudioUrl(String videoIdOrUrl) async {
-    final infos = fetcher != null
+    var infos = fetcher != null
         ? await fetcher!(videoIdOrUrl)
         : await _fetch(id: videoIdOrUrl);
     if (infos.isEmpty) {
       throw StateError('No audio streams found for $videoIdOrUrl');
+    }
+    infos = infos
+        .where((e) => e.bitrate <= maxBitrateKbps)
+        .toList();
+    if (infos.isEmpty) {
+      throw StateError('No audio streams below $maxBitrateKbps kbps');
     }
     infos.sort((a, b) => a.bitrate.compareTo(b.bitrate));
     return infos.last.url.toString();
@@ -57,6 +66,7 @@ class YoutubeAudioService {
       return [];
     }
     return audios
+        .where((e) => e.bitrate.kiloBitsPerSecond <= maxBitrateKbps)
         .map((e) => AudioInfo(e.bitrate.kiloBitsPerSecond.toInt(), e.url))
         .toList();
   }

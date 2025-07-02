@@ -14,14 +14,14 @@ class _FakeYoutubeExplode extends YoutubeExplode {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  test('returns highest bitrate url', () async {
+  test('returns best medium bitrate url', () async {
     final service = YoutubeAudioService(YoutubeExplode(), fetcher: (id) async => [
       AudioInfo(128, Uri.parse('u1')),
       AudioInfo(256, Uri.parse('u2')),
     ]);
 
     final url = await service.getAudioUrl('abc');
-    expect(url, 'u2');
+    expect(url, 'u1');
   });
 
   test('throws when _AudioFetcher throws for invalid id', () async {
