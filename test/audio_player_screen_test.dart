@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class _MockYoutubeService extends Mock implements YoutubeAudioService {}
 
@@ -79,5 +80,38 @@ void main() {
     await tester.pump();
 
     expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+  });
+
+  testWidgets('shows SnackBar when youtube lookup fails',
+      (WidgetTester tester) async {
+    final yt = _MockYoutubeService();
+    final player = _MockAudioPlayer();
+    final repo = _FakeSongHistoryRepository();
+    final controller = StreamController<PlayerState>();
+
+    when(() => yt.getAudioUrl('id'))
+        .thenThrow(YoutubeExplodeException('fail'));
+    when(() => player.playerStateStream).thenAnswer((_) => controller.stream);
+    final handler = AudioPlayerHandler(yt, player: player);
+    controller.add(PlayerState(false, ProcessingState.ready));
+
+    getIt.registerSingleton<AudioPlayerHandler>(handler);
+    getIt.registerSingleton<SongHistoryRepository>(repo);
+
+    const track = AudioTrack(
+      id: 1,
+      title: 't',
+      youtubeId: 'id',
+      artist: 'a',
+      coverUrl: 'c',
+    );
+
+    await tester
+        .pumpWidget(const MaterialApp(home: AudioPlayerScreen(track: track)));
+
+    await tester.tap(find.byType(IconButton));
+    await tester.pump();
+
+    expect(find.text('Gagal memutar audio dari YouTube'), findsOneWidget);
   });
 }
