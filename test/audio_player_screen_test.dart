@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:audio_service/audio_service.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:dear_flutter/presentation/home/screens/audio_player_screen.dart';
@@ -44,7 +43,7 @@ void main() {
 
     when(() => yt.getAudioUrl('id')).thenAnswer((_) async => 'u');
     when(() => player.playerStateStream).thenAnswer((_) => controller.stream);
-    when(() => player.setUrl('u')).thenAnswer((_) async {});
+    when(() => player.setUrl('u')).thenAnswer((_) async => Duration.zero);
     when(player.play).thenAnswer((_) async {
       controller.add(PlayerState(true, ProcessingState.ready));
     });

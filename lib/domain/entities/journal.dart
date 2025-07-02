@@ -1,7 +1,6 @@
 // lib/domain/entities/journal.dart
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:json_annotation/json_annotation.dart';
 
 // Baris-baris ini diperlukan untuk code generator.
 // Nama file harus cocok.
@@ -21,7 +20,8 @@ class Journal with _$Journal {
     // Di Kotlin: createdAt: OffsetDateTime
     // Di Dart, kita gunakan DateTime. json_serializable akan meng-handle konversinya.
     // Anotasi @JsonKey digunakan untuk mencocokkan nama field dari JSON API.
-    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'created_at')
+    required DateTime createdAt,
   }) = _Journal;
 
   // Factory ini penting agar kita bisa membuat objek Journal dari JSON.
