@@ -18,6 +18,10 @@ class AudioPlayerHandler extends BaseAudioHandler {
   final AudioPlayer _player;
   String? _currentId;
 
+  Stream<Duration> get positionStream => _player.positionStream;
+  Stream<Duration> get bufferedPositionStream => _player.bufferedPositionStream;
+  Stream<Duration?> get durationStream => _player.durationStream;
+
   Future<void> _broadcastState(PlayerState state) async {
     playbackState.add(
       PlaybackState(
@@ -74,6 +78,8 @@ class AudioPlayerHandler extends BaseAudioHandler {
 
   @override
   Future<void> pause() => _player.pause();
+
+  Future<void> seek(Duration position) => _player.seek(position);
 
   @override
   Future<void> stop() async {

@@ -60,9 +60,19 @@ def _process_search_results(search_results: dict) -> list[schemas.AudioTrack]:
         preview = track.get("preview_url")
         external = track.get("external_urls", {}).get("spotify")
         youtube_id = preview or external or track.get("id")
+        artists = track.get("artists", [])
+        artist_names = ", ".join(a.get("name") for a in artists if a.get("name"))
+        images = track.get("album", {}).get("images", [])
+        cover_url = images[0].get("url") if images else None
         if youtube_id and title:
             musics.append(
-                schemas.AudioTrack(id=idx, title=title, youtube_id=youtube_id)
+                schemas.AudioTrack(
+                    id=idx,
+                    title=title,
+                    youtube_id=youtube_id,
+                    artist=artist_names or None,
+                    cover_url=cover_url,
+                )
             )
 
     return musics

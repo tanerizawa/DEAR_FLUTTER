@@ -4,6 +4,8 @@ from pydantic import BaseModel, ConfigDict
 class AudioTrackBase(BaseModel):
     title: str
     youtube_id: str
+    artist: str | None = None
+    cover_url: str | None = None
 
 
 class AudioTrackCreate(AudioTrackBase):

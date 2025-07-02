@@ -57,7 +57,13 @@ void main() {
     getIt.registerSingleton<AudioPlayerHandler>(handler);
     getIt.registerSingleton<SongHistoryRepository>(repo);
 
-    const track = AudioTrack(id: 1, title: 't', youtubeId: 'id');
+    const track = AudioTrack(
+      id: 1,
+      title: 't',
+      youtubeId: 'id',
+      artist: 'a',
+      coverUrl: 'c',
+    );
 
     await tester.pumpWidget(const MaterialApp(home: AudioPlayerScreen(track: track)));
 

@@ -96,12 +96,14 @@ class _MusicCard extends StatelessWidget {
         subtitle: Text(suggestion.artist),
         onTap: () async {
           final service = getIt<YoutubeSearchService>();
-          final id =
-              await service.searchId('${suggestion.title} ${suggestion.artist}');
+          final result =
+              await service.search('${suggestion.title} ${suggestion.artist}');
           final track = AudioTrack(
             id: 0,
             title: suggestion.title,
-            youtubeId: id,
+            youtubeId: result.id,
+            artist: suggestion.artist,
+            coverUrl: result.thumbnailUrl,
           );
           if (context.mounted) {
             context.go('/audio', extra: track);
