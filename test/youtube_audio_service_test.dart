@@ -46,6 +46,15 @@ void main() {
     );
   });
 
+  test('throws when no audio streams are available', () async {
+    final service = YoutubeAudioService(YoutubeExplode(), fetcher: (id) async => []);
+
+    expect(
+      () => service.getAudioUrl('abc'),
+      throwsA(isA<StateError>()),
+    );
+  });
+
   test('close disposes YoutubeExplode client', () {
     final fake = _FakeYoutubeExplode();
     final service = YoutubeAudioService(fake, fetcher: (id) async => []);

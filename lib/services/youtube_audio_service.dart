@@ -43,13 +43,20 @@ class YoutubeAudioService {
     final infos = fetcher != null
         ? await fetcher!(videoIdOrUrl)
         : await _fetch(id: videoIdOrUrl);
+    if (infos.isEmpty) {
+      throw StateError('No audio streams found for $videoIdOrUrl');
+    }
     infos.sort((a, b) => a.bitrate.compareTo(b.bitrate));
     return infos.last.url.toString();
   }
 
   Future<List<AudioInfo>> _fetch({required String id}) async {
     final manifest = await yt.videos.streamsClient.getManifest(id);
-    return manifest.audioOnly
+    final audios = manifest.audioOnly;
+    if (audios.isEmpty) {
+      return [];
+    }
+    return audios
         .map((e) => AudioInfo(e.bitrate.kiloBitsPerSecond.toInt(), e.url))
         .toList();
   }
