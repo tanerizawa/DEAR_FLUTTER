@@ -29,8 +29,10 @@ class HomeScreen extends StatelessWidget {
         ),
         body: RefreshIndicator(
           onRefresh: () async {
-            await context.read<LatestMusicCubit>().fetchLatestMusic();
-            await context.read<LatestQuoteCubit>().fetchLatestQuote();
+            final musicCubit = context.read<LatestMusicCubit>();
+            final quoteCubit = context.read<LatestQuoteCubit>();
+            await musicCubit.fetchLatestMusic();
+            await quoteCubit.fetchLatestQuote();
           },
           child: ListView(
             padding: const EdgeInsets.all(16),
@@ -83,7 +85,8 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
 
