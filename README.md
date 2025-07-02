@@ -266,6 +266,10 @@ Contributions are welcome! Please open issues or pull requests on GitHub. Make s
 
 - Use the commit message style `<type>(<scope>): <description>` as outlined in `AGENTS.md`. For example: `fix(ui): resolve newline issues`.
 
+## Profiling
+
+See [docs/PROFILING.md](docs/PROFILING.md) for details on API and audio performance.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
