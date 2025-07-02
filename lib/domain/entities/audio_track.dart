@@ -8,7 +8,7 @@ class AudioTrack with _$AudioTrack {
   const factory AudioTrack({
     required int id,
     required String title,
-    @JsonKey(name: 'youtube_id')
+    @JsonKey(name: 'youtube_id') // ignore: invalid_annotation_target
     required String youtubeId,
   }) = _AudioTrack;
 

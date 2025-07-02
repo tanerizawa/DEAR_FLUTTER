@@ -7,7 +7,6 @@ import 'package:dear_flutter/domain/usecases/logout_usecase.dart';
 import 'package:dear_flutter/presentation/profile/cubit/profile_cubit.dart';
 import 'package:dear_flutter/data/datasources/local/app_database.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 
 class _FakeAuthRepository implements AuthRepository {
   bool deleteCalled = false;

@@ -26,7 +26,7 @@ void main() {
 
   test('throws when _AudioFetcher throws for invalid id', () async {
     final service = YoutubeAudioService(YoutubeExplode(), fetcher: (id) async {
-      throw FormatException('invalid');
+      throw const FormatException('invalid');
     });
 
     expect(

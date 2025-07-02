@@ -19,9 +19,9 @@ class Journal with _$Journal {
     
     // Di Kotlin: createdAt: OffsetDateTime
     // Di Dart, kita gunakan DateTime. json_serializable akan meng-handle konversinya.
-    // Anotasi @JsonKey digunakan untuk mencocokkan nama field dari JSON API.
-    @JsonKey(name: 'created_at')
-    required DateTime createdAt,
+      // Anotasi @JsonKey digunakan untuk mencocokkan nama field dari JSON API.
+      @JsonKey(name: 'created_at') // ignore: invalid_annotation_target
+      required DateTime createdAt,
   }) = _Journal;
 
   // Factory ini penting agar kita bisa membuat objek Journal dari JSON.
