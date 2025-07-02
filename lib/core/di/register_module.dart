@@ -56,6 +56,15 @@ Dio dio(
   @lazySingleton
   Future<Box<Map>> get songBox => Hive.openBox<Map>('song_history');
 
+  @preResolve
+  @lazySingleton
+  Future<Box<Map>> get suggestionBox =>
+      Hive.openBox<Map>('song_suggestions');
+
+  @preResolve
+  @lazySingleton
+  Future<Box<Map>> get quoteBox => Hive.openBox<Map>('motivational_quotes');
+
   // --- AUDIO ---
   @lazySingleton
   YoutubeExplode youtubeExplode() => YoutubeExplode();
