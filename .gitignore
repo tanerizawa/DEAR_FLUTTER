@@ -2,7 +2,7 @@
 # ✅ FOLDER UTAMA YANG DISIMPAN
 # JANGAN abaikan folder-folder ini agar proyek tetap berfungsi.
 #
-/android/
+# /android/
 # !/lib/
 # !/test/
 # !/pubspec.yaml
