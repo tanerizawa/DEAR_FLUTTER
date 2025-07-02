@@ -1,6 +1,7 @@
 import 'package:dear_flutter/domain/usecases/get_music_suggestions_usecase.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
 import 'package:dear_flutter/domain/repositories/song_suggestion_cache_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 

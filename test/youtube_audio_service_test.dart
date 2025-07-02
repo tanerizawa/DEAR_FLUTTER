@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:youtube_explode_dart/src/reverse_engineering/models/fragment.dart';
+import 'package:youtube_explode_dart/src/videos/streams/models/audio_track.dart';
 
 class _FakeYoutubeExplode extends YoutubeExplode {
   bool closed = false;
@@ -64,7 +66,7 @@ class _FakeAudioOnlyStreamInfo implements AudioOnlyStreamInfo {
     this.audioCodec = 'aac',
     this.qualityLabel = '',
     this.fragments = const [],
-    this.codec = const MediaType('audio', 'mp4'),
+    this.codec = MediaType('audio', 'mp4'),
     this.audioTrack,
   });
 
