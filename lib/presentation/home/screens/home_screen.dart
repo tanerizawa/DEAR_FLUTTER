@@ -14,6 +14,7 @@ import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,8 +33,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _handler = getIt<AudioPlayerHandler>();
-    _playSub = _handler.playbackState
-        .listen((state) => setState(() => _isPlaying = state.playing));
+    _playSub = _handler.playbackState.listen((state) {
+      setState(() => _isPlaying = state.playing);
+    });
   }
 
   @override
@@ -42,28 +44,53 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  // Play music suggestion and add to history
   Future<void> _playSuggestion(SongSuggestion suggestion) async {
-    final service = getIt<YoutubeSearchService>();
-    final result =
-        await service.search('${suggestion.title} ${suggestion.artist}');
-    final track = AudioTrack(
-      id: 0,
-      title: suggestion.title,
-      youtubeId: result.id,
-      artist: suggestion.artist,
-      coverUrl: result.thumbnailUrl,
-    );
-    await getIt<SongHistoryRepository>().addTrack(track);
-    await _handler.playFromYoutubeId(track.youtubeId);
-    setState(() => _currentTrack = track);
+    try {
+      setState(() => _isPlaying = true); // Show loading indicator
+
+      final service = getIt<YoutubeSearchService>();
+      final result = await service.search('${suggestion.title} ${suggestion.artist}');
+
+      final track = AudioTrack(
+        id: 0,
+        title: suggestion.title,
+        youtubeId: result.id,
+        artist: suggestion.artist,
+        coverUrl: result.thumbnailUrl,
+      );
+
+      // Save track to history and start playback
+      await getIt<SongHistoryRepository>().addTrack(track);
+      await _handler.playFromYoutubeId(track.youtubeId);
+
+      setState(() {
+        _currentTrack = track;
+        _isPlaying = false; // Hide loading indicator
+      });
+    } catch (e) {
+      setState(() => _isPlaying = false); // Hide loading indicator on error
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal memuat lagu. Coba lagi.')),
+      );
+    }
   }
 
+  // Toggle play/pause
   Future<void> _toggle() async {
     if (_isPlaying) {
       await _handler.pause();
     } else if (_currentTrack != null) {
       await _handler.play();
     }
+  }
+
+  // Handle refresh
+  Future<void> _onRefresh() async {
+    await Future.wait([
+      context.read<LatestMusicCubit>().fetchLatestMusic(),
+      context.read<LatestQuoteCubit>().fetchLatestQuote(),
+    ]);
   }
 
   @override
@@ -74,75 +101,18 @@ class _HomeScreenState extends State<HomeScreen> {
         BlocProvider(create: (_) => getIt<LatestQuoteCubit>()),
       ],
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Beranda'),
-        ),
+        appBar: AppBar(title: const Text('Beranda')),
         body: Column(
           children: [
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () async {
-                  final musicCubit = context.read<LatestMusicCubit>();
-                  final quoteCubit = context.read<LatestQuoteCubit>();
-                  await musicCubit.fetchLatestMusic();
-                  await quoteCubit.fetchLatestQuote();
-                },
+                onRefresh: _onRefresh,
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    BlocBuilder<LatestQuoteCubit, LatestQuoteState>(
-                      builder: (context, state) {
-                        if (state.status == LatestQuoteStatus.loading) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
-                        if (state.status == LatestQuoteStatus.failure) {
-                          return Center(
-                            child:
-                                Text(state.errorMessage ?? 'Terjadi kesalahan'),
-                          );
-                        }
-                        final quote = state.quote;
-                        if (quote == null) {
-                          return const SizedBox.shrink();
-                        }
-                        return _QuoteCard(quote: quote);
-                      },
-                    ),
+                    const _QuoteSection(),
                     const SizedBox(height: 24),
-                    BlocBuilder<LatestMusicCubit, LatestMusicState>(
-                      builder: (context, state) {
-                        if (state.status == LatestMusicStatus.loading) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
-                        if (state.status == LatestMusicStatus.failure) {
-                          return Center(
-                            child: Text(
-                                state.errorMessage ?? 'Terjadi kesalahan'),
-                          );
-                        }
-                        if (state.suggestions.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        final suggestion = state.suggestions.first;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Rekomendasi Musik',
-                              style:
-                                  Theme.of(context).textTheme.headlineSmall,
-                            ),
-                            const SizedBox(height: 16),
-                            _MusicCard(
-                              suggestion: suggestion,
-                              onTap: () => _playSuggestion(suggestion),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
+                    const _MusicSection(),
                   ],
                 ),
               ),
@@ -160,6 +130,108 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+// Widget for displaying quotes with shimmer loading
+class _QuoteSection extends StatelessWidget {
+  const _QuoteSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<LatestQuoteCubit, LatestQuoteState>(
+      builder: (context, state) {
+        if (state.status == LatestQuoteStatus.loading) {
+          return _ShimmerQuoteCard();
+        }
+        if (state.status == LatestQuoteStatus.failure) {
+          return Center(
+            child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
+          );
+        }
+        final quote = state.quote;
+        if (quote == null) return const SizedBox.shrink();
+        return _QuoteCard(quote: quote);
+      },
+    );
+  }
+}
+
+// Shimmer effect for quote card while loading
+class _ShimmerQuoteCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Card(
+        child: ListTile(
+          leading: Icon(Icons.format_quote, color: Colors.grey[400]),
+          title: Container(height: 20.0, color: Colors.grey[400]),
+          subtitle: Container(height: 15.0, color: Colors.grey[300]),
+        ),
+      ),
+    );
+  }
+}
+
+// Widget for displaying music cards
+class _MusicSection extends StatelessWidget {
+  const _MusicSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<LatestMusicCubit, LatestMusicState>(
+      builder: (context, state) {
+        if (state.status == LatestMusicStatus.loading) {
+          return _ShimmerMusicCard();
+        }
+        if (state.status == LatestMusicStatus.failure) {
+          return Center(
+            child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
+          );
+        }
+        if (state.suggestions.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final suggestion = state.suggestions.first;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Rekomendasi Musik',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 16),
+            _MusicCard(
+              suggestion: suggestion,
+              onTap: () => _playSuggestion(suggestion),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// Shimmer effect for music card while loading
+class _ShimmerMusicCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Card(
+        child: ListTile(
+          leading: Icon(Icons.music_note, color: Colors.grey[400]),
+          title: Container(height: 20.0, color: Colors.grey[400]),
+          subtitle: Container(height: 15.0, color: Colors.grey[300]),
+        ),
+      ),
+    );
+  }
+}
+
+// Music card widget that shows song info
 class _MusicCard extends StatelessWidget {
   const _MusicCard({required this.suggestion, required this.onTap});
 
@@ -179,6 +251,7 @@ class _MusicCard extends StatelessWidget {
   }
 }
 
+// Quote card widget for displaying quotes
 class _QuoteCard extends StatelessWidget {
   const _QuoteCard({required this.quote});
 
@@ -197,6 +270,7 @@ class _QuoteCard extends StatelessWidget {
   }
 }
 
+// Player bar widget for controlling playback
 class _PlayerBar extends StatelessWidget {
   const _PlayerBar({
     required this.track,
