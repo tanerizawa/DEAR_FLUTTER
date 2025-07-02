@@ -52,15 +52,18 @@ Dio dio(
   @lazySingleton
   Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
 
+  @Named('songBox')
   @preResolve
   @lazySingleton
   Future<Box<Map>> get songBox => Hive.openBox<Map>('song_history');
 
+  @Named('suggestionBox')
   @preResolve
   @lazySingleton
   Future<Box<Map>> get suggestionBox =>
       Hive.openBox<Map>('song_suggestions');
 
+  @Named('quoteBox')
   @preResolve
   @lazySingleton
   Future<Box<Map>> get quoteBox => Hive.openBox<Map>('motivational_quotes');
