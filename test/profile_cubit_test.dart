@@ -5,7 +5,9 @@ import 'package:dear_flutter/domain/usecases/delete_account_usecase.dart';
 import 'package:dear_flutter/domain/usecases/get_user_profile_usecase.dart';
 import 'package:dear_flutter/domain/usecases/logout_usecase.dart';
 import 'package:dear_flutter/presentation/profile/cubit/profile_cubit.dart';
+import 'package:dear_flutter/data/datasources/local/app_database.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _FakeAuthRepository implements AuthRepository {
   bool deleteCalled = false;
@@ -31,13 +33,17 @@ class _FakeAuthRepository implements AuthRepository {
   Future<User> getProfile() async => const User(id: 1, username: 'u', email: 'e');
 }
 
+class _FakeAppDatabase extends Fake implements AppDatabase {}
+
 void main() {
   test('ProfileCubit.deleteAccount delegates to use case', () async {
     final repo = _FakeAuthRepository();
+    final db = _FakeAppDatabase();
     final cubit = ProfileCubit(
       GetUserProfileUseCase(repo),
       LogoutUseCase(repo),
       DeleteAccountUseCase(repo),
+      db,
     );
 
     await cubit.deleteAccount();
