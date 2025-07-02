@@ -27,9 +27,14 @@ class HomeScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Beranda'),
         ),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
+        body: RefreshIndicator(
+          onRefresh: () async {
+            await context.read<LatestMusicCubit>().fetchLatestMusic();
+            await context.read<LatestQuoteCubit>().fetchLatestQuote();
+          },
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
             BlocBuilder<LatestQuoteCubit, LatestQuoteState>(
               builder: (context, state) {
                 if (state.status == LatestQuoteStatus.loading) {
@@ -61,6 +66,7 @@ class HomeScreen extends StatelessWidget {
                 if (state.suggestions.isEmpty) {
                   return const SizedBox.shrink();
                 }
+                final suggestion = state.suggestions.first;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -69,8 +75,7 @@ class HomeScreen extends StatelessWidget {
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 16),
-                    ...state.suggestions
-                        .map((s) => _MusicCard(suggestion: s)),
+                    _MusicCard(suggestion: suggestion),
                   ],
                 );
               },
