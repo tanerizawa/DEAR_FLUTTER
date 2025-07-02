@@ -63,6 +63,7 @@ dev_dependencies:
   json_serializable: ^6.7.1              # Codegen untuk JSON
   drift_dev: ^2.14.0                     # Codegen untuk ORM Drift
   mocktail: ^1.0.1                       # Untuk mocking di unit test
+  http_parser: ^4.0.0
 
 flutter:
   uses-material-design: true
