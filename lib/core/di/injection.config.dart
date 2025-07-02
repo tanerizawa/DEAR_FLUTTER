@@ -96,6 +96,7 @@ import 'package:dear_flutter/services/music_update_service.dart' as _i434;
 import 'package:dear_flutter/services/notification_service.dart' as _i448;
 import 'package:dear_flutter/services/quote_update_service.dart' as _i500;
 import 'package:dear_flutter/services/youtube_audio_service.dart' as _i288;
+import 'package:dear_flutter/services/youtube_search_service.dart' as _i510;
 import 'package:dio/dio.dart' as _i361;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:hive/hive.dart' as _i979;
@@ -166,6 +167,9 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i14.SongSuggestionCacheRepositoryImpl(
         gh<_i979.Box<Map<dynamic, dynamic>>>(instanceName: 'suggestionBox'),
       ),
+    );
+    gh.lazySingleton<_i510.YoutubeSearchService>(
+      () => _i510.YoutubeSearchService(gh<_i578.YoutubeExplode>()),
     );
     gh.lazySingleton<_i139.QuoteCacheRepository>(
       () => _i658.QuoteCacheRepositoryImpl(
