@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import 'youtube_audio_service.dart';
 
@@ -48,10 +49,23 @@ class AudioPlayerHandler extends BaseAudioHandler {
   }
 
   /// Resolve [youtubeId] and begin playback.
+  ///
+  /// Throws a [YoutubeExplodeException] if resolving the video fails or a
+  /// [StateError] when no suitable audio stream is found. A
+  /// [PlayerException] may also be thrown if playback fails.
   Future<void> playFromYoutubeId(String youtubeId) async {
     try {
       if (_currentId != youtubeId) {
-        final url = await _youtube.getAudioUrl(youtubeId);
+        String url;
+        try {
+          url = await _youtube.getAudioUrl(youtubeId);
+        } on YoutubeExplodeException catch (e) {
+          debugPrint('Failed to resolve YouTube audio: $e');
+          rethrow;
+        } on StateError catch (e) {
+          debugPrint('No suitable audio stream: ${e.message}');
+          rethrow;
+        }
         await _player.setUrl(url);
         _currentId = youtubeId;
       }
