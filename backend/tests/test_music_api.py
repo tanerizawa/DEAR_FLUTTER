@@ -1,47 +1,10 @@
 # tests/test_music_api.py (Versi Perbaikan)
 
 import pytest
-from spotipy import Spotify
-from app.core.config import settings
-from app.api.v1 import music
-
 from app import crud, models
 from app.services.music_suggestion_service import MusicSuggestionService
 from app.schemas.song import SongSuggestion
-
-
-def test_music_endpoint_returns_list(client, monkeypatch):
-    monkeypatch.setattr(settings, "SPOTIFY_CLIENT_ID", "id")
-    monkeypatch.setattr(settings, "SPOTIFY_CLIENT_SECRET", "secret")
-    monkeypatch.setattr(music, "spotify", None)
-
-    # Return fake Spotify search payload
-    def fake_search(self, q, type="track", limit=20):
-        return {
-            "tracks": {
-                "items": [
-                    {
-                        "name": "Song",
-                        "id": "abc123",
-                        "artists": [{"name": "Artist"}],
-                        "album": {"images": [{"url": "img"}]},
-                    }
-                ]
-            }
-        }
-
-    # Kita tidak lagi memanggil get_song di backend, jadi mock ini bisa disederhanakan/dihapus.
-    # Namun, kita biarkan untuk keamanan jika ada logika lain yang mungkin memanggilnya.
-    monkeypatch.setattr(Spotify, "search", fake_search)
-
-    client_app, _ = client
-    resp = client_app.get("/api/v1/music?mood=test")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert isinstance(data, list)
-    assert data[0]["youtube_id"] == "abc123"
-    assert data[0]["artist"] == "Artist"
-    assert data[0]["cover_url"] == "img"
+from app.core.config import settings
 
 
 @pytest.mark.asyncio
@@ -98,12 +61,3 @@ def test_music_recommend_returns_suggestions(client, monkeypatch):
     assert resp.json()[0]["title"] == "t"
     assert captured["mood"] == "joy"
     assert captured["profile"] is not None
-
-
-def test_music_endpoint_returns_503_without_credentials(client, monkeypatch):
-    monkeypatch.setattr(settings, "SPOTIFY_CLIENT_ID", None)
-    monkeypatch.setattr(settings, "SPOTIFY_CLIENT_SECRET", None)
-    monkeypatch.setattr(music, "spotify", None)
-    client_app, _ = client
-    resp = client_app.get("/api/v1/music?mood=test")
-    assert resp.status_code == 503

@@ -169,8 +169,6 @@ The backend reads several variables from the environment. Provide a
 - `GENERATOR_MODEL_NAME` – model name used by the response generator.
 - `APP_SITE_URL` – site URL sent in OpenRouter requests for identification.
 - `APP_NAME` – application name reported to OpenRouter when making requests.
-- `SPOTIFY_CLIENT_ID` – Spotify Web API client ID.
-- `SPOTIFY_CLIENT_SECRET` – Spotify Web API client secret.
 
 
 To use the AI features you need an OpenRouter account. Sign up at
@@ -186,8 +184,6 @@ PLANNER_MODEL_NAME=mistralai/mistral-7b-instruct
 GENERATOR_MODEL_NAME=google/gemma-7b-it
 APP_SITE_URL=https://yourdomain.com
 APP_NAME=Dear Diary
-SPOTIFY_CLIENT_ID=
-SPOTIFY_CLIENT_SECRET=
 ```
 
 After creating `.env` you can verify the setup with:
@@ -196,7 +192,7 @@ After creating `.env` you can verify the setup with:
 python backend/check_env.py
 ```
 
-This script ensures `OPENROUTER_API_KEY` and the Spotify credentials are defined.
+This script ensures `OPENROUTER_API_KEY` is defined.
 
 ## Usage
 

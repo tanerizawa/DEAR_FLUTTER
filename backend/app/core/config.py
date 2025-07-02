@@ -42,8 +42,6 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: str | None = None
     PLANNER_MODEL_NAME: str = "deepseek/deepseek-chat-v3-0324"
     GENERATOR_MODEL_NAME: str = "deepseek/deepseek-chat-v3-0324"
-    SPOTIFY_CLIENT_ID: str
-    SPOTIFY_CLIENT_SECRET: str
 
     # Pengaturan Opsional (Contoh: CORS, Sentry)
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
