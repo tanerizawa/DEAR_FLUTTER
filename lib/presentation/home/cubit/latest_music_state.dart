@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'latest_music_state.freezed.dart';
 
-enum LatestMusicStatus { initial, loading, success, failure }
+enum LatestMusicStatus { initial, loading, cached, success, failure }
 
 @freezed
 class LatestMusicState with _$LatestMusicState {

@@ -210,7 +210,10 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i183.GetMusicSuggestionsUseCase(gh<_i34.HomeRepository>()),
     );
     gh.factory<_i119.LatestMusicCubit>(
-      () => _i119.LatestMusicCubit(gh<_i183.GetMusicSuggestionsUseCase>()),
+      () => _i119.LatestMusicCubit(
+        gh<_i183.GetMusicSuggestionsUseCase>(),
+        gh<_i1202.SongSuggestionCacheRepository>(),
+      ),
     );
     gh.lazySingleton<_i374.ChatRepository>(
       () => _i41.ChatRepositoryImpl(
