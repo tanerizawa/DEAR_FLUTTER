@@ -12,12 +12,22 @@ class HomeCubit extends Cubit<HomeState> {
   final GetJournalsUseCase _getJournalsUseCase;
   final SyncJournalsUseCase _syncJournalsUseCase;
   StreamSubscription? _journalSubscription;
+  bool _initialized = false;
 
   HomeCubit(this._getJournalsUseCase, this._syncJournalsUseCase)
       : super(const HomeState()) {
+    initialize();
+  }
+
+  void initialize() {
+    if (_initialized) {
+      debugPrint('HomeCubit already initialized');
+      return;
+    }
+    _initialized = true;
     // Jalankan pemantauan dan sinkronisasi jurnal saat cubit diinisialisasi
     watchJournals();
-    syncJournals(); // <-- Sudah tidak dikomentari
+    syncJournals();
   }
 
   Future<void> syncJournals() async {
