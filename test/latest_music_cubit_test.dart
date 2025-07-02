@@ -24,32 +24,28 @@ class _FakeCacheRepo implements SongSuggestionCacheRepository {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('emits cached suggestions when api fails', () async {
+  test('loads cached suggestions on init', () async {
     final usecase = _MockGetMusicSuggestionsUseCase();
     final cache = _FakeCacheRepo()
       ..suggestions = const [SongSuggestion(title: 't', artist: 'a')];
-    when(() => usecase('Netral')).thenThrow(Exception());
 
     final cubit = LatestMusicCubit(usecase, cache);
-    final states = <LatestMusicState>[];
-    final sub = cubit.stream.listen(states.add);
 
-    await Future<void>.delayed(const Duration(milliseconds: 10));
-
-    expect(states, hasLength(1));
-    expect(states.first.status, LatestMusicStatus.cached);
-    expect(states.first.suggestions, cache.suggestions);
-    await sub.cancel();
+    expect(cubit.state.status, LatestMusicStatus.cached);
+    expect(cubit.state.suggestions, cache.suggestions);
   });
 
-  test('fetchLatestMusic only calls api once', () async {
+  test('fetchLatestMusic retrieves suggestions from api', () async {
     final usecase = _MockGetMusicSuggestionsUseCase();
     final cache = _FakeCacheRepo();
-    when(() => usecase('Netral')).thenAnswer((_) async => []);
+    when(() => usecase('Netral'))
+        .thenAnswer((_) async => const [SongSuggestion(title: 't', artist: 'a')]);
 
     final cubit = LatestMusicCubit(usecase, cache);
     await cubit.fetchLatestMusic();
 
+    expect(cubit.state.status, LatestMusicStatus.success);
+    expect(cubit.state.suggestions, isNotEmpty);
     verify(() => usecase('Netral')).called(1);
   });
 }

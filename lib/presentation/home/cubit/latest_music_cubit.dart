@@ -9,42 +9,32 @@ import 'package:injectable/injectable.dart';
 class LatestMusicCubit extends Cubit<LatestMusicState> {
   final GetMusicSuggestionsUseCase _getMusicSuggestionsUseCase;
   final SongSuggestionCacheRepository _cacheRepository;
-  bool _hasFetched = false;
-
   LatestMusicCubit(
     this._getMusicSuggestionsUseCase,
     this._cacheRepository,
   ) : super(const LatestMusicState()) {
-    fetchLatestMusic();
+    _loadCached();
+  }
+
+  void _loadCached() {
+    final cached = _cacheRepository.getLastSuggestions();
+    if (cached.isNotEmpty) {
+      emit(state.copyWith(status: LatestMusicStatus.cached, suggestions: cached));
+    }
   }
 
   Future<void> fetchLatestMusic() async {
-    if (_hasFetched) {
-      debugPrint('fetchLatestMusic skipped: already fetched');
-      return;
-    }
-    _hasFetched = true;
-
-    final cached = _cacheRepository.getLastSuggestions();
-    final hasCache = cached.isNotEmpty;
-    if (hasCache) {
-      emit(state.copyWith(
-          status: LatestMusicStatus.cached, suggestions: cached));
-    } else {
-      emit(state.copyWith(status: LatestMusicStatus.loading));
-    }
+    emit(state.copyWith(status: LatestMusicStatus.loading));
     try {
       final suggestions = await _getMusicSuggestionsUseCase('Netral');
       emit(state.copyWith(
           status: LatestMusicStatus.success, suggestions: suggestions));
       await _cacheRepository.saveSuggestions(suggestions);
     } catch (_) {
-      if (!hasCache) {
-        emit(state.copyWith(
-          status: LatestMusicStatus.failure,
-          errorMessage: 'Gagal memuat musik.',
-        ));
-      }
+      emit(state.copyWith(
+        status: LatestMusicStatus.failure,
+        errorMessage: 'Gagal memuat musik.',
+      ));
     }
   }
 }
