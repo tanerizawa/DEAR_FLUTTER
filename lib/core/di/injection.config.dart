@@ -119,14 +119,17 @@ extension GetItInjectableX on _i174.GetIt {
     );
     await gh.lazySingletonAsync<_i979.Box<Map<dynamic, dynamic>>>(
       () => registerModule.songBox,
+      instanceName: 'songBox',
       preResolve: true,
     );
     await gh.lazySingletonAsync<_i979.Box<Map<dynamic, dynamic>>>(
       () => registerModule.suggestionBox,
+      instanceName: 'suggestionBox',
       preResolve: true,
     );
     await gh.lazySingletonAsync<_i979.Box<Map<dynamic, dynamic>>>(
       () => registerModule.quoteBox,
+      instanceName: 'quoteBox',
       preResolve: true,
     );
     gh.lazySingleton<_i578.YoutubeExplode>(
@@ -156,17 +159,17 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i448.SongHistoryRepository>(
       () => _i227.SongHistoryRepositoryImpl(
-        gh<_i979.Box<Map<dynamic, dynamic>>>(),
+        gh<_i979.Box<Map<dynamic, dynamic>>>(instanceName: 'songBox'),
       ),
     );
     gh.lazySingleton<_i1202.SongSuggestionCacheRepository>(
       () => _i1200.SongSuggestionCacheRepositoryImpl(
-        gh<_i979.Box<Map<dynamic, dynamic>>>(),
+        gh<_i979.Box<Map<dynamic, dynamic>>>(instanceName: 'suggestionBox'),
       ),
     );
     gh.lazySingleton<_i1203.QuoteCacheRepository>(
       () => _i1201.QuoteCacheRepositoryImpl(
-        gh<_i979.Box<Map<dynamic, dynamic>>>(),
+        gh<_i979.Box<Map<dynamic, dynamic>>>(instanceName: 'quoteBox'),
       ),
     );
     gh.factory<_i498.AuthInterceptor>(

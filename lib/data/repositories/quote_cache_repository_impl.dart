@@ -7,7 +7,7 @@ import 'package:dear_flutter/domain/repositories/quote_cache_repository.dart';
 class QuoteCacheRepositoryImpl implements QuoteCacheRepository {
   final Box<Map> _box;
 
-  QuoteCacheRepositoryImpl(this._box);
+  QuoteCacheRepositoryImpl(@Named('quoteBox') this._box);
 
   @override
   Future<void> saveQuote(MotivationalQuote quote) =>

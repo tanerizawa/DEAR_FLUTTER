@@ -7,7 +7,7 @@ import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 class SongHistoryRepositoryImpl implements SongHistoryRepository {
   final Box<Map> _box;
 
-  SongHistoryRepositoryImpl(this._box);
+  SongHistoryRepositoryImpl(@Named('songBox') this._box);
 
   @override
   Future<void> addTrack(AudioTrack track) => _box.add(track.toJson());

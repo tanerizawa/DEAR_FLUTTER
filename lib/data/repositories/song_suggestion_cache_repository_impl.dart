@@ -7,7 +7,7 @@ import 'package:dear_flutter/domain/repositories/song_suggestion_cache_repositor
 class SongSuggestionCacheRepositoryImpl implements SongSuggestionCacheRepository {
   final Box<Map> _box;
 
-  SongSuggestionCacheRepositoryImpl(this._box);
+  SongSuggestionCacheRepositoryImpl(@Named('suggestionBox') this._box);
 
   @override
   Future<void> saveSuggestions(List<SongSuggestion> suggestions) =>
