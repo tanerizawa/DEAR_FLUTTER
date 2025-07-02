@@ -10,13 +10,13 @@ class HomeApiService {
   HomeApiService(this._dio);
 
   Future<MotivationalQuote> getLatestQuote() async {
-    final response = await _dio.get('quotes/latest/');
+    final response = await _dio.get('quotes/latest');
     return MotivationalQuote.fromJson(
         response.data as Map<String, dynamic>);
   }
 
   Future<AudioTrack?> getLatestMusic() async {
-    final response = await _dio.get('music/latest/');
+    final response = await _dio.get('music/latest');
     final data = response.data;
     if (data == null) return null;
     return AudioTrack.fromJson(data as Map<String, dynamic>);
@@ -24,7 +24,7 @@ class HomeApiService {
 
   Future<List<SongSuggestion>> getSuggestedMusic(String mood) async {
     final response = await _dio.get(
-      'music/recommend/',
+      'music/recommend',
       queryParameters: {'mood': mood},
     );
     final data = response.data as List<dynamic>;
