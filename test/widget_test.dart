@@ -41,7 +41,9 @@ void main() {
     getIt.reset();
     getIt.registerFactory<LatestMusicCubit>(() => _FakeLatestMusicCubit());
     final search = _MockSearchService();
-    when(() => search.searchId(any())).thenAnswer((_) async => 'id');
+    when(() => search.search(any())).thenAnswer(
+      (_) async => YoutubeSearchResult('id', 'thumb'),
+    );
     getIt.registerSingleton<YoutubeSearchService>(search);
   });
 

@@ -21,7 +21,15 @@ def test_home_feed_structure_and_ordering(client, monkeypatch):
 
     async def fake_recommend_music(*, mood: str, **kwargs):
         assert mood == "lofi"
-        return [AudioTrack(id=99, title="rec", youtube_id="y1")]
+        return [
+            AudioTrack(
+                id=99,
+                title="rec",
+                youtube_id="y1",
+                artist="artist",
+                cover_url="c",
+            )
+        ]
 
     async def fake_generate_keyword(self, journals):
         return "lofi"

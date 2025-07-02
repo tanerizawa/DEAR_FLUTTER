@@ -89,9 +89,13 @@ def test_music_latest_endpoint_returns_track(client):
     from app.state.music import set_latest_music
     from app.schemas.audio import AudioTrack
 
-    set_latest_music(AudioTrack(id=1, title="t", youtube_id="y"))
+    set_latest_music(
+        AudioTrack(id=1, title="t", youtube_id="y", artist="a", cover_url="c")
+    )
     client_app, _ = client
     resp = client_app.get("/api/v1/music/latest")
     assert resp.status_code == 200
     data = resp.json()
     assert data["title"] == "t"
+    assert data["artist"] == "a"
+    assert data["cover_url"] == "c"

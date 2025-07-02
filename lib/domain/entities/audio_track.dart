@@ -10,6 +10,9 @@ class AudioTrack with _$AudioTrack {
     required String title,
     @JsonKey(name: 'youtube_id') // ignore: invalid_annotation_target
     required String youtubeId,
+    String? artist,
+    @JsonKey(name: 'cover_url') // ignore: invalid_annotation_target
+    String? coverUrl,
   }) = _AudioTrack;
 
   factory AudioTrack.fromJson(Map<String, dynamic> json) => _$AudioTrackFromJson(json);

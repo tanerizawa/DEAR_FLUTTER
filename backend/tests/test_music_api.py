@@ -17,7 +17,18 @@ def test_music_endpoint_returns_list(client, monkeypatch):
 
     # Return fake Spotify search payload
     def fake_search(self, q, type="track", limit=20):
-        return {"tracks": {"items": [{"name": "Song", "id": "abc123"}]}}
+        return {
+            "tracks": {
+                "items": [
+                    {
+                        "name": "Song",
+                        "id": "abc123",
+                        "artists": [{"name": "Artist"}],
+                        "album": {"images": [{"url": "img"}]},
+                    }
+                ]
+            }
+        }
 
     # Kita tidak lagi memanggil get_song di backend, jadi mock ini bisa disederhanakan/dihapus.
     # Namun, kita biarkan untuk keamanan jika ada logika lain yang mungkin memanggilnya.
@@ -29,6 +40,8 @@ def test_music_endpoint_returns_list(client, monkeypatch):
     data = resp.json()
     assert isinstance(data, list)
     assert data[0]["youtube_id"] == "abc123"
+    assert data[0]["artist"] == "Artist"
+    assert data[0]["cover_url"] == "img"
 
 
 @pytest.mark.asyncio
