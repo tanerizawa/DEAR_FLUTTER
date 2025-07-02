@@ -89,13 +89,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-3. Provide Spotify API credentials in a `.env` file inside `backend/`:
-
-```bash
-SPOTIFY_CLIENT_ID=<your-client-id>
-SPOTIFY_CLIENT_SECRET=<your-client-secret>
-```
-
 4. Start the development server **from inside** the `backend/` directory to avoid
    `ModuleNotFoundError`:
 
@@ -103,28 +96,6 @@ SPOTIFY_CLIENT_SECRET=<your-client-secret>
 cd backend && uvicorn app.main:app --reload
 ```
 > **Note**: If you run `uvicorn` from outside `backend/`, export `PYTHONPATH=backend` or run `python -m uvicorn app.main:app --reload`.
-
-Once running you can try the music search endpoint or request a recommendation.
-The `/music/recommend` route analyzes your latest five journal entries with
-OpenRouter to produce a song keyword and then searches Spotify:
-
-```bash
-# search by mood
-curl "http://localhost:8000/api/v1/music?mood=happy" -H "Authorization: Bearer <token>"
-
-# get a song based on your last five journals
-    curl http://localhost:8000/api/v1/music/recommend \
-     -H "Authorization: Bearer <token>"
-
-# fetch the most recently scheduled recommendation
-curl http://localhost:8000/api/v1/music/latest
-```
-
-### Spotify Web API
-
-Music search now relies on the [Spotify Web API](https://developer.spotify.com/documentation/web-api/).
-Create a developer application on the Spotify dashboard and provide its
-client credentials in your `.env` file as shown above.
 
 ### YouTube Audio Service
 
