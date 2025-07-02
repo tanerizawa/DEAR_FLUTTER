@@ -132,7 +132,8 @@ Recommended tracks returned by the backend include a `youtube_id` field. The
 Flutter client resolves this ID to a playable audio stream using
 `lib/services/youtube_audio_service.dart`. The service keeps a single
 `YoutubeExplode` client around and queries the manifest for audio-only streams.
-These are sorted by bitrate and the highest quality URL is returned. No
+Only streams up to 160 kbps are considered and the highest quality URL within
+that range is returned. No
 YouTube API key is required.
 
 Audio suggestions come from the `/music/recommend` endpoint which analyses the
