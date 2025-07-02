@@ -147,6 +147,15 @@ final handler = getIt<AudioPlayerHandler>();
 await handler.playFromYoutubeId(track.youtubeId);
 ```
 
+Below is a minimal snippet that mirrors the quick-start example from the
+`just_audio` documentation:
+
+```dart
+final player = AudioPlayer();
+await player.setUrl('https://example.com/foo.mp3');
+await player.play();
+```
+
 The `AudioPlayerScreen` widget obtains an `AudioPlayerHandler` instance and
 triggers playback as above. Background audio is enabled in `main.dart` by
 initializing `AudioService` with an `AudioServiceConfig` that defines the
