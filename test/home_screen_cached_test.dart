@@ -5,10 +5,14 @@ import 'package:dear_flutter/presentation/home/cubit/latest_quote_state.dart';
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:dear_flutter/domain/entities/song_suggestion.dart';
+import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:dear_flutter/services/audio_player_handler.dart';
+import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 
 class _CachedMusicCubit extends Cubit<LatestMusicState>
     implements LatestMusicCubit {
@@ -34,6 +38,16 @@ class _CachedQuoteCubit extends Cubit<LatestQuoteState>
   Future<void> fetchLatestQuote() async {}
 }
 
+class _DummyHandler extends Mock implements AudioPlayerHandler {}
+
+class _FakeSongHistoryRepository implements SongHistoryRepository {
+  @override
+  Future<void> addTrack(AudioTrack track) async {}
+
+  @override
+  List<AudioTrack> getHistory() => [];
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final getIt = GetIt.instance;
@@ -42,6 +56,8 @@ void main() {
     getIt.reset();
     getIt.registerFactory<LatestMusicCubit>(() => _CachedMusicCubit());
     getIt.registerFactory<LatestQuoteCubit>(() => _CachedQuoteCubit());
+    getIt.registerSingleton<AudioPlayerHandler>(_DummyHandler());
+    getIt.registerSingleton<SongHistoryRepository>(_FakeSongHistoryRepository());
   });
 
   tearDown(getIt.reset);
