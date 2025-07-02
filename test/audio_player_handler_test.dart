@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dear_flutter/services/audio_player_handler.dart';
 import 'package:dear_flutter/services/youtube_audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mocktail/mocktail.dart';
@@ -43,7 +44,7 @@ void main() {
     when(() => yt.getAudioUrl('id')).thenAnswer((_) async => 'u');
     when(() => player.playerStateStream).thenAnswer((_) => controller.stream);
     when(() => player.setUrl('u')).thenAnswer((_) async => Duration.zero);
-    when(player.play).thenThrow(PlayerException('code', 'msg'));
+    when(player.play).thenThrow(PlayerException(1, 'msg', null));
 
     final handler = AudioPlayerHandler(yt, player: player);
     controller.add(PlayerState(false, ProcessingState.ready));
@@ -62,7 +63,7 @@ void main() {
     when(() => yt.getAudioUrl('id')).thenAnswer((_) async => 'u');
     when(() => player.playerStateStream).thenAnswer((_) => controller.stream);
     when(() => player.setUrl('u')).thenAnswer((_) async => Duration.zero);
-    when(player.play).thenThrow(PlayerInterruptedException());
+    when(player.play).thenThrow(PlayerInterruptedException(null));
 
     var logged = '';
     final original = debugPrint;
