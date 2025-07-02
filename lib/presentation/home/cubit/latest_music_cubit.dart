@@ -8,6 +8,7 @@ import 'package:injectable/injectable.dart';
 class LatestMusicCubit extends Cubit<LatestMusicState> {
   final GetMusicSuggestionsUseCase _getMusicSuggestionsUseCase;
   final SongSuggestionCacheRepository _cacheRepository;
+  bool _hasFetched = false;
 
   LatestMusicCubit(
     this._getMusicSuggestionsUseCase,
@@ -17,6 +18,12 @@ class LatestMusicCubit extends Cubit<LatestMusicState> {
   }
 
   Future<void> fetchLatestMusic() async {
+    if (_hasFetched) {
+      debugPrint('fetchLatestMusic skipped: already fetched');
+      return;
+    }
+    _hasFetched = true;
+
     final cached = _cacheRepository.getLastSuggestions();
     final hasCache = cached.isNotEmpty;
     if (hasCache) {

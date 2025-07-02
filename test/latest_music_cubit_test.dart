@@ -41,4 +41,15 @@ void main() {
     expect(states.first.suggestions, cache.suggestions);
     await sub.cancel();
   });
+
+  test('fetchLatestMusic only calls api once', () async {
+    final usecase = _MockGetMusicSuggestionsUseCase();
+    final cache = _FakeCacheRepo();
+    when(() => usecase('Netral')).thenAnswer((_) async => []);
+
+    final cubit = LatestMusicCubit(usecase, cache);
+    await cubit.fetchLatestMusic();
+
+    verify(() => usecase('Netral')).called(1);
+  });
 }
