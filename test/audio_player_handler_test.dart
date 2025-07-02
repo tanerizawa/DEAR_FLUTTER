@@ -35,6 +35,50 @@ void main() {
     verify(player.play).called(1);
   });
 
+  test('playFromYoutubeId forwards PlayerException', () async {
+    final player = _MockAudioPlayer();
+    final yt = _MockYoutubeService();
+    final controller = StreamController<PlayerState>();
+
+    when(() => yt.getAudioUrl('id')).thenAnswer((_) async => 'u');
+    when(() => player.playerStateStream).thenAnswer((_) => controller.stream);
+    when(() => player.setUrl('u')).thenAnswer((_) async => Duration.zero);
+    when(player.play).thenThrow(PlayerException('code', 'msg'));
+
+    final handler = AudioPlayerHandler(yt, player: player);
+    controller.add(PlayerState(false, ProcessingState.ready));
+
+    expect(
+      () => handler.playFromYoutubeId('id'),
+      throwsA(isA<PlayerException>()),
+    );
+  });
+
+  test('playFromYoutubeId logs PlayerInterruptedException', () async {
+    final player = _MockAudioPlayer();
+    final yt = _MockYoutubeService();
+    final controller = StreamController<PlayerState>();
+
+    when(() => yt.getAudioUrl('id')).thenAnswer((_) async => 'u');
+    when(() => player.playerStateStream).thenAnswer((_) => controller.stream);
+    when(() => player.setUrl('u')).thenAnswer((_) async => Duration.zero);
+    when(player.play).thenThrow(PlayerInterruptedException());
+
+    var logged = '';
+    final original = debugPrint;
+    debugPrint = (String? message, {int? wrapWidth}) {
+      logged = message ?? '';
+    };
+
+    final handler = AudioPlayerHandler(yt, player: player);
+    controller.add(PlayerState(false, ProcessingState.ready));
+
+    await handler.playFromYoutubeId('id');
+
+    expect(logged, contains('Playback interrupted'));
+    debugPrint = original;
+  });
+
   test('playbackState reflects player state', () async {
     final player = _MockAudioPlayer();
     final yt = _MockYoutubeService();

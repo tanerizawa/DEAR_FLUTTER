@@ -44,16 +44,32 @@ class AudioPlayerHandler extends BaseAudioHandler {
 
   /// Resolve [youtubeId] and begin playback.
   Future<void> playFromYoutubeId(String youtubeId) async {
-    if (_currentId != youtubeId) {
-      final url = await _youtube.getAudioUrl(youtubeId);
-      await _player.setUrl(url);
-      _currentId = youtubeId;
+    try {
+      if (_currentId != youtubeId) {
+        final url = await _youtube.getAudioUrl(youtubeId);
+        await _player.setUrl(url);
+        _currentId = youtubeId;
+      }
+      await _player.play();
+    } on PlayerException catch (e) {
+      debugPrint('Player error: ${e.message}');
+      rethrow;
+    } on PlayerInterruptedException catch (e) {
+      debugPrint('Playback interrupted: ${e.message}');
     }
-    await _player.play();
   }
 
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() async {
+    try {
+      await _player.play();
+    } on PlayerException catch (e) {
+      debugPrint('Player error: ${e.message}');
+      rethrow;
+    } on PlayerInterruptedException catch (e) {
+      debugPrint('Playback interrupted: ${e.message}');
+    }
+  }
 
   @override
   Future<void> pause() => _player.pause();
