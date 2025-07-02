@@ -14,7 +14,6 @@ httpx>=0.27.0
 structlog>=24.1.0
 
 # --- OAuth / External API ---
-spotipy
 
 # --- Production Server ---
 gunicorn

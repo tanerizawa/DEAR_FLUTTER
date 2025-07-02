@@ -13,8 +13,6 @@ services:
       - ENVIRONMENT=production
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       - SECRET_KEY=${SECRET_KEY}
-      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
-      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - SENTRY_DSN=${SENTRY_DSN}  # ← Tambahan baru untuk integrasi Sentry
     depends_on:
