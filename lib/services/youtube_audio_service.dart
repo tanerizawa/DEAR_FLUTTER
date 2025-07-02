@@ -65,10 +65,21 @@ class YoutubeAudioService {
     if (audios.isEmpty) {
       return [];
     }
-    return audios
-        .where((e) => e.bitrate.kiloBitsPerSecond <= maxBitrateKbps)
-        .map((e) => AudioInfo(e.bitrate.kiloBitsPerSecond.toInt(), e.url))
-        .toList();
+    AudioOnlyStreamInfo chosen;
+    try {
+      chosen = audios.firstWhere((e) => e.tag == 140);
+    } on StateError {
+      final within =
+          audios.where((e) => e.bitrate.kiloBitsPerSecond <= maxBitrateKbps);
+      if (within.isNotEmpty) {
+        chosen = within.sortByBitrate().first;
+      } else {
+        chosen = audios.sortByBitrate().last;
+      }
+    }
+    return [
+      AudioInfo(chosen.bitrate.kiloBitsPerSecond.toInt(), chosen.url)
+    ];
   }
 
   /// Closes the underlying [YoutubeExplode] client and frees resources.
