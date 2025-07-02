@@ -86,7 +86,9 @@ class _ChatMessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final isUser = message.role == 'user';
     final alignment = isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start;
-    final color = isUser ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surfaceVariant;
+    final color = isUser
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.surfaceContainerHighest;
     final textColor = isUser ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurfaceVariant;
 
     return Container(

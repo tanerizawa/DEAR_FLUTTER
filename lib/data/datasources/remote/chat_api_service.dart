@@ -15,7 +15,7 @@ class ChatRequest with _$ChatRequest {
 @freezed
 class ChatResponse with _$ChatResponse {
   const factory ChatResponse({
-    @JsonKey(name: 'content')
+    @JsonKey(name: 'content') // ignore: invalid_annotation_target
     required String reply,
     String? emotion,
   }) = _ChatResponse;

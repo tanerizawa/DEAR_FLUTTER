@@ -42,8 +42,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 ...state.suggestions
-                    .map((s) => _MusicCard(suggestion: s))
-                    .toList(),
+                    .map((s) => _MusicCard(suggestion: s)),
               ],
             );
           },
