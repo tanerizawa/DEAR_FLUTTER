@@ -28,8 +28,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late final AudioPlayerHandler _handler;
   late final StreamSubscription<PlaybackState> _playSub;
+  late final StreamSubscription<Duration> _posSub;
+  late final StreamSubscription<Duration?> _durSub;
   bool _isPlaying = false;
   AudioTrack? _currentTrack;
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
 
   @override
   void initState() {
@@ -38,11 +42,21 @@ class _HomeScreenState extends State<HomeScreen> {
     _playSub = _handler.playbackState.listen((state) {
       setState(() => _isPlaying = state.playing);
     });
+    _posSub = _handler.positionStream.listen((d) {
+      setState(() => _position = d);
+    });
+    _durSub = _handler.durationStream.listen((d) {
+      if (d != null) {
+        setState(() => _duration = d);
+      }
+    });
   }
 
   @override
   void dispose() {
     _playSub.cancel();
+    _posSub.cancel();
+    _durSub.cancel();
     super.dispose();
   }
 
@@ -87,6 +101,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _seek(double value) async {
+    await _handler.seek(Duration(milliseconds: value.round()));
+  }
+
   // Handle refresh
   Future<void> _onRefresh() async {
     await Future.wait([
@@ -123,7 +141,10 @@ class _HomeScreenState extends State<HomeScreen> {
               _PlayerBar(
                 track: _currentTrack!,
                 isPlaying: _isPlaying,
+                position: _position,
+                duration: _duration,
                 onToggle: _toggle,
+                onSeek: _seek,
               ),
           ],
         ),
@@ -279,46 +300,81 @@ class _PlayerBar extends StatelessWidget {
   const _PlayerBar({
     required this.track,
     required this.isPlaying,
+    required this.position,
+    required this.duration,
     required this.onToggle,
+    required this.onSeek,
   });
 
   final AudioTrack track;
   final bool isPlaying;
+  final Duration position;
+  final Duration duration;
   final VoidCallback onToggle;
+  final ValueChanged<double> onSeek;
 
   @override
   Widget build(BuildContext context) {
+    final max = duration.inMilliseconds.toDouble();
+    final value = position.inMilliseconds.clamp(0, max).toDouble();
+    String fmt(Duration d) {
+      final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+      final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+      final hours = d.inHours;
+      return hours > 0 ? '$hours:$minutes:$seconds' : '$minutes:$seconds';
+    }
+
     return Material(
       color: Theme.of(context).colorScheme.surfaceVariant,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          children: [
-            if (track.coverUrl != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Image.network(
-                  track.coverUrl!,
-                  height: 40,
-                  width: 40,
-                  fit: BoxFit.cover,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Slider(
+            min: 0,
+            max: max > 0 ? max : 1,
+            value: value,
+            onChanged: onSeek,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                if (track.coverUrl != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.network(
+                      track.coverUrl!,
+                      height: 40,
+                      width: 40,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                else
+                  Container(height: 40, width: 40, color: Colors.grey),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        track.title,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        '${fmt(position)} / ${fmt(duration)}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
                 ),
-              )
-            else
-              Container(height: 40, width: 40, color: Colors.grey),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                track.title,
-                overflow: TextOverflow.ellipsis,
-              ),
+                IconButton(
+                  icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+                  onPressed: onToggle,
+                ),
+              ],
             ),
-            IconButton(
-              icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-              onPressed: onToggle,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
