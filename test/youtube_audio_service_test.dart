@@ -66,9 +66,9 @@ class _FakeAudioOnlyStreamInfo implements AudioOnlyStreamInfo {
     this.audioCodec = 'aac',
     this.qualityLabel = '',
     this.fragments = const [],
-    this.codec = MediaType('audio', 'mp4'),
+    MediaType? codec,
     this.audioTrack,
-  });
+  }) : codec = codec ?? MediaType('audio', 'mp4');
 
   @override
   bool get isThrottled => false;
