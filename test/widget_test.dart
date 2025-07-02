@@ -9,8 +9,8 @@ import 'package:dear_flutter/domain/entities/song_suggestion.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
 import 'package:dear_flutter/services/youtube_search_service.dart';
-import 'package:go_router/go_router.dart';
-import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:audio_service/audio_service.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 
@@ -34,10 +34,9 @@ class _MockSongHistoryRepository extends Mock implements SongHistoryRepository {
 
 void main() {
   final getIt = GetIt.instance;
+  late _MockHandler handler;
 
-  setUpAll(() {
-    registerFallbackValue(_FakeRoute());
-  });
+  setUpAll(() {});
 
   setUp(() {
     getIt.reset();
@@ -47,8 +46,8 @@ void main() {
       (_) async => YoutubeSearchResult('id', 'thumb'),
     );
     getIt.registerSingleton<YoutubeSearchService>(search);
-
-    getIt.registerSingleton<AudioPlayerHandler>(_MockHandler());
+    handler = _MockHandler();
+    getIt.registerSingleton<AudioPlayerHandler>(handler);
     getIt.registerSingleton<SongHistoryRepository>(_MockSongHistoryRepository());
   });
 
@@ -63,8 +62,15 @@ void main() {
 
   testWidgets('tapping music card resolves id and plays',
       (WidgetTester tester) async {
-    final handler = _MockHandler();
-    when(() => handler.playbackState).thenAnswer((_) => const Stream.empty());
+    when(() => handler.playbackState).thenAnswer(
+      (_) => BehaviorSubject.seeded(
+        PlaybackState(
+          processingState: AudioProcessingState.idle,
+          playing: false,
+          controls: const <MediaControl>[],
+        ),
+      ),
+    );
     when(() => handler.playFromYoutubeId(any())).thenAnswer((_) async {});
 
     await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
