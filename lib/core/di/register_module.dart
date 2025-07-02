@@ -1,5 +1,4 @@
 //register_module.dart
-import 'dart:io' show Platform;
 
 import 'package:dear_flutter/core/api/auth_interceptor.dart';
 import 'package:dear_flutter/core/api/logging_interceptor.dart';
@@ -7,7 +6,6 @@ import 'package:dear_flutter/data/datasources/local/app_database.dart';
 import 'package:dear_flutter/data/datasources/local/chat_message_dao.dart';
 import 'package:dear_flutter/data/datasources/local/journal_dao.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive/hive.dart';

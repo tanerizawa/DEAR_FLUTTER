@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:injectable/injectable.dart';
 
 part 'chat_api_service.freezed.dart';
@@ -16,7 +15,8 @@ class ChatRequest with _$ChatRequest {
 @freezed
 class ChatResponse with _$ChatResponse {
   const factory ChatResponse({
-    @JsonKey(name: 'content') required String reply,
+    @JsonKey(name: 'content')
+    required String reply,
     String? emotion,
   }) = _ChatResponse;
   factory ChatResponse.fromJson(Map<String, dynamic> json) => _$ChatResponseFromJson(json);
