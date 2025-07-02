@@ -38,6 +38,10 @@ import 'package:dear_flutter/data/repositories/journal_repository_impl.dart'
     as _i485;
 import 'package:dear_flutter/data/repositories/song_history_repository_impl.dart'
     as _i227;
+import 'package:dear_flutter/data/repositories/song_suggestion_cache_repository_impl.dart'
+    as _i1200;
+import 'package:dear_flutter/data/repositories/quote_cache_repository_impl.dart'
+    as _i1201;
 import 'package:dear_flutter/domain/repositories/auth_repository.dart' as _i528;
 import 'package:dear_flutter/domain/repositories/chat_repository.dart' as _i374;
 import 'package:dear_flutter/domain/repositories/home_repository.dart' as _i34;
@@ -45,6 +49,10 @@ import 'package:dear_flutter/domain/repositories/journal_repository.dart'
     as _i614;
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart'
     as _i448;
+import 'package:dear_flutter/domain/repositories/song_suggestion_cache_repository.dart'
+    as _i1202;
+import 'package:dear_flutter/domain/repositories/quote_cache_repository.dart'
+    as _i1203;
 import 'package:dear_flutter/domain/usecases/delete_account_usecase.dart'
     as _i945;
 import 'package:dear_flutter/domain/usecases/get_auth_status_usecase.dart'
@@ -111,6 +119,14 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.songBox,
       preResolve: true,
     );
+    await gh.lazySingletonAsync<_i979.Box<Map<dynamic, dynamic>>>(
+      () => registerModule.suggestionBox,
+      preResolve: true,
+    );
+    await gh.lazySingletonAsync<_i979.Box<Map<dynamic, dynamic>>>(
+      () => registerModule.quoteBox,
+      preResolve: true,
+    );
     gh.lazySingleton<_i578.YoutubeExplode>(
       () => registerModule.youtubeExplode(),
     );
@@ -138,6 +154,16 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i448.SongHistoryRepository>(
       () => _i227.SongHistoryRepositoryImpl(
+        gh<_i979.Box<Map<dynamic, dynamic>>>(),
+      ),
+    );
+    gh.lazySingleton<_i1202.SongSuggestionCacheRepository>(
+      () => _i1200.SongSuggestionCacheRepositoryImpl(
+        gh<_i979.Box<Map<dynamic, dynamic>>>(),
+      ),
+    );
+    gh.lazySingleton<_i1203.QuoteCacheRepository>(
+      () => _i1201.QuoteCacheRepositoryImpl(
         gh<_i979.Box<Map<dynamic, dynamic>>>(),
       ),
     );
@@ -208,6 +234,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i500.QuoteUpdateService(
         gh<_i104.HomeApiService>(),
         gh<_i448.NotificationService>(),
+        gh<_i1203.QuoteCacheRepository>(),
       ),
     );
     gh.lazySingleton<_i528.AuthRepository>(
@@ -224,7 +251,10 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.lazySingleton<_i434.MusicUpdateService>(
-      () => _i434.MusicUpdateService(gh<_i104.HomeApiService>()),
+      () => _i434.MusicUpdateService(
+        gh<_i104.HomeApiService>(),
+        gh<_i1202.SongSuggestionCacheRepository>(),
+      ),
     );
     gh.factory<_i222.GetUserProfileUseCase>(
       () => _i222.GetUserProfileUseCase(gh<_i528.AuthRepository>()),
