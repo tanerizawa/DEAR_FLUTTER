@@ -15,7 +15,7 @@ class _FakeYoutubeExplode extends YoutubeExplode {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   test('returns highest bitrate url', () async {
-    final service = YoutubeAudioService(fetcher: (id) async => [
+    final service = YoutubeAudioService(YoutubeExplode(), fetcher: (id) async => [
       AudioInfo(128, Uri.parse('u1')),
       AudioInfo(256, Uri.parse('u2')),
     ]);
@@ -25,7 +25,7 @@ void main() {
   });
 
   test('throws when _AudioFetcher throws for invalid id', () async {
-    final service = YoutubeAudioService(fetcher: (id) async {
+    final service = YoutubeAudioService(YoutubeExplode(), fetcher: (id) async {
       throw FormatException('invalid');
     });
 
@@ -36,7 +36,7 @@ void main() {
   });
 
   test('throws when _AudioFetcher fails with network error', () async {
-    final service = YoutubeAudioService(fetcher: (id) async {
+    final service = YoutubeAudioService(YoutubeExplode(), fetcher: (id) async {
       throw Exception('network');
     });
 
@@ -48,7 +48,7 @@ void main() {
 
   test('close disposes YoutubeExplode client', () {
     final fake = _FakeYoutubeExplode();
-    final service = YoutubeAudioService(client: fake, fetcher: (id) async => []);
+    final service = YoutubeAudioService(fake, fetcher: (id) async => []);
 
     service.close();
 
