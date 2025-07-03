@@ -215,7 +215,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i434.MusicUpdateService>(
       () => _i434.MusicUpdateService(
         gh<_i104.HomeApiService>(),
-        gh<_i176.SongSuggestionCacheRepository>(),
       ),
     );
     gh.lazySingleton<_i500.QuoteUpdateService>(
@@ -270,8 +269,7 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i119.LatestMusicCubit>(
       () => _i119.LatestMusicCubit(
-        gh<_i183.GetMusicSuggestionsUseCase>(),
-        gh<_i176.SongSuggestionCacheRepository>(),
+        gh<_i434.MusicUpdateService>(),
       ),
     );
     gh.factory<_i222.GetUserProfileUseCase>(

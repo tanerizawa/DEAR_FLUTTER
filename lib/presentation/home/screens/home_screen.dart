@@ -1,10 +1,8 @@
 // lib/presentation/home/screens/home_screen.dart
 
 import 'package:dear_flutter/core/di/injection.dart';
-import 'package:dear_flutter/domain/entities/song_suggestion.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
-import 'package:dear_flutter/services/youtube_search_service.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_quote_cubit.dart';
@@ -69,21 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // Play music suggestion and add to history
-  Future<void> _playSuggestion(SongSuggestion suggestion) async {
+  // Play selected track and add to history
+  Future<void> _playTrack(AudioTrack track) async {
     try {
       setState(() => _loading = true); // Show loading indicator
-
-      final service = getIt<YoutubeSearchService>();
-      final result = await service.search('${suggestion.title} ${suggestion.artist}');
-
-      final track = AudioTrack(
-        id: 0,
-        title: suggestion.title,
-        youtubeId: result.id,
-        artist: suggestion.artist,
-        coverUrl: result.thumbnailUrl,
-      );
 
       // Save track to history and start playback
       await getIt<SongHistoryRepository>().addTrack(track);
@@ -143,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const _QuoteSection(),
                     const SizedBox(height: 24),
                     _MusicSection(
-                      onPlay: _playSuggestion,
+                      onPlay: _playTrack,
                       loading: _loading,
                     ),
                   ],
@@ -213,7 +200,7 @@ class _ShimmerQuoteCard extends StatelessWidget {
 class _MusicSection extends StatelessWidget {
   const _MusicSection({required this.onPlay, required this.loading});
 
-  final Future<void> Function(SongSuggestion) onPlay;
+  final Future<void> Function(AudioTrack) onPlay;
   final bool loading;
 
   @override
@@ -228,11 +215,10 @@ class _MusicSection extends StatelessWidget {
             child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
           );
         }
-        if (state.suggestions.isEmpty) {
+        final track = state.track;
+        if (track == null) {
           return const SizedBox.shrink();
         }
-
-        final suggestion = state.suggestions.first;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,8 +229,8 @@ class _MusicSection extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _MusicCard(
-              suggestion: suggestion,
-              onTap: () => onPlay(suggestion),
+              track: track,
+              onTap: () => onPlay(track),
               loading: loading,
             ),
           ],
@@ -275,12 +261,12 @@ class _ShimmerMusicCard extends StatelessWidget {
 // Music card widget that shows song info
 class _MusicCard extends StatelessWidget {
   const _MusicCard({
-    required this.suggestion,
+    required this.track,
     required this.onTap,
     required this.loading,
   });
 
-  final SongSuggestion suggestion;
+  final AudioTrack track;
   final VoidCallback onTap;
   final bool loading;
 
@@ -289,8 +275,8 @@ class _MusicCard extends StatelessWidget {
     return Card(
       child: ListTile(
         leading: const Icon(Icons.music_note),
-        title: Text(suggestion.title),
-        subtitle: Text(suggestion.artist),
+        title: Text(track.title),
+        subtitle: Text(track.artist ?? ''),
         onTap: onTap,
         trailing: loading
             ? const SizedBox(

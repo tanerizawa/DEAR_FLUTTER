@@ -2,14 +2,13 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
-import 'package:dear_flutter/domain/entities/song_suggestion.dart';
+import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_quote_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_quote_state.dart';
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
-import 'package:dear_flutter/services/youtube_search_service.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,7 +22,7 @@ class _FakeMusicCubit extends Cubit<LatestMusicState>
   _FakeMusicCubit()
       : super(const LatestMusicState(
           status: LatestMusicStatus.success,
-          suggestions: [SongSuggestion(title: 't', artist: 'a')],
+          track: AudioTrack(id: 1, title: 't', youtubeId: 'id', artist: 'a'),
         ));
 
   @override
@@ -42,7 +41,6 @@ class _FakeQuoteCubit extends Cubit<LatestQuoteState>
   Future<void> fetchLatestQuote() async {}
 }
 
-class _MockSearchService extends Mock implements YoutubeSearchService {}
 
 class _MockHandler extends Mock implements AudioPlayerHandler {}
 
@@ -62,10 +60,6 @@ void main() {
 
   testWidgets('tapping music card plays and shows player bar',
       (WidgetTester tester) async {
-    final search = _MockSearchService();
-    when(() => search.search(any()))
-        .thenAnswer((_) async => YoutubeSearchResult('id', 'thumb'));
-    getIt.registerSingleton<YoutubeSearchService>(search);
 
     final handler = _MockHandler();
     final controller = BehaviorSubject<PlaybackState>();

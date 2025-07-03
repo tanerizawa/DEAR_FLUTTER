@@ -72,7 +72,7 @@ Local notifications are powered by `flutter_local_notifications`. The
 `/quotes/latest` endpoint every 15 minutes. When a new quote is found a
 notification is shown and tapping it opens the quote detail screen.
 The app also polls `/music/latest` every 15 minutes to update the home screen
-with the newest song recommendation.
+with the newest track.
 
 On Android the default app icon is used for the notification. No additional
 configuration is required other than granting notification permissions on first
@@ -111,10 +111,9 @@ Only streams up to 160 kbps are considered and the highest quality URL within
 that range is returned. No
 YouTube API key is required.
 
-Audio suggestions come from the `/music/recommend` endpoint which analyses the
-latest journal entries through OpenRouter to generate a search keyword. That
-keyword is used to query Spotify and the resulting track IDs are then passed to
-`YoutubeAudioService` for playback.
+The latest track is fetched from the `/music/latest` endpoint which already
+includes a `youtube_id`. That ID is resolved by `YoutubeAudioService` into a
+playable URL for the audio player.
 
 To play the resolved URL using `just_audio` through `audio_service`:
 
@@ -208,7 +207,7 @@ backend can still be reached from the virtual device.
 
 ### App Usage
 
-Long‑press any message in the conversation to enter selection mode. A delete icon will appear in the top bar so you can remove the selected messages, similar to how WhatsApp handles chat message deletion. The home screen now automatically shows a recommended song based on your latest journals.
+Long‑press any message in the conversation to enter selection mode. A delete icon will appear in the top bar so you can remove the selected messages, similar to how WhatsApp handles chat message deletion. The home screen now automatically shows the latest track provided by the backend.
 
 ### Authentication workflow
 

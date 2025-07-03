@@ -5,30 +5,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
-import 'package:dear_flutter/domain/entities/song_suggestion.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
-import 'package:dear_flutter/services/youtube_search_service.dart';
+import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 
-const _sampleSuggestion = SongSuggestion(title: 't', artist: 'a');
+const _sampleTrack =
+    AudioTrack(id: 1, title: 't', youtubeId: 'id', artist: 'a');
 
 class _FakeLatestMusicCubit extends Cubit<LatestMusicState>
     implements LatestMusicCubit {
   _FakeLatestMusicCubit()
       : super(const LatestMusicState(
           status: LatestMusicStatus.success,
-          suggestions: [_sampleSuggestion],
+          track: _sampleTrack,
         ));
 
   @override
   Future<void> fetchLatestMusic() async {}
 }
 
-class _MockSearchService extends Mock implements YoutubeSearchService {}
 class _MockHandler extends Mock implements AudioPlayerHandler {}
 class _MockSongHistoryRepository extends Mock implements SongHistoryRepository {}
 
@@ -41,11 +40,6 @@ void main() {
   setUp(() {
     getIt.reset();
     getIt.registerFactory<LatestMusicCubit>(() => _FakeLatestMusicCubit());
-    final search = _MockSearchService();
-    when(() => search.search(any())).thenAnswer(
-      (_) async => YoutubeSearchResult('id', 'thumb'),
-    );
-    getIt.registerSingleton<YoutubeSearchService>(search);
     handler = _MockHandler();
     getIt.registerSingleton<AudioPlayerHandler>(handler);
     getIt.registerSingleton<SongHistoryRepository>(_MockSongHistoryRepository());
