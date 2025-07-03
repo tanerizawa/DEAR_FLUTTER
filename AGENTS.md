@@ -6,6 +6,16 @@
 
 ---
 
+## 0. Lingkungan Codex AI
+
+-   Repositori ini kerap dikerjakan di dalam lingkungan **Codex AI**. Kontainer tersebut mungkin **tidak** memiliki SDK Flutter, Dart, maupun Android secara lengkap.
+-   Jika perintah seperti `flutter`, `dart`, atau `gradle` tidak tersedia, lakukan pengecekan kode semampunya dan cantumkan di pesan PR bahwa langkah otomatis dilewati.
+-   Untuk menjalankan *build* atau pengujian penuh, gunakan mesin lokal yang memiliki semua dependensi.
+-   Kontainer ini biasanya tidak menyediakan emulator atau perangkat Android. Jalankan aplikasi pada emulator lokal jika Anda perlu menguji langsung.
+-   Semua aturan di bawah tetap berlaku, namun sesuaikan dengan kapabilitas alat yang tersedia di lingkungan Anda.
+
+---
+
 ## 1. Alur Kerja Umum & Kebijakan Git
 
 -   **Jangan membuat *branch* baru** kecuali diinstruksikan oleh pengelola repositori.
@@ -45,7 +55,8 @@
     -   Ikuti panduan [Effective Dart](https://dart.dev/guides/language/effective-dart/style).
     -   Utamakan penggunaan *stateless widget* jika memungkinkan.
     -   Semua *widget*, model, dan layanan publik harus didokumentasikan dengan komentar DartDoc.
-    -   Jalankan `dart format .` dan `dart analyze` sebelum setiap *commit*.
+    -   Jalankan `dart format .` dan `dart analyze` sebelum setiap *commit* apabila perintah tersebut tersedia.
+    -   Jika alat tersebut tidak ada di lingkungan Anda, lakukan peninjauan kode secara manual dan sebutkan di pesan PR bahwa pemeriksaan otomatis dilewati.
 
 -   **Pengujian:**
     -   Tempatkan semua tes di direktori `/test`.
@@ -87,7 +98,8 @@
     -   Referensi ke *issue*/*ticket* yang ditangani.
     -   Daftar file yang terpengaruh.
     -   Instruksi untuk pengujian manual atau otomatis.
--   Jika `AGENTS.md` mana pun berisi format pesan PR khusus, Anda **wajib** mengikutinya.
+    -   Catatan jika ada langkah otomatis yang dilewati karena keterbatasan lingkungan (misal tidak tersedianya Flutter SDK).
+    -   Jika `AGENTS.md` mana pun berisi format pesan PR khusus, Anda **wajib** mengikutinya.
 
 ---
 
@@ -95,6 +107,7 @@
 
 -   Jika `AGENTS.md` dalam lingkup Anda menentukan pemeriksaan terprogram atau *CI jobs*, **Anda harus menjalankan semua pemeriksaan dan memperbaiki semua kesalahan atau peringatan sebelum mengirimkan atau menyelesaikan perubahan Anda**—bahkan untuk dokumentasi.
 -   Jika tidak yakin, tanyakan kepada pengelola atau peninjau untuk klarifikasi.
+-   Apabila perintah otomatis (seperti `flutter test` atau `dart analyze`) tidak dapat dijalankan karena keterbatasan lingkungan, sebutkan alasan tersebut di pesan PR dan lakukan peninjauan manual semaksimal mungkin.
 
 ---
 
