@@ -3,6 +3,7 @@ import 'package:dear_flutter/presentation/journal/cubit/journal_editor_cubit.dar
 import 'package:dear_flutter/presentation/journal/cubit/journal_editor_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class JournalEditorScreen extends StatefulWidget {
   const JournalEditorScreen({super.key});
