@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pytest
 from app import models
 from app.services.music_keyword_service import MusicKeywordService
 from app.services.music_suggestion_service import MusicSuggestionService
@@ -7,7 +8,8 @@ from app.schemas.song import SongSuggestion
 from app.state.music import get_latest_music
 
 
-def test_generate_music_recommendation_task_sets_track(monkeypatch, temp_session):
+@pytest.mark.asyncio
+async def test_generate_music_recommendation_task_sets_track(monkeypatch, temp_session):
     db = temp_session()
     try:
         db.add(models.Journal(content="j1", created_at=datetime.utcnow()))
@@ -43,7 +45,7 @@ def test_generate_music_recommendation_task_sets_track(monkeypatch, temp_session
     monkeypatch.setattr(MusicSuggestionService, "suggest_songs", fake_suggest)
     monkeypatch.setattr("youtubesearchpython.VideosSearch", DummySearch)
 
-    generate_music_recommendation_task()
+    await generate_music_recommendation_task()
     track = get_latest_music()
     assert track is not None
     assert track.title == "Song"

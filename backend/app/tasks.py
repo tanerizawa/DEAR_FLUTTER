@@ -4,7 +4,6 @@ from app.celery_app import celery_app
 from app.services.profile_analyzer_service import profile_analyzer
 from app.db.session import SessionLocal
 from app import crud
-import asyncio
 from app.services.quote_generation_service import QuoteGenerationService
 from app.services.music_keyword_service import MusicKeywordService
 from app.services.music_suggestion_service import MusicSuggestionService
@@ -30,7 +29,7 @@ def analyze_profile_task(user_id: int):
 
 
 @celery_app.task
-def generate_quote_task():
+async def generate_quote_task():
     """Generate a motivational quote based on the latest journal mood."""
     db = SessionLocal()
     try:
@@ -39,7 +38,7 @@ def generate_quote_task():
         )
         mood = latest.mood if latest and latest.mood else "Netral"
         service = QuoteGenerationService()
-        text, author = asyncio.run(service.generate_quote(mood))
+        text, author = await service.generate_quote(mood)
         if text:
             crud.motivational_quote.create(
                 db,
@@ -51,7 +50,7 @@ def generate_quote_task():
 
 
 @celery_app.task
-def generate_music_recommendation_task():
+async def generate_music_recommendation_task():
     """Generate and store a music recommendation based on recent journals."""
     db = SessionLocal()
     try:
@@ -62,11 +61,11 @@ def generate_music_recommendation_task():
             .all()
         )
 
-        keyword = asyncio.run(MusicKeywordService().generate_keyword(journals))
+        keyword = await MusicKeywordService().generate_keyword(journals)
         if not keyword:
             return "No keyword generated"
 
-        suggestions = asyncio.run(MusicSuggestionService().suggest_songs(keyword))
+        suggestions = await MusicSuggestionService().suggest_songs(keyword)
         if not suggestions:
             return "No suggestions returned"
 
