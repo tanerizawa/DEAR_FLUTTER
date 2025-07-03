@@ -26,10 +26,14 @@ Future<void> main() async {
     getIt.registerSingleton<AudioPlayerHandler>(handler);
   }
   await getIt<NotificationService>().init();
-  getIt<QuoteUpdateService>().start();
-  getIt<MusicUpdateService>().start();
 
   runApp(const MyApp());
+
+  // Delay starting services until after the first frame to prevent skipped-frame warnings
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    getIt<QuoteUpdateService>().start();
+    getIt<MusicUpdateService>().start();
+  });
 }
 
 class MyApp extends StatelessWidget {
