@@ -114,8 +114,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => getIt<LatestMusicCubit>()),
-        BlocProvider(create: (_) => getIt<LatestQuoteCubit>()),
+        BlocProvider(
+          create: (_) => getIt<LatestMusicCubit>()..fetchLatestMusic(),
+        ),
+        BlocProvider(
+          create: (_) => getIt<LatestQuoteCubit>()..fetchLatestQuote(),
+        ),
       ],
       child: Scaffold(
         appBar: null,
