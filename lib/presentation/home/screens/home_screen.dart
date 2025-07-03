@@ -112,6 +112,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final offlineState = context.watch<LatestMusicCubit>().state;
+    final playerTrack =
+        _currentTrack ?? (offlineState.status == LatestMusicStatus.offline ? offlineState.track : null);
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => getIt<LatestMusicCubit>()),
@@ -137,9 +141,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            if (_currentTrack != null)
+            if (playerTrack != null)
               _PlayerBar(
-                track: _currentTrack!,
+                track: playerTrack,
                 isPlaying: _isPlaying,
                 isLoading: _loading,
                 position: _position,
@@ -223,6 +227,14 @@ class _MusicSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (state.status == LatestMusicStatus.offline)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Offline – menampilkan lagu terakhir.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
             Text(
               'Rekomendasi Musik',
               style: Theme.of(context).textTheme.headlineSmall,
