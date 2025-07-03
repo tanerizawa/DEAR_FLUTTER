@@ -66,7 +66,7 @@ class _FakeAudioOnlyStreamInfo implements AudioOnlyStreamInfo {
         audioCodec = 'aac',
         qualityLabel = '',
         fragments = const [],
-        codec = const MediaType('audio', 'mp4'),
+        codec = MediaType('audio', 'mp4'),
         audioTrack = null;
 
   @override

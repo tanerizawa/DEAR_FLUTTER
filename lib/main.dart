@@ -16,7 +16,7 @@ Future<void> main() async {
   // Inisialisasi dependency injection (getIt, dll.)
   await configureDependencies();
   final handler = await AudioService.init(
-    builder: getIt<AudioPlayerHandler>.call,
+    builder: () => getIt<AudioPlayerHandler>(),
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.example.dear.audio',
       androidNotificationChannelName: 'Audio Playback',
