@@ -7,7 +7,10 @@ import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
+/// Fullscreen audio player for a single track.
+
 class AudioPlayerScreen extends StatefulWidget {
+
   const AudioPlayerScreen({super.key, required this.track});
 
   final AudioTrack track;

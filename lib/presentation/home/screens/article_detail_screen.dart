@@ -2,7 +2,10 @@ import 'package:dear_flutter/domain/entities/article.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+/// Displays an article inside a WebView.
+
 class ArticleDetailScreen extends StatefulWidget {
+
   const ArticleDetailScreen({super.key, required this.article});
 
   final Article article;
