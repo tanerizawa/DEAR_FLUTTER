@@ -20,7 +20,12 @@ Dio dio(
   AuthInterceptor authInterceptor,
   LoggingInterceptor loggingInterceptor,
 ) {
-  const baseUrl = 'https://server-qp6y.onrender.com/api/v1/'; // <-- gunakan ini!
+  // Read API base URL from a compile time environment variable. A sensible
+  // default points to the hosted backend so the app works out of the box.
+  const baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://server-qp6y.onrender.com/api/v1/',
+  );
 
   final dio = Dio(
     BaseOptions(
