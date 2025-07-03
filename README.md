@@ -61,6 +61,10 @@ dependencies {
 ```
 Then run `flutter clean` followed by `flutter run`.
 
+Recent versions of `just_audio` have removed the ExoPlayer "hidden method"
+warnings during builds. If you still encounter them, upgrade `just_audio` to at
+least version `0.10.4` and run `flutter pub upgrade`.
+
 ## Notifications
 
 Local notifications are powered by `flutter_local_notifications`. The
