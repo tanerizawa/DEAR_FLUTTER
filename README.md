@@ -273,6 +273,8 @@ Contributions are welcome! Please open issues or pull requests on GitHub. Make s
 ## Profiling
 
 See [docs/PROFILING.md](docs/PROFILING.md) for details on API and audio performance.
+For information on Android buffering logs and tuning ExoPlayer, see
+[docs/AUDIO_BUFFERING.md](docs/AUDIO_BUFFERING.md).
 
 ## License
 
