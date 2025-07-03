@@ -28,7 +28,9 @@ class QuoteUpdateService {
     _timer = Timer.periodic(const Duration(minutes: 15), (_) => _fetch());
   }
 
-  Future<void> _fetch() async {
+  Future<MotivationalQuote?> refresh() => _fetch();
+
+  Future<MotivationalQuote?> _fetch() async {
     try {
       final quote = await _apiService.getLatestQuote();
       if (_lastQuote == null || quote.id != _lastQuote!.id) {
@@ -36,8 +38,10 @@ class QuoteUpdateService {
         await _notificationService.showQuoteNotification(quote);
       }
       await _cacheRepository.saveQuote(quote);
+      return _lastQuote;
     } catch (_) {
       // Ignore errors silently
+      return null;
     }
   }
 
