@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+/// Shows a quote with sharing actions.
+
 class QuoteDetailScreen extends StatelessWidget {
+
   const QuoteDetailScreen({super.key, required this.quote});
 
   final MotivationalQuote quote;
