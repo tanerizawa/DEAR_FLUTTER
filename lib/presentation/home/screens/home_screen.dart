@@ -112,21 +112,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final offlineState = context.watch<LatestMusicCubit>().state;
-    final playerTrack =
-        _currentTrack ?? (offlineState.status == LatestMusicStatus.offline ? offlineState.track : null);
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => getIt<LatestMusicCubit>()),
         BlocProvider(create: (_) => getIt<LatestQuoteCubit>()),
       ],
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Beranda')),
-        body: Column(
-          children: [
-            Expanded(
-              child: RefreshIndicator(
+      child: Builder(
+        builder: (context) {
+          final offlineState = context.watch<LatestMusicCubit>().state;
+          final playerTrack = _currentTrack ??
+              (offlineState.status == LatestMusicStatus.offline
+                  ? offlineState.track
+                  : null);
+
+          return Scaffold(
+            appBar: AppBar(title: const Text('Beranda')),
+            body: Column(
+              children: [
+                Expanded(
+                  child: RefreshIndicator(
                 onRefresh: _onRefresh,
                 child: ListView(
                   padding: const EdgeInsets.all(16),
@@ -139,20 +143,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
+                ),
               ),
-            ),
-            if (playerTrack != null)
-              _PlayerBar(
-                track: playerTrack,
-                isPlaying: _isPlaying,
-                isLoading: _loading,
-                position: _position,
-                duration: _duration,
-                onToggle: _toggle,
-                onSeek: _seek,
-              ),
-          ],
-        ),
+              if (playerTrack != null)
+                _PlayerBar(
+                  track: playerTrack,
+                  isPlaying: _isPlaying,
+                  isLoading: _loading,
+                  position: _position,
+                  duration: _duration,
+                  onToggle: _toggle,
+                  onSeek: _seek,
+                ),
+            ],
+          ),
+        );
+        },
       ),
     );
   }
