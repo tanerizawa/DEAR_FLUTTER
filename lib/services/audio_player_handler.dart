@@ -102,6 +102,7 @@ class AudioPlayerHandler extends BaseAudioHandler {
   @override
   Future<void> pause() => _player.pause();
 
+  @override
   Future<void> seek(Duration position) => _player.seek(position);
 
   @override

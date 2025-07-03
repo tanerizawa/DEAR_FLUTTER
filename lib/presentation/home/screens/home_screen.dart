@@ -79,12 +79,13 @@ class _HomeScreenState extends State<HomeScreen> {
       // Save track to history and start playback
       await getIt<SongHistoryRepository>().addTrack(track);
       await _handler.playFromYoutubeId(track.youtubeId);
-
+      if (!mounted) return;
       setState(() {
         _currentTrack = track;
         _isPlaying = false; // Hide loading indicator
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isPlaying = false); // Hide loading indicator on error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gagal memuat lagu. Coba lagi.')),
@@ -325,7 +326,7 @@ class _PlayerBar extends StatelessWidget {
     }
 
     return Material(
-      color: Theme.of(context).colorScheme.surfaceVariant,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
