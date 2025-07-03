@@ -6,7 +6,6 @@ import 'package:dear_flutter/services/quote_update_service.dart';
 import 'package:dear_flutter/services/music_update_service.dart';
 import 'package:audio_service/audio_service.dart';
 import 'services/audio_player_handler.dart';
-import 'services/youtube_audio_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 Future<void> main() async {
@@ -17,7 +16,7 @@ Future<void> main() async {
   // Inisialisasi dependency injection (getIt, dll.)
   await configureDependencies();
   final handler = await AudioService.init(
-    builder: getIt<AudioPlayerHandler>,
+    builder: getIt<AudioPlayerHandler>.call,
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.example.dear.audio',
       androidNotificationChannelName: 'Audio Playback',
@@ -28,6 +27,7 @@ Future<void> main() async {
   }
   await getIt<NotificationService>().init();
   getIt<QuoteUpdateService>().start();
+  getIt<MusicUpdateService>().start();
 
   runApp(const MyApp());
 }

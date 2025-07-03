@@ -11,7 +11,7 @@ class YoutubeSearchService {
   /// Returns the first result for [query] including id and thumbnail.
   Future<YoutubeSearchResult> search(String query) async {
     final results = await _yt.search.search(query);
-    final first = await results.first;
+    final first = results.first;
     return YoutubeSearchResult(first.id.value, first.thumbnails.highResUrl);
   }
 

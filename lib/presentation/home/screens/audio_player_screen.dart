@@ -63,22 +63,21 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       await getIt<SongHistoryRepository>().addTrack(widget.track);
       try {
         await _handler.playFromYoutubeId(widget.track.youtubeId);
+        if (!mounted) return;
       } on YoutubeExplodeException catch (_) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              const SnackBar(content: Text('Gagal memutar audio dari YouTube')),
-            );
-        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text('Gagal memutar audio dari YouTube')),
+          );
       } on StateError catch (_) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              const SnackBar(content: Text('Audio tidak tersedia')), 
-            );
-        }
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text('Audio tidak tersedia')),
+          );
       }
     }
   }
