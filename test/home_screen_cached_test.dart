@@ -4,7 +4,6 @@ import 'package:dear_flutter/presentation/home/cubit/latest_quote_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_quote_state.dart';
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
-import 'package:dear_flutter/domain/entities/song_suggestion.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,7 +18,7 @@ class _CachedMusicCubit extends Cubit<LatestMusicState>
   _CachedMusicCubit()
       : super(const LatestMusicState(
           status: LatestMusicStatus.cached,
-          suggestions: [SongSuggestion(title: 't', artist: 'a')],
+          track: AudioTrack(id: 1, title: 't', youtubeId: 'y', artist: 'a'),
         ));
 
   @override
