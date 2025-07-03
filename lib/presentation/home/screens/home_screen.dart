@@ -40,8 +40,16 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _handler = getIt<AudioPlayerHandler>();
-    _playSub = _handler.playbackState.listen((state) {
-      setState(() => _isPlaying = state.playing);
+    _playSub = _handler.playbackState.listen((state) async {
+      if (state.processingState == AudioProcessingState.completed) {
+        await _handler.seek(Duration.zero);
+        setState(() {
+          _isPlaying = false;
+          _currentTrack = null;
+        });
+      } else {
+        setState(() => _isPlaying = state.playing);
+      }
     });
     _posSub = _handler.positionStream.listen((d) {
       setState(() => _position = d);
