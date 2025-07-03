@@ -15,6 +15,14 @@ class LatestQuoteCubit extends Cubit<LatestQuoteState> {
   }
 
   Future<void> fetchLatestQuote() async {
+    if (_updateService.hasFetchedInitial) {
+      final cached = _updateService.latest;
+      if (cached != null) {
+        emit(state.copyWith(status: LatestQuoteStatus.success, quote: cached));
+      }
+      return;
+    }
+
     emit(state.copyWith(status: LatestQuoteStatus.loading));
     final quote = await _updateService.refresh();
     if (quote != null) {

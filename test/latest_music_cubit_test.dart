@@ -30,6 +30,7 @@ void main() {
     final service = _MockMusicUpdateService();
     when(() => service.latest).thenReturn(null);
     when(service.refresh).thenAnswer((_) async => track);
+    when(() => service.hasFetchedInitial).thenReturn(false);
 
     final cubit = LatestMusicCubit(service);
     await cubit.fetchLatestMusic();
@@ -43,6 +44,7 @@ void main() {
     final service = _MockMusicUpdateService();
     when(() => service.latest).thenReturn(track);
     when(service.refresh).thenAnswer((_) async => null);
+    when(() => service.hasFetchedInitial).thenReturn(false);
 
     final cubit = LatestMusicCubit(service);
     await cubit.fetchLatestMusic();
@@ -56,6 +58,7 @@ void main() {
     final service = _MockMusicUpdateService();
     when(() => service.latest).thenReturn(track);
     when(service.refresh).thenAnswer((_) async => null);
+    when(() => service.hasFetchedInitial).thenReturn(false);
 
     final cubit = LatestMusicCubit(service);
 
@@ -81,5 +84,18 @@ void main() {
 
     await cubit.fetchLatestMusic();
     await expectation;
+  });
+
+  test('does not refresh when service already fetched initial data', () async {
+    final service = _MockMusicUpdateService();
+    when(() => service.latest).thenReturn(track);
+    when(() => service.hasFetchedInitial).thenReturn(true);
+
+    final cubit = LatestMusicCubit(service);
+    await cubit.fetchLatestMusic();
+
+    expect(cubit.state.status, LatestMusicStatus.success);
+    expect(cubit.state.track, track);
+    verifyNever(() => service.refresh());
   });
 }

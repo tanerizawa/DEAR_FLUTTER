@@ -15,6 +15,7 @@ class QuoteUpdateService {
 
   Timer? _timer;
   MotivationalQuote? _lastQuote;
+  bool _initialFetchDone = false;
 
   QuoteUpdateService(
       this._apiService, this._notificationService, this._cacheRepository);
@@ -24,11 +25,14 @@ class QuoteUpdateService {
 
   void start() {
     _timer?.cancel();
-    _fetch();
+    _initialFetchDone = false;
+    _fetch().whenComplete(() => _initialFetchDone = true);
     _timer = Timer.periodic(const Duration(minutes: 15), (_) => _fetch());
   }
 
   Future<MotivationalQuote?> refresh() => _fetch();
+
+  bool get hasFetchedInitial => _initialFetchDone;
 
   Future<MotivationalQuote?> _fetch() async {
     try {

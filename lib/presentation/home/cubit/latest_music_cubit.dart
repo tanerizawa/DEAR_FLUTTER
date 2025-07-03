@@ -14,6 +14,14 @@ class LatestMusicCubit extends Cubit<LatestMusicState> {
   }
 
   Future<void> fetchLatestMusic() async {
+    if (_updateService.hasFetchedInitial) {
+      final cached = _updateService.latest;
+      if (cached != null) {
+        emit(state.copyWith(status: LatestMusicStatus.success, track: cached));
+      }
+      return;
+    }
+
     emit(state.copyWith(status: LatestMusicStatus.loading));
     final track = await _updateService.refresh();
     if (track != null) {

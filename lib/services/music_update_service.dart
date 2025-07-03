@@ -12,17 +12,21 @@ class MusicUpdateService {
 
   Timer? _timer;
   AudioTrack? _latest;
+  bool _initialFetchDone = false;
   MusicUpdateService(this._apiService, this._cacheRepository);
 
   void start() {
     _timer?.cancel();
-    _fetch();
+    _initialFetchDone = false;
+    _fetch().whenComplete(() => _initialFetchDone = true);
     _timer = Timer.periodic(const Duration(minutes: 15), (_) => _fetch());
   }
 
   Future<AudioTrack?> refresh() => _fetch();
 
   AudioTrack? get latest => _latest ?? _cacheRepository.getLastTrack();
+
+  bool get hasFetchedInitial => _initialFetchDone;
 
   Future<AudioTrack?> _fetch() async {
     try {
