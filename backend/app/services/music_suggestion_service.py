@@ -69,6 +69,7 @@ class MusicSuggestionService:
             if content.endswith("```"):
                 content = content[:-3].strip()
             items = json.loads(content)
+            self.log.info("music_suggestion_result", items=items)
             return [SongSuggestion(**item) for item in items]
         except Exception as e:
             self.log.error("music_suggestion_error", error=str(e))
