@@ -104,10 +104,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Handle refresh
-  Future<void> _onRefresh() async {
+  Future<void> _onRefresh(BuildContext ctx) async {
     await Future.wait([
-      context.read<LatestMusicCubit>().fetchLatestMusic(),
-      context.read<LatestQuoteCubit>().fetchLatestQuote(),
+      ctx.read<LatestMusicCubit>().fetchLatestMusic(),
+      ctx.read<LatestQuoteCubit>().fetchLatestQuote(),
     ]);
   }
 
@@ -128,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               child: RefreshIndicator(
-                onRefresh: _onRefresh,
+                onRefresh: () => _onRefresh(context),
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
