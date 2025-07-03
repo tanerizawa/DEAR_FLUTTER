@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/entities/song_suggestion.dart';
+import 'package:dear_flutter/domain/entities/home_feed.dart';
 
 @injectable
 class HomeApiService {
@@ -31,5 +32,10 @@ class HomeApiService {
     return data
         .map((e) => SongSuggestion.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  Future<HomeFeed> getHomeFeed() async {
+    final response = await _dio.get('home-feed');
+    return HomeFeed.fromJson(response.data as Map<String, dynamic>);
   }
 }

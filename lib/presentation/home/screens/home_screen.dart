@@ -2,8 +2,7 @@
 
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
-import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
-import 'package:dear_flutter/presentation/home/cubit/latest_quote_cubit.dart';
+import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:dear_flutter/presentation/home/widgets/widgets.dart';
@@ -102,23 +101,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Handle refresh
   Future<void> _onRefresh(BuildContext ctx) async {
-    await Future.wait([
-      ctx.read<LatestMusicCubit>().fetchLatestMusic(),
-      ctx.read<LatestQuoteCubit>().fetchLatestQuote(),
-    ]);
+    await ctx.read<HomeFeedCubit>().fetchHomeFeed();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (_) => getIt<LatestMusicCubit>()..fetchLatestMusic(),
-        ),
-        BlocProvider(
-          create: (_) => getIt<LatestQuoteCubit>()..fetchLatestQuote(),
-        ),
-      ],
+    return BlocProvider(
+      create: (_) => HomeFeedCubit(getIt())..fetchHomeFeed(),
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(),
