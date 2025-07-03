@@ -25,3 +25,6 @@ redis
 
 # --- Testing ---
 pytest-asyncio
+
+# --- Utility ---
+youtube-search-python
