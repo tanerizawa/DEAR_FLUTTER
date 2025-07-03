@@ -23,9 +23,9 @@ class QuoteUpdateService {
   MotivationalQuote? get latest =>
       _lastQuote ?? _cacheRepository.getLastQuote();
 
-  void start() {
+  void start({bool immediateFetch = true}) {
     _timer?.cancel();
-    if (!_initialFetchDone) {
+    if (immediateFetch && !_initialFetchDone) {
       _fetch().whenComplete(() => _initialFetchDone = true);
     }
     _timer = Timer.periodic(const Duration(minutes: 15), (_) => _fetch());

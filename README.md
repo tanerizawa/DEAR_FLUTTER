@@ -84,7 +84,10 @@ notification is shown and tapping it opens the quote detail screen.
 The backend runs a Celery task named `generate_music_recommendation_task`
 every 15 minutes. It stores its result in `/music/latest`, and the Flutter app
 polls this endpoint on the same schedule to update the home screen with the
-newest track.
+newest track. The quote and music update services expose a
+`start({bool immediateFetch = true})` method. Passing `immediateFetch: false`
+skips the initial network call so only the periodic timer runs. The home screen
+fetches `/home-feed` on launch to obtain the latest quote and track.
 
 A lightweight `/home-feed` endpoint is also available. It returns the most
 recent motivational quote and music track in a single JSON object:

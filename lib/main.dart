@@ -31,8 +31,8 @@ Future<void> main() async {
 
   // Delay starting services until after the first frame to prevent skipped-frame warnings
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    getIt<QuoteUpdateService>().start();
-    getIt<MusicUpdateService>().start();
+    getIt<QuoteUpdateService>().start(immediateFetch: false);
+    getIt<MusicUpdateService>().start(immediateFetch: false);
   });
 }
 
