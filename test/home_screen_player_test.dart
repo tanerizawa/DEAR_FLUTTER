@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
@@ -64,15 +63,15 @@ void main() {
     final handler = _MockHandler();
     final controller = BehaviorSubject<PlaybackState>();
     controller.add(
-      const PlaybackState(
+      PlaybackState(
         playing: false,
         processingState: AudioProcessingState.ready,
         controls: <MediaControl>[],
       ),
     );
-    when(() => handler.playbackState).thenAnswer((_) => controller.stream);
+    when(() => handler.playbackState).thenAnswer((_) => controller);
     when(() => handler.playFromYoutubeId(any())).thenAnswer((_) async {
-      controller.add(const PlaybackState(
+      controller.add(PlaybackState(
         playing: true,
         processingState: AudioProcessingState.ready,
         controls: <MediaControl>[],
@@ -96,7 +95,7 @@ void main() {
     expect(find.text('t'), findsNWidgets(2));
     expect(find.byIcon(Icons.pause), findsOneWidget);
 
-    controller.add(const PlaybackState(
+    controller.add(PlaybackState(
       playing: false,
       processingState: AudioProcessingState.ready,
       controls: <MediaControl>[],
