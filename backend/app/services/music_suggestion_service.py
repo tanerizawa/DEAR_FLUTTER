@@ -34,9 +34,9 @@ class MusicSuggestionService:
             response.raise_for_status()
             return response.json()
 
-    async def suggest_songs(
+    async def suggest_song(
         self, mood: str, user_profile: Optional[UserProfile] = None
-    ) -> List[SongSuggestion]:
+    ) -> SongSuggestion | None:
         profile_summary = ""
         if user_profile:
             emerging = user_profile.emerging_themes or {}
@@ -50,9 +50,9 @@ class MusicSuggestionService:
 
         prompt = dedent(
             f"""
-            Sarankan tiga lagu beserta artis yang cocok untuk mood berikut: {mood}.
+            Sarankan satu lagu beserta artis yang cocok untuk mood berikut: {mood}.
             {profile_summary}
-            Balas dengan JSON list berisi objek {{"title": "...", "artist": "..."}}.
+            Balas dengan JSON {{"title": "...", "artist": "..."}} saja.
             """
         ).strip()
 
@@ -68,9 +68,9 @@ class MusicSuggestionService:
                 content = content[len("```json") :].strip()
             if content.endswith("```"):
                 content = content[:-3].strip()
-            items = json.loads(content)
-            self.log.info("music_suggestion_result", items=items)
-            return [SongSuggestion(**item) for item in items]
+            item = json.loads(content)
+            self.log.info("music_suggestion_result", item=item)
+            return SongSuggestion(**item)
         except Exception as e:
             self.log.error("music_suggestion_error", error=str(e))
-            return []
+            return None
