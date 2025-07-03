@@ -7,9 +7,9 @@ class PsyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Psy'),
+        title: const Text('Psy'),
       ),
-      body: Center(
+      body: const Center(
         child: Text('Coming soon...'),
       ),
     );

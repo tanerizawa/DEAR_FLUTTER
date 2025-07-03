@@ -121,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
       child: Builder(
         builder: (context) => Scaffold(
-          appBar: null,
+          appBar: AppBar(),
           body: Column(
             children: [
               Expanded(
