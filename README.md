@@ -83,9 +83,10 @@ launch.
 
 ## Backend Setup
 
-1. Create and activate a Python virtual environment:
+1. Change to the `backend/` directory and create a Python virtual environment:
 
 ```bash
+cd backend
 python -m venv venv
 source venv/bin/activate
 ```
@@ -96,11 +97,11 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. Start the development server **from inside** the `backend/` directory to avoid
+3. Start the development server **from inside** the `backend/` directory to avoid
    `ModuleNotFoundError`:
 
 ```bash
-cd backend && uvicorn app.main:app --reload
+uvicorn app.main:app --reload
 ```
 > **Note**: If you run `uvicorn` from outside `backend/`, export `PYTHONPATH=backend` or run `python -m uvicorn app.main:app --reload`.
 
@@ -167,7 +168,7 @@ to your database.
 After applying migrations you can populate some example articles, audio tracks and motivational quotes. Run the seeding script:
 
 ```bash
-python backend/app/db/seed.py
+python app/db/seed.py
 ```
 
 
@@ -203,7 +204,7 @@ APP_NAME=Dear Diary
 After creating `.env` you can verify the setup with:
 
 ```bash
-python backend/check_env.py
+python check_env.py
 ```
 
 This script ensures `OPENROUTER_API_KEY` is defined.
