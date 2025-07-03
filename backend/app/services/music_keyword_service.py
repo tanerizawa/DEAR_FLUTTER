@@ -54,7 +54,9 @@ class MusicKeywordService:
                 model=self.settings.GENERATOR_MODEL_NAME,
                 messages=messages,
             )
-            return data["choices"][0]["message"]["content"].strip()
+            keyword = data["choices"][0]["message"]["content"].strip()
+            self.log.info("music_keyword_generated", keyword=keyword)
+            return keyword
         except Exception as e:
             self.log.error("music_keyword_service_error", error=str(e))
             return ""
