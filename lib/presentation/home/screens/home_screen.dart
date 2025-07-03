@@ -117,20 +117,12 @@ class _HomeScreenState extends State<HomeScreen> {
         BlocProvider(create: (_) => getIt<LatestMusicCubit>()),
         BlocProvider(create: (_) => getIt<LatestQuoteCubit>()),
       ],
-      child: Builder(
-        builder: (context) {
-          final offlineState = context.watch<LatestMusicCubit>().state;
-          final playerTrack = _currentTrack ??
-              (offlineState.status == LatestMusicStatus.offline
-                  ? offlineState.track
-                  : null);
-
-          return Scaffold(
-            appBar: AppBar(title: const Text('Beranda')),
-            body: Column(
-              children: [
-                Expanded(
-                  child: RefreshIndicator(
+      child: Scaffold(
+        appBar: null,
+        body: Column(
+          children: [
+            Expanded(
+              child: RefreshIndicator(
                 onRefresh: _onRefresh,
                 child: ListView(
                   padding: const EdgeInsets.all(16),
@@ -143,22 +135,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                ),
               ),
-              if (playerTrack != null)
-                _PlayerBar(
-                  track: playerTrack,
-                  isPlaying: _isPlaying,
-                  isLoading: _loading,
-                  position: _position,
-                  duration: _duration,
-                  onToggle: _toggle,
-                  onSeek: _seek,
-                ),
-            ],
-          ),
-        );
-        },
+            ),
+            if (_currentTrack != null)
+              _PlayerBar(
+                track: _currentTrack!,
+                isPlaying: _isPlaying,
+                isLoading: _loading,
+                position: _position,
+                duration: _duration,
+                onToggle: _toggle,
+                onSeek: _seek,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -233,14 +223,6 @@ class _MusicSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (state.status == LatestMusicStatus.offline)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(
-                  'Offline – menampilkan lagu terakhir.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
             Text(
               'Rekomendasi Musik',
               style: Theme.of(context).textTheme.headlineSmall,

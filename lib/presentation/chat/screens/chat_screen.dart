@@ -38,9 +38,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return BlocProvider(
       create: (context) => getIt<ChatCubit>(),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Chat dengan Dear'),
-        ),
+        appBar: AppBar(),
         body: Column(
           children: [
             Expanded(
