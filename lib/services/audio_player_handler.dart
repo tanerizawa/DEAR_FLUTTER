@@ -10,8 +10,17 @@ import 'youtube_audio_service.dart';
 /// controls via `audio_service`.
 @LazySingleton()
 class AudioPlayerHandler extends BaseAudioHandler {
-  AudioPlayerHandler(this._youtube, {AudioPlayer? player})
-      : _player = player ?? AudioPlayer() {
+  /// Creates a handler managing [AudioPlayer] playback.
+  ///
+  /// The optional [player] can be supplied for testing. When omitted, a new
+  /// [AudioPlayer] is created. To customize buffering behavior provide a
+  /// [loadConfiguration], otherwise the default configuration is used.
+  AudioPlayerHandler(
+    this._youtube, {
+    AudioPlayer? player,
+    AudioLoadConfiguration? loadConfiguration,
+  }) : _player =
+            player ?? AudioPlayer(audioLoadConfiguration: loadConfiguration ?? const AudioLoadConfiguration()) {
     _player.playerStateStream.listen(_broadcastState);
   }
 
