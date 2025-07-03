@@ -1,4 +1,4 @@
-//register_module.dart
+// lib/core/di/register_module.dart
 
 import 'package:dear_flutter/core/api/auth_interceptor.dart';
 import 'package:dear_flutter/core/api/logging_interceptor.dart';
@@ -15,32 +15,29 @@ import 'package:just_audio/just_audio.dart';
 @module
 abstract class RegisterModule {
   // --- NETWORK ---
-@lazySingleton
-Dio dio(
-  AuthInterceptor authInterceptor,
-  LoggingInterceptor loggingInterceptor,
-) {
-  // Read API base URL from a compile time environment variable. A sensible
-  // default points to the hosted backend so the app works out of the box.
-  const baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://server-qp6y.onrender.com/api/v1/',
-  );
+  @lazySingleton
+  Dio dio(
+    AuthInterceptor authInterceptor,
+    LoggingInterceptor loggingInterceptor,
+  ) {
+    const baseUrl = String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'https://server-qp6y.onrender.com/api/v1/',
+    );
 
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 60),
-    ),
-  );
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 60),
+      ),
+    );
 
-  dio.interceptors.add(authInterceptor);
-  dio.interceptors.add(loggingInterceptor);
+    dio.interceptors.add(authInterceptor);
+    dio.interceptors.add(loggingInterceptor);
 
-  return dio;
-}
-
+    return dio;
+  }
 
   // --- DATABASE ---
   @singleton
@@ -84,10 +81,10 @@ Dio dio(
   YoutubeExplode youtubeExplode() => YoutubeExplode();
 
   @lazySingleton
-  AudioPlayer audioPlayer(AudioLoadConfiguration config) =>
-      AudioPlayer(audioLoadConfiguration: config);
-
-  @lazySingleton
   AudioLoadConfiguration audioLoadConfiguration() =>
       const AudioLoadConfiguration();
+
+  @lazySingleton
+  AudioPlayer audioPlayer(AudioLoadConfiguration config) =>
+      AudioPlayer(audioLoadConfiguration: config);
 }

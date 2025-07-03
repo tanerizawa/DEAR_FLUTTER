@@ -3,13 +3,10 @@
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
-import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
 import 'package:dear_flutter/presentation/home/cubit/latest_quote_cubit.dart';
-import 'package:dear_flutter/presentation/home/cubit/latest_quote_state.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:dear_flutter/presentation/home/widgets/widgets.dart';
-import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
