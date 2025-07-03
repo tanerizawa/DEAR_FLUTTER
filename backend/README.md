@@ -6,6 +6,7 @@ This directory hosts the FastAPI service for Dear Diary.
 
 Create and activate a virtual environment, then install dependencies:
 
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate
@@ -16,6 +17,8 @@ pip install -r requirements.txt
 > starting Uvicorn. Omitting it can lead to import errors such as
 > `ModuleNotFoundError` if required packages are missing.
 
+Copy `backend/.env.example` to `.env` and edit the values before running the server.
+
 Run the development server from within this directory:
 
 ```bash
@@ -25,9 +28,8 @@ gunicorn --preload -w 4 -k uvicorn.workers.UvicornWorker app.main:app
 
 ## Configuration
 
-Copy `.env.example` to `.env` and edit the values before running the server.
-The repository includes `.env.example` with placeholders for all environment
-variables (e.g. `DATABASE_URL` and `OPENROUTER_API_KEY`).
+See `.env.example` for the list of required environment variables including
+`DATABASE_URL` and `OPENROUTER_API_KEY`.
 
 ## Background tasks
 
