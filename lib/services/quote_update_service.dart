@@ -49,8 +49,8 @@ class QuoteUpdateService {
       await _cacheRepository.saveQuote(quote);
       return _lastQuote;
     } catch (_) {
-      // Ignore errors silently
-      return null;
+      // Ignore errors silently, fall back to cached quote
+      return _cacheRepository.getLastQuote();
     }
   }
 
