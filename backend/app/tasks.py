@@ -65,11 +65,9 @@ async def generate_music_recommendation_task():
         if not keyword:
             return "No keyword generated"
 
-        suggestions = await MusicSuggestionService().suggest_songs(keyword)
-        if not suggestions:
-            return "No suggestions returned"
-
-        suggestion = suggestions[0]
+        suggestion = await MusicSuggestionService().suggest_song(keyword)
+        if not suggestion:
+            return "No suggestion returned"
         youtube_id = ""
         try:
             from youtubesearchpython import VideosSearch

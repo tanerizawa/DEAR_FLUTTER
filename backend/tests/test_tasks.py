@@ -31,7 +31,7 @@ async def test_generate_music_recommendation_task_sets_track(monkeypatch, temp_s
         return "lofi"
 
     async def fake_suggest(self, mood):
-        return [SongSuggestion(title="Song", artist="Artist")]
+        return SongSuggestion(title="Song", artist="Artist")
 
     class DummySearch:
         def __init__(self, query, limit=1):
@@ -42,7 +42,7 @@ async def test_generate_music_recommendation_task_sets_track(monkeypatch, temp_s
             return {"result": [{"id": "ytid"}]}
 
     monkeypatch.setattr(MusicKeywordService, "generate_keyword", fake_keyword)
-    monkeypatch.setattr(MusicSuggestionService, "suggest_songs", fake_suggest)
+    monkeypatch.setattr(MusicSuggestionService, "suggest_song", fake_suggest)
     monkeypatch.setattr("youtubesearchpython.VideosSearch", DummySearch)
 
     await generate_music_recommendation_task()

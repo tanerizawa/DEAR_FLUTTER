@@ -12,7 +12,7 @@ router = APIRouter()
 log = structlog.get_logger(__name__)
 
 
-@router.get("/recommend", response_model=list[schemas.SongSuggestion])
+@router.get("/recommend", response_model=schemas.SongSuggestion)
 async def recommend_music(
     *,
     mood: str = Query(..., min_length=1),
@@ -21,7 +21,7 @@ async def recommend_music(
     suggestion_service: MusicSuggestionService = Depends(),
 ):
     profile = crud.user_profile.get_by_user_id(db, user_id=current_user.id)
-    return await suggestion_service.suggest_songs(mood=mood, user_profile=profile)
+    return await suggestion_service.suggest_song(mood=mood, user_profile=profile)
 
 
 @router.get("/latest", response_model=schemas.AudioTrack | None)

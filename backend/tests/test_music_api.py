@@ -13,9 +13,7 @@ async def test_music_suggestion_service_builds_prompt(monkeypatch):
 
     async def fake_call(self, model, messages):
         captured["prompt"] = messages[0]["content"]
-        return {
-            "choices": [{"message": {"content": '[{"title": "t", "artist": "a"}]'}}]
-        }
+        return {"choices": [{"message": {"content": '{"title": "t", "artist": "a"}'}}]}
 
     monkeypatch.setattr(MusicSuggestionService, "_call_openrouter", fake_call)
 
@@ -31,9 +29,9 @@ async def test_music_suggestion_service_builds_prompt(monkeypatch):
         last_analyzed=datetime.utcnow(),
     )
 
-    result = await service.suggest_songs("happy", profile)
+    result = await service.suggest_song("happy", profile)
 
-    assert result[0].title == "t"
+    assert result.title == "t"
     assert "happy" in captured["prompt"]
     assert "rock" in captured["prompt"]
 
@@ -44,9 +42,9 @@ def test_music_recommend_returns_suggestions(client, monkeypatch):
     async def fake_suggest(self, mood, user_profile=None):
         captured["mood"] = mood
         captured["profile"] = user_profile
-        return [SongSuggestion(title="t", artist="a")]
+        return SongSuggestion(title="t", artist="a")
 
-    monkeypatch.setattr(MusicSuggestionService, "suggest_songs", fake_suggest)
+    monkeypatch.setattr(MusicSuggestionService, "suggest_song", fake_suggest)
 
     client_app, session_local = client
     db = session_local()
@@ -58,6 +56,6 @@ def test_music_recommend_returns_suggestions(client, monkeypatch):
 
     resp = client_app.get("/api/v1/music/recommend?mood=joy")
     assert resp.status_code == 200
-    assert resp.json()[0]["title"] == "t"
+    assert resp.json()["title"] == "t"
     assert captured["mood"] == "joy"
     assert captured["profile"] is not None
