@@ -51,4 +51,35 @@ void main() {
     expect(cubit.state.track, track);
     expect(cubit.state.errorMessage, isNotNull);
   });
+
+  test('emits loading then offline state when refresh returns null', () async {
+    final service = _MockMusicUpdateService();
+    when(() => service.latest).thenReturn(track);
+    when(service.refresh).thenAnswer((_) async => null);
+
+    final cubit = LatestMusicCubit(service);
+
+    final expectation = expectLater(
+      cubit.stream.skip(1),
+      emitsInOrder([
+        isA<LatestMusicState>().having(
+          (s) => s.status,
+          'status',
+          LatestMusicStatus.loading,
+        ),
+        isA<LatestMusicState>().having(
+          (s) => s.status,
+          'status',
+          LatestMusicStatus.offline,
+        ).having((s) => s.track, 'track', track).having(
+          (s) => s.errorMessage,
+          'errorMessage',
+          isNotNull,
+        ),
+      ]),
+    );
+
+    await cubit.fetchLatestMusic();
+    await expectation;
+  });
 }
