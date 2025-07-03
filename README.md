@@ -38,6 +38,15 @@ Run the application on an attached device or emulator:
 flutter run
 ```
 
+To point the client at a different API endpoint, supply `API_BASE_URL` when
+building or running the app. The dependency injection layer reads this value via
+`String.fromEnvironment` and falls back to `https://server-qp6y.onrender.com/api/v1/`
+if not provided:
+
+```bash
+flutter run --dart-define=API_BASE_URL=https://example.com/api/v1/
+```
+
 ### Android build issues
 
 If the build fails with an error such as:
@@ -216,6 +225,7 @@ Start the backend and then run the Flutter app. By default the client expects th
 API to be available at `http://localhost:8000/api/v1/`. When running on an Android
 emulator the app automatically switches to `http://10.0.2.2:8000/api/v1/` so the
 backend can still be reached from the virtual device.
+You can override these values by providing `API_BASE_URL` via `--dart-define`.
 
 ### App Usage
 
