@@ -87,6 +87,8 @@ import 'package:dear_flutter/presentation/auth/cubit/register_cubit.dart'
     as _i279;
 import 'package:dear_flutter/presentation/chat/cubit/chat_cubit.dart' as _i195;
 import 'package:dear_flutter/presentation/home/cubit/home_cubit.dart' as _i941;
+import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart'
+    as _i737;
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart'
     as _i119;
 import 'package:dear_flutter/presentation/home/cubit/latest_quote_cubit.dart'
@@ -244,6 +246,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i183.GetMusicSuggestionsUseCase>(
       () => _i183.GetMusicSuggestionsUseCase(gh<_i34.HomeRepository>()),
+    );
+    gh.factory<_i737.HomeFeedCubit>(
+      () => _i737.HomeFeedCubit(gh<_i34.HomeRepository>()),
     );
     gh.lazySingleton<_i374.ChatRepository>(
       () => _i41.ChatRepositoryImpl(

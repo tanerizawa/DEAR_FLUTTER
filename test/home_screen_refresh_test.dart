@@ -6,7 +6,6 @@ import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
