@@ -3,6 +3,7 @@ import 'package:dear_flutter/data/datasources/remote/home_api_service.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/entities/song_suggestion.dart';
+import 'package:dear_flutter/domain/entities/home_feed.dart';
 import 'package:dear_flutter/domain/repositories/home_repository.dart';
 
 @LazySingleton(as: HomeRepository)
@@ -10,6 +11,11 @@ class HomeRepositoryImpl implements HomeRepository {
   final HomeApiService _apiService;
 
   HomeRepositoryImpl(this._apiService);
+
+  @override
+  Future<HomeFeed> getHomeFeed() {
+    return _apiService.getHomeFeed();
+  }
 
   @override
   Future<MotivationalQuote> getLatestQuote() {

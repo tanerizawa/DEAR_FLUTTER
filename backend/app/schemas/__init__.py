@@ -32,6 +32,7 @@ from .audio import (
     AudioTrack,
 )
 from .song import SongSuggestion
+from .home_feed import HomeFeed
 
 __all__ = [
     "UserBase",
@@ -73,4 +74,5 @@ __all__ = [
     "AudioTrackUpdate",
     "AudioTrack",
     "SongSuggestion",
+    "HomeFeed",
 ]

@@ -86,6 +86,18 @@ every 15 minutes. It stores its result in `/music/latest`, and the Flutter app
 polls this endpoint on the same schedule to update the home screen with the
 newest track.
 
+A lightweight `/home-feed` endpoint is also available. It returns the most
+recent motivational quote and music track in a single JSON object:
+
+```json
+{
+  "quote": {"id": 1, "text": "...", "author": "..."},
+  "music": {"id": 2, "title": "...", "youtube_id": "abc"}
+}
+```
+The Dart model `HomeFeed` exposes `quote` and `music` fields with a `fromJson`
+factory for parsing this response.
+
 On Android the default app icon is used for the notification. No additional
 configuration is required other than granting notification permissions on first
 launch.

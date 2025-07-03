@@ -1,6 +1,6 @@
 import 'package:dear_flutter/domain/entities/audio_track.dart';
-import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart';
-import 'package:dear_flutter/presentation/home/cubit/latest_music_state.dart';
+import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
+import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
@@ -14,17 +14,17 @@ class MusicSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LatestMusicCubit, LatestMusicState>(
+    return BlocBuilder<HomeFeedCubit, HomeFeedState>(
       builder: (context, state) {
-        if (state.status == LatestMusicStatus.loading) {
+        if (state.status == HomeFeedStatus.loading) {
           return const _ShimmerMusicCard();
         }
-        if (state.status == LatestMusicStatus.failure) {
+        if (state.status == HomeFeedStatus.failure) {
           return Center(
             child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
           );
         }
-        final track = state.track;
+        final track = state.feed?.music;
         if (track == null) {
           return const SizedBox.shrink();
         }

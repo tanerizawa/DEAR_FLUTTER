@@ -1,48 +1,46 @@
 from app import crud, schemas
-from app.api.v1 import home as home_api
-from app.schemas.audio import AudioTrack
+from app.state.music import set_latest_music
 
 
-def _create_sample_data(db):
-    crud.article.create(db, obj_in=schemas.ArticleCreate(title="a1", url="u1"))
-    crud.article.create(db, obj_in=schemas.ArticleCreate(title="a2", url="u2"))
-    crud.motivational_quote.create(
-        db, obj_in=schemas.MotivationalQuoteCreate(text="q1", author="au")
-    )
-
-
-def test_home_feed_structure_and_ordering(client, monkeypatch):
+def test_home_feed_returns_latest_data(client):
     client_app, session_local = client
     db = session_local()
     try:
-        _create_sample_data(db)
+        crud.motivational_quote.create(
+            db, obj_in=schemas.MotivationalQuoteCreate(text="old", author="a")
+        )
+        latest = crud.motivational_quote.create(
+            db, obj_in=schemas.MotivationalQuoteCreate(text="new", author="b")
+        )
     finally:
         db.close()
 
-    async def fake_recommend_music(*, mood: str, **kwargs):
-        assert mood == "lofi"
-        return [
-            AudioTrack(
-                id=99,
-                title="rec",
-                youtube_id="y1",
-                artist="artist",
-                cover_url="c",
-            )
-        ]
-
-    async def fake_generate_keyword(self, journals):
-        return "lofi"
-
-    monkeypatch.setattr(home_api, "recommend_music", fake_recommend_music)
-    monkeypatch.setattr(
-        home_api.MusicKeywordService, "generate_keyword", fake_generate_keyword
+    set_latest_music(
+        schemas.AudioTrack(id=1, title="t", youtube_id="y", artist="a", cover_url=None)
     )
 
     resp = client_app.get("/api/v1/home-feed")
     assert resp.status_code == 200
     data = resp.json()
-    assert len(data) == 4
-    assert all("type" in item and "data" in item for item in data)
-    types = {item["type"] for item in data}
-    assert types == {"article", "audio", "quote"}
+    assert data["quote"]["id"] == latest.id
+    assert data["music"]["title"] == "t"
+    set_latest_music(None)
+
+
+def test_home_feed_without_music(client):
+    client_app, session_local = client
+    db = session_local()
+    try:
+        quote = crud.motivational_quote.create(
+            db, obj_in=schemas.MotivationalQuoteCreate(text="only", author="a")
+        )
+    finally:
+        db.close()
+
+    set_latest_music(None)
+
+    resp = client_app.get("/api/v1/home-feed")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["quote"]["id"] == quote.id
+    assert data["music"] is None

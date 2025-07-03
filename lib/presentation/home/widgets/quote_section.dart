@@ -1,6 +1,6 @@
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
-import 'package:dear_flutter/presentation/home/cubit/latest_quote_cubit.dart';
-import 'package:dear_flutter/presentation/home/cubit/latest_quote_state.dart';
+import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
+import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -12,17 +12,17 @@ class QuoteSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LatestQuoteCubit, LatestQuoteState>(
+    return BlocBuilder<HomeFeedCubit, HomeFeedState>(
       builder: (context, state) {
-        if (state.status == LatestQuoteStatus.loading) {
+        if (state.status == HomeFeedStatus.loading) {
           return const _ShimmerQuoteCard();
         }
-        if (state.status == LatestQuoteStatus.failure) {
+        if (state.status == HomeFeedStatus.failure) {
           return Center(
             child: Text(state.errorMessage ?? 'Terjadi kesalahan'),
           );
         }
-        final quote = state.quote;
+        final quote = state.feed?.quote;
         if (quote == null) return const SizedBox.shrink();
         return _QuoteCard(quote: quote);
       },
