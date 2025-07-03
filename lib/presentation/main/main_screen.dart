@@ -20,12 +20,22 @@ class MainScreen extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
-            label: 'Beranda',
+            label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline),
             activeIcon: Icon(Icons.chat_bubble),
             label: 'Chat',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.add_circle_outline),
+            activeIcon: Icon(Icons.add_circle),
+            label: 'Jurnal',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.psychology_outlined),
+            activeIcon: Icon(Icons.psychology),
+            label: 'Psy',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
@@ -42,7 +52,9 @@ class MainScreen extends StatelessWidget {
     final String location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith('/home')) return 0;
     if (location.startsWith('/chat')) return 1;
-    if (location.startsWith('/profile')) return 2;
+    if (location.startsWith('/journal')) return 2;
+    if (location.startsWith('/psy')) return 3;
+    if (location.startsWith('/profile')) return 4;
     return 0;
   }
 
@@ -56,6 +68,12 @@ class MainScreen extends StatelessWidget {
         context.go('/chat');
         break;
       case 2:
+        context.go('/journal');
+        break;
+      case 3:
+        context.go('/psy');
+        break;
+      case 4:
         context.go('/profile');
         break;
     }

@@ -6,6 +6,8 @@ import 'package:dear_flutter/presentation/chat/screens/chat_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
 import 'package:dear_flutter/presentation/main/main_screen.dart';
 import 'package:dear_flutter/presentation/profile/screens/profile_screen.dart'; // Sudah ditambahkan
+import 'package:dear_flutter/presentation/journal/screens/journal_editor_screen.dart';
+import 'package:dear_flutter/presentation/psy/screens/psy_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/article_detail_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/audio_player_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/quote_detail_screen.dart';
@@ -22,13 +24,13 @@ final GoRouter router = GoRouter(
   initialLocation: '/home',
   navigatorKey: _rootNavigatorKey,
   routes: [
-    // ShellRoute dengan 3 tab utama
+    // ShellRoute dengan 5 tab utama
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
         return MainScreen(child: navigationShell);
       },
       branches: [
-        // Tab 0: Beranda
+        // Tab 0: Home
         StatefulShellBranch(
           routes: [
             GoRoute(
@@ -48,7 +50,27 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
-        // Tab 2: Profil (tambahan)
+        // Tab 2: Create Journal
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/journal',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: JournalEditorScreen()),
+            ),
+          ],
+        ),
+        // Tab 3: Psy
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/psy',
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: PsyScreen()),
+            ),
+          ],
+        ),
+        // Tab 4: Profil
         StatefulShellBranch(
           routes: [
             GoRoute(
