@@ -31,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late final StreamSubscription<Duration> _posSub;
   late final StreamSubscription<Duration?> _durSub;
   bool _isPlaying = false;
+  bool _loading = false;
   AudioTrack? _currentTrack;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Play music suggestion and add to history
   Future<void> _playSuggestion(SongSuggestion suggestion) async {
     try {
-      setState(() => _isPlaying = true); // Show loading indicator
+      setState(() => _loading = true); // Show loading indicator
 
       final service = getIt<YoutubeSearchService>();
       final result = await service.search('${suggestion.title} ${suggestion.artist}');
@@ -82,11 +83,11 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       setState(() {
         _currentTrack = track;
-        _isPlaying = false; // Hide loading indicator
+        _loading = false; // Hide loading indicator
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _isPlaying = false); // Hide loading indicator on error
+      setState(() => _loading = false); // Hide loading indicator on error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gagal memuat lagu. Coba lagi.')),
       );
@@ -133,7 +134,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     const _QuoteSection(),
                     const SizedBox(height: 24),
-                    _MusicSection(onPlay: _playSuggestion),
+                    _MusicSection(
+                      onPlay: _playSuggestion,
+                      loading: _loading,
+                    ),
                   ],
                 ),
               ),
@@ -142,6 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _PlayerBar(
                 track: _currentTrack!,
                 isPlaying: _isPlaying,
+                isLoading: _loading,
                 position: _position,
                 duration: _duration,
                 onToggle: _toggle,
@@ -198,9 +203,10 @@ class _ShimmerQuoteCard extends StatelessWidget {
 
 // Widget for displaying music cards
 class _MusicSection extends StatelessWidget {
-  const _MusicSection({required this.onPlay});
+  const _MusicSection({required this.onPlay, required this.loading});
 
   final Future<void> Function(SongSuggestion) onPlay;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
@@ -231,6 +237,7 @@ class _MusicSection extends StatelessWidget {
             _MusicCard(
               suggestion: suggestion,
               onTap: () => onPlay(suggestion),
+              loading: loading,
             ),
           ],
         );
@@ -259,10 +266,15 @@ class _ShimmerMusicCard extends StatelessWidget {
 
 // Music card widget that shows song info
 class _MusicCard extends StatelessWidget {
-  const _MusicCard({required this.suggestion, required this.onTap});
+  const _MusicCard({
+    required this.suggestion,
+    required this.onTap,
+    required this.loading,
+  });
 
   final SongSuggestion suggestion;
   final VoidCallback onTap;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
@@ -272,6 +284,13 @@ class _MusicCard extends StatelessWidget {
         title: Text(suggestion.title),
         subtitle: Text(suggestion.artist),
         onTap: onTap,
+        trailing: loading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : null,
       ),
     );
   }
@@ -301,6 +320,7 @@ class _PlayerBar extends StatelessWidget {
   const _PlayerBar({
     required this.track,
     required this.isPlaying,
+    required this.isLoading,
     required this.position,
     required this.duration,
     required this.onToggle,
@@ -309,6 +329,7 @@ class _PlayerBar extends StatelessWidget {
 
   final AudioTrack track;
   final bool isPlaying;
+  final bool isLoading;
   final Duration position;
   final Duration duration;
   final VoidCallback onToggle;
@@ -368,10 +389,16 @@ class _PlayerBar extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-                  onPressed: onToggle,
-                ),
+                isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : IconButton(
+                        icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+                        onPressed: onToggle,
+                      ),
               ],
             ),
           ),
