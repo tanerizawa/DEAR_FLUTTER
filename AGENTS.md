@@ -128,6 +128,7 @@
 -   Jangan pernah menyimpan rahasia atau kredensial sensitif secara *hardcode* di dalam file sumber.
 -   Untuk setiap integrasi AI atau alat otomatis, dokumentasikan input/output yang diharapkan dan contoh *prompt*/perintah utama di `README` atau dokumentasi fitur yang relevan.
 -   Selalu perbarui semua `README`, `AGENTS.md`, dan dokumentasi yang ditujukan untuk pengembang dengan setiap perubahan struktural atau proses.
+-   Jika mengubah berkas konfigurasi (misalnya `.env`, `config/*.json`, `android/app/build.gradle.kts`), tambahkan komentar singkat atau baris `# TODO:` pada nilai yang diubah dan catat alasannya di `docs/CONFIG_NOTES.md` beserta tanggal dan penulis.
 
 ---
 
