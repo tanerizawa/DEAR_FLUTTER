@@ -30,7 +30,9 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
         listener: (context, state) {
           if (state.status == JournalEditorStatus.success) {
             // Jika sukses, kembali ke halaman sebelumnya
-            Navigator.of(context).pop();
+            // Gunakan GoRouter untuk memastikan navigasi tidak memicu error
+            // saat stack kosong
+            context.go('/home');
           }
           if (state.status == JournalEditorStatus.failure) {
             // Jika gagal, tampilkan Snackbar
