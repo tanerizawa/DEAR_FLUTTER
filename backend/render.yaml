@@ -33,5 +33,14 @@ services:
     envVars:
       - fromGroup: dear-diary-secrets
 
+  - type: worker
+    name: beat
+    runtime: docker
+    repo: https://github.com/tanerizawa/server.git
+    autoDeploy: true
+    dockerCommand: "celery -A app.celery_app beat --loglevel=info"
+    envVars:
+      - fromGroup: dear-diary-secrets
+
 envVarGroups:
   - name: dear-diary-secrets
