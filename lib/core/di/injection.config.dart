@@ -213,11 +213,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i34.HomeRepository>(
       () => _i405.HomeRepositoryImpl(gh<_i104.HomeApiService>()),
     );
-    gh.lazySingleton<_i434.MusicUpdateService>(
-      () => _i434.MusicUpdateService(
-        gh<_i104.HomeApiService>(),
-      ),
-    );
     gh.lazySingleton<_i500.QuoteUpdateService>(
       () => _i500.QuoteUpdateService(
         gh<_i104.HomeApiService>(),
@@ -265,13 +260,11 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i696.SendMessageUseCase>(),
       ),
     );
+    gh.lazySingleton<_i434.MusicUpdateService>(
+      () => _i434.MusicUpdateService(gh<_i104.HomeApiService>()),
+    );
     gh.factory<_i568.LatestQuoteCubit>(
       () => _i568.LatestQuoteCubit(gh<_i500.QuoteUpdateService>()),
-    );
-    gh.factory<_i119.LatestMusicCubit>(
-      () => _i119.LatestMusicCubit(
-        gh<_i434.MusicUpdateService>(),
-      ),
     );
     gh.factory<_i222.GetUserProfileUseCase>(
       () => _i222.GetUserProfileUseCase(gh<_i528.AuthRepository>()),
@@ -308,6 +301,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i300.GetJournalsUseCase>(),
         gh<_i677.SyncJournalsUseCase>(),
       ),
+    );
+    gh.factory<_i119.LatestMusicCubit>(
+      () => _i119.LatestMusicCubit(gh<_i434.MusicUpdateService>()),
     );
     gh.factory<_i776.ProfileCubit>(
       () => _i776.ProfileCubit(
