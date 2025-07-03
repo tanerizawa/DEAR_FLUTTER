@@ -68,6 +68,12 @@ Dio dio(
   @lazySingleton
   Future<Box<Map>> get quoteBox => Hive.openBox<Map>('motivational_quotes');
 
+  @Named('latestMusicBox')
+  @preResolve
+  @lazySingleton
+  Future<Box<Map>> get latestMusicBox =>
+      Hive.openBox<Map>('latest_music');
+
   // --- AUDIO ---
   @lazySingleton
   YoutubeExplode youtubeExplode() => YoutubeExplode();

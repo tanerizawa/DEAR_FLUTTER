@@ -38,6 +38,8 @@ import 'package:dear_flutter/data/repositories/journal_repository_impl.dart'
     as _i485;
 import 'package:dear_flutter/data/repositories/quote_cache_repository_impl.dart'
     as _i658;
+import 'package:dear_flutter/data/repositories/latest_music_cache_repository_impl.dart'
+    as _i710;
 import 'package:dear_flutter/data/repositories/song_history_repository_impl.dart'
     as _i227;
 import 'package:dear_flutter/data/repositories/song_suggestion_cache_repository_impl.dart'
@@ -49,6 +51,8 @@ import 'package:dear_flutter/domain/repositories/journal_repository.dart'
     as _i614;
 import 'package:dear_flutter/domain/repositories/quote_cache_repository.dart'
     as _i139;
+import 'package:dear_flutter/domain/repositories/latest_music_cache_repository.dart'
+    as _i709;
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart'
     as _i448;
 import 'package:dear_flutter/domain/repositories/song_suggestion_cache_repository.dart'
@@ -166,6 +170,11 @@ extension GetItInjectableX on _i174.GetIt {
       instanceName: 'quoteBox',
       preResolve: true,
     );
+    await gh.lazySingletonAsync<_i979.Box<Map<dynamic, dynamic>>>(
+      () => registerModule.latestMusicBox,
+      instanceName: 'latestMusicBox',
+      preResolve: true,
+    );
     gh.lazySingleton<_i176.SongSuggestionCacheRepository>(
       () => _i14.SongSuggestionCacheRepositoryImpl(
         gh<_i979.Box<Map<dynamic, dynamic>>>(instanceName: 'suggestionBox'),
@@ -177,6 +186,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i139.QuoteCacheRepository>(
       () => _i658.QuoteCacheRepositoryImpl(
         gh<_i979.Box<Map<dynamic, dynamic>>>(instanceName: 'quoteBox'),
+      ),
+    );
+    gh.lazySingleton<_i709.LatestMusicCacheRepository>(
+      () => _i710.LatestMusicCacheRepositoryImpl(
+        gh<_i979.Box<Map<dynamic, dynamic>>>(instanceName: 'latestMusicBox'),
       ),
     );
     gh.factory<_i498.AuthInterceptor>(
@@ -261,7 +275,10 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.lazySingleton<_i434.MusicUpdateService>(
-      () => _i434.MusicUpdateService(gh<_i104.HomeApiService>()),
+      () => _i434.MusicUpdateService(
+        gh<_i104.HomeApiService>(),
+        gh<_i709.LatestMusicCacheRepository>(),
+      ),
     );
     gh.factory<_i568.LatestQuoteCubit>(
       () => _i568.LatestQuoteCubit(gh<_i500.QuoteUpdateService>()),
