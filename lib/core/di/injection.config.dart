@@ -189,6 +189,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i133.AudioPlayerHandler(
         gh<_i288.YoutubeAudioService>(),
         player: gh<_i501.AudioPlayer>(),
+        loadConfiguration: gh<_i501.AudioLoadConfiguration>(),
       ),
     );
     gh.factory<_i104.HomeApiService>(
@@ -231,12 +232,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i183.GetMusicSuggestionsUseCase>(
       () => _i183.GetMusicSuggestionsUseCase(gh<_i34.HomeRepository>()),
     );
-    gh.factory<_i568.LatestQuoteCubit>(
-      () => _i568.LatestQuoteCubit(
-        gh<_i345.GetLatestQuoteUseCase>(),
-        gh<_i139.QuoteCacheRepository>(),
-      ),
-    );
     gh.lazySingleton<_i374.ChatRepository>(
       () => _i41.ChatRepositoryImpl(
         gh<_i1065.ChatApiService>(),
@@ -267,6 +262,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i819.GetChatHistoryUseCase>(),
         gh<_i696.SendMessageUseCase>(),
       ),
+    );
+    gh.factory<_i568.LatestQuoteCubit>(
+      () => _i568.LatestQuoteCubit(gh<_i500.QuoteUpdateService>()),
     );
     gh.factory<_i119.LatestMusicCubit>(
       () => _i119.LatestMusicCubit(
