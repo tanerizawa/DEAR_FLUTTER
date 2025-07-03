@@ -122,26 +122,27 @@ class _HomeScreenState extends State<HomeScreen> {
           create: (_) => getIt<LatestQuoteCubit>()..fetchLatestQuote(),
         ),
       ],
-      child: Scaffold(
-        appBar: null,
-        body: Column(
-          children: [
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => _onRefresh(context),
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    const QuoteSection(),
-                    const SizedBox(height: 24),
-                    MusicSection(
-                      onPlay: _playTrack,
-                      loading: _loading,
-                    ),
-                  ],
+      child: Builder(
+        builder: (context) => Scaffold(
+          appBar: null,
+          body: Column(
+            children: [
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => _onRefresh(context),
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      const QuoteSection(),
+                      const SizedBox(height: 24),
+                      MusicSection(
+                        onPlay: _playTrack,
+                        loading: _loading,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
             if (_currentTrack != null)
               PlayerBar(
                 track: _currentTrack!,
@@ -155,7 +156,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
 
