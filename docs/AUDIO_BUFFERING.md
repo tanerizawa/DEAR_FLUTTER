@@ -31,3 +31,19 @@ final player = AudioPlayer(
 ```
 
 You may also implement your own `AndroidLoadControl` to override ExoPlayer's `DefaultLoadControl` and specify a `targetBufferBytes` value. Increasing these values increases memory usage but can reduce stalling on slower connections.
+
+The same configuration can be supplied when creating `AudioPlayerHandler` so the underlying player uses those buffer sizes:
+
+```dart
+final handler = AudioPlayerHandler(
+  youtubeService,
+  loadConfiguration: AudioLoadConfiguration(
+    androidLoadControl: AndroidLoadControl(
+      minBufferDuration: const Duration(seconds: 10),
+      maxBufferDuration: const Duration(seconds: 60),
+      bufferForPlaybackDuration: const Duration(seconds: 1),
+      bufferForPlaybackAfterRebufferDuration: const Duration(seconds: 5),
+    ),
+  ),
+);
+```
