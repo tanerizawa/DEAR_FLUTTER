@@ -123,7 +123,8 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i501.AudioPlayer>(() => registerModule.audioPlayer());
     gh.lazySingleton<_i501.AudioLoadConfiguration>(
-        () => registerModule.audioLoadConfiguration());
+      () => registerModule.audioLoadConfiguration(),
+    );
     gh.lazySingleton<_i989.LoggingInterceptor>(
       () => _i989.LoggingInterceptor(),
     );
