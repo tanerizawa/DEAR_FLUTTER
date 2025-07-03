@@ -17,12 +17,17 @@ class MusicUpdateService {
 
   void start() {
     _timer?.cancel();
-    _initialFetchDone = false;
-    _fetch().whenComplete(() => _initialFetchDone = true);
+    if (!_initialFetchDone) {
+      _fetch().whenComplete(() => _initialFetchDone = true);
+    }
     _timer = Timer.periodic(const Duration(minutes: 15), (_) => _fetch());
   }
 
-  Future<AudioTrack?> refresh() => _fetch();
+  Future<AudioTrack?> refresh() async {
+    final track = await _fetch();
+    _initialFetchDone = true;
+    return track;
+  }
 
   AudioTrack? get latest => _latest ?? _cacheRepository.getLastTrack();
 
