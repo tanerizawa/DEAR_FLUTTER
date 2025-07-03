@@ -19,10 +19,19 @@ class LatestMusicCubit extends Cubit<LatestMusicState> {
     if (track != null) {
       emit(state.copyWith(status: LatestMusicStatus.success, track: track));
     } else {
-      emit(state.copyWith(
-        status: LatestMusicStatus.failure,
-        errorMessage: 'Gagal memuat musik.',
-      ));
+      final cached = _updateService.latest;
+      if (cached != null) {
+        emit(state.copyWith(
+          status: LatestMusicStatus.offline,
+          track: cached,
+          errorMessage: 'Gagal memuat musik.',
+        ));
+      } else {
+        emit(state.copyWith(
+          status: LatestMusicStatus.failure,
+          errorMessage: 'Gagal memuat musik.',
+        ));
+      }
     }
   }
 }

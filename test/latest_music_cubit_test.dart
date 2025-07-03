@@ -38,4 +38,17 @@ void main() {
     expect(cubit.state.track, track);
     verify(service.refresh).called(1);
   });
+
+  test('emits offline when refresh fails but cached track exists', () async {
+    final service = _MockMusicUpdateService();
+    when(() => service.latest).thenReturn(track);
+    when(service.refresh).thenAnswer((_) async => null);
+
+    final cubit = LatestMusicCubit(service);
+    await cubit.fetchLatestMusic();
+
+    expect(cubit.state.status, LatestMusicStatus.offline);
+    expect(cubit.state.track, track);
+    expect(cubit.state.errorMessage, isNotNull);
+  });
 }
