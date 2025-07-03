@@ -1,4 +1,5 @@
 import 'package:injectable/injectable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 /// Simple data holder representing an audio stream option from YouTube.
@@ -60,6 +61,20 @@ class YoutubeAudioService {
   }
 
   Future<List<AudioInfo>> _fetch({required String id}) async {
+    final list = await compute(_fetchAudioInfoIsolate, id);
+    return list
+        .map((e) =>
+            AudioInfo(e['bitrate'] as int, Uri.parse(e['url'] as String)))
+        .toList();
+  }
+
+  /// Closes the underlying [YoutubeExplode] client and frees resources.
+  void close() => yt.close();
+}
+
+Future<List<Map<String, dynamic>>> _fetchAudioInfoIsolate(String id) async {
+  final yt = YoutubeExplode();
+  try {
     final manifest = await yt.videos.streamsClient.getManifest(id);
     final audios = manifest.audioOnly;
     if (audios.isEmpty) {
@@ -69,19 +84,26 @@ class YoutubeAudioService {
     try {
       chosen = audios.firstWhere((e) => e.tag == 140);
     } on StateError {
-      final within =
-          audios.where((e) => e.bitrate.kiloBitsPerSecond <= maxBitrateKbps);
+      final within = audios
+          .where((e) =>
+              e.bitrate.kiloBitsPerSecond <= YoutubeAudioService.maxBitrateKbps)
+          .toList();
+      within.sort((a, b) => a.bitrate.compareTo(b.bitrate));
       if (within.isNotEmpty) {
-        chosen = within.sortByBitrate().first;
+        chosen = within.first;
       } else {
-        chosen = audios.sortByBitrate().last;
+        final sorted = audios.toList()
+          ..sort((a, b) => a.bitrate.compareTo(b.bitrate));
+        chosen = sorted.last;
       }
     }
     return [
-      AudioInfo(chosen.bitrate.kiloBitsPerSecond.toInt(), chosen.url)
+      {
+        'bitrate': chosen.bitrate.kiloBitsPerSecond.toInt(),
+        'url': chosen.url.toString(),
+      }
     ];
+  } finally {
+    yt.close();
   }
-
-  /// Closes the underlying [YoutubeExplode] client and frees resources.
-  void close() => yt.close();
 }
