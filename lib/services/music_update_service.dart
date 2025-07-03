@@ -15,9 +15,9 @@ class MusicUpdateService {
   bool _initialFetchDone = false;
   MusicUpdateService(this._apiService, this._cacheRepository);
 
-  void start() {
+  void start({bool immediateFetch = true}) {
     _timer?.cancel();
-    if (!_initialFetchDone) {
+    if (immediateFetch && !_initialFetchDone) {
       _fetch().whenComplete(() => _initialFetchDone = true);
     }
     _timer = Timer.periodic(const Duration(minutes: 15), (_) => _fetch());
