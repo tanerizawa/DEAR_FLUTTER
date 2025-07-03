@@ -74,4 +74,8 @@ Dio dio(
 
   @lazySingleton
   AudioPlayer audioPlayer() => AudioPlayer();
+
+  @lazySingleton
+  AudioLoadConfiguration audioLoadConfiguration() =>
+      const AudioLoadConfiguration();
 }

@@ -122,6 +122,8 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.youtubeExplode(),
     );
     gh.lazySingleton<_i501.AudioPlayer>(() => registerModule.audioPlayer());
+    gh.lazySingleton<_i501.AudioLoadConfiguration>(
+        () => registerModule.audioLoadConfiguration());
     gh.lazySingleton<_i989.LoggingInterceptor>(
       () => _i989.LoggingInterceptor(),
     );
