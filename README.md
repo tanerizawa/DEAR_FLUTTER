@@ -71,8 +71,11 @@ Local notifications are powered by `flutter_local_notifications`. The
 `NotificationService` is initialized in `main.dart` and automatically polls the
 `/quotes/latest` endpoint every 15 minutes. When a new quote is found a
 notification is shown and tapping it opens the quote detail screen.
-The app also polls `/music/latest` every 15 minutes to update the home screen
-with the newest track.
+
+The backend runs a Celery task named `generate_music_recommendation_task`
+every 15 minutes. It stores its result in `/music/latest`, and the Flutter app
+polls this endpoint on the same schedule to update the home screen with the
+newest track.
 
 On Android the default app icon is used for the notification. No additional
 configuration is required other than granting notification permissions on first
@@ -100,6 +103,14 @@ pip install -r requirements.txt
 cd backend && uvicorn app.main:app --reload
 ```
 > **Note**: If you run `uvicorn` from outside `backend/`, export `PYTHONPATH=backend` or run `python -m uvicorn app.main:app --reload`.
+
+Start the Celery worker and beat alongside Uvicorn so background tasks such as
+`generate_music_recommendation_task` can store new quotes and tracks:
+
+```bash
+celery -A app.celery_app.celery_app worker --loglevel=info
+celery -A app.celery_app.celery_app beat --loglevel=info
+```
 
 ### YouTube Audio Service
 
