@@ -25,12 +25,17 @@ class QuoteUpdateService {
 
   void start() {
     _timer?.cancel();
-    _initialFetchDone = false;
-    _fetch().whenComplete(() => _initialFetchDone = true);
+    if (!_initialFetchDone) {
+      _fetch().whenComplete(() => _initialFetchDone = true);
+    }
     _timer = Timer.periodic(const Duration(minutes: 15), (_) => _fetch());
   }
 
-  Future<MotivationalQuote?> refresh() => _fetch();
+  Future<MotivationalQuote?> refresh() async {
+    final quote = await _fetch();
+    _initialFetchDone = true;
+    return quote;
+  }
 
   bool get hasFetchedInitial => _initialFetchDone;
 
