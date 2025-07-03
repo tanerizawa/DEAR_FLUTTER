@@ -84,7 +84,8 @@ Dio dio(
   YoutubeExplode youtubeExplode() => YoutubeExplode();
 
   @lazySingleton
-  AudioPlayer audioPlayer() => AudioPlayer();
+  AudioPlayer audioPlayer(AudioLoadConfiguration config) =>
+      AudioPlayer(audioLoadConfiguration: config);
 
   @lazySingleton
   AudioLoadConfiguration audioLoadConfiguration() =>
