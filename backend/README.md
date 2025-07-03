@@ -31,6 +31,9 @@ gunicorn --preload -w 4 -k uvicorn.workers.UvicornWorker app.main:app
 See `.env.example` for the list of required environment variables including
 `DATABASE_URL` and `OPENROUTER_API_KEY`.
 
+`LOG_LEVEL` controls verbosity for both `logging` and `structlog`. Set
+`LOG_LEVEL=DEBUG` to enable detailed debug logs during development.
+
 ## Background tasks
 
 Motivational quotes are generated automatically using Celery. Ensure Redis is running and start the worker and beat processes alongside Uvicorn:

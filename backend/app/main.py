@@ -9,13 +9,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 from app.api.api import api_router
+from app.core.config import settings
 import sentry_sdk
 import structlog
 
 # --- Setup Logging ---
-logging.basicConfig(level=logging.INFO)
+log_level = logging.getLevelName(settings.LOG_LEVEL)
+logging.basicConfig(level=log_level)
 structlog.configure(
-    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+    wrapper_class=structlog.make_filtering_bound_logger(log_level),
 )
 logger = structlog.get_logger()
 

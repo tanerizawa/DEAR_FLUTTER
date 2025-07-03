@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     # Pengaturan Opsional (Contoh: CORS, Sentry)
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
     SENTRY_DSN: str | None = None
+    LOG_LEVEL: str = "INFO"
 
 
 # Buat satu instance settings untuk digunakan di seluruh aplikasi
