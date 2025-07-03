@@ -279,6 +279,8 @@ Alternatively you can simply run `make test` which installs the requirements and
 
 Contributions are welcome! Please open issues or pull requests on GitHub. Make sure to format code and provide tests where relevant.
 
+- See [docs/CONFIG_NOTES.md](docs/CONFIG_NOTES.md) for how to document any configuration changes.
+
 - Use the commit message style `<type>(<scope>): <description>` as outlined in `AGENTS.md`. For example: `fix(ui): resolve newline issues`.
 
 ## Profiling
