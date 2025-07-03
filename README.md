@@ -118,9 +118,10 @@ Start the Celery worker and beat alongside Uvicorn so background tasks such as
 `generate_music_recommendation_task` can store new quotes and tracks:
 
 ```bash
-celery -A app.celery_app.celery_app worker --loglevel=info
+celery -A app.celery_app.celery_app worker --loglevel=info -P solo
 celery -A app.celery_app.celery_app beat --loglevel=info
 ```
+The `solo` pool ensures that Celery can await these asynchronous tasks properly.
 
 ### YouTube Audio Service
 
