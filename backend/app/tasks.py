@@ -3,14 +3,76 @@
 from app.celery_app import celery_app
 from app.services.profile_analyzer_service import profile_analyzer
 from app.db.session import SessionLocal
-from app import crud
+from app import crud, models
 from app.services.quote_generation_service import QuoteGenerationService
 from app.services.music_keyword_service import MusicKeywordService
 from app.services.music_suggestion_service import MusicSuggestionService
-from app.core.config import settings
 from app.schemas.motivational_quote import MotivationalQuoteCreate
 from app.schemas.audio import AudioTrackCreate
-from app import models
+from youtubesearchpython import VideosSearch
+import structlog
+
+log = structlog.get_logger(__name__)
+
+# --- FUNGSI LOGIKA INTI YANG BISA DIGUNAKAN KEMBALI ---
+async def run_music_generation_flow():
+    """
+    Menjalankan alur lengkap untuk menghasilkan dan menyimpan rekomendasi musik.
+    Fungsi ini sekarang terpisah agar bisa dipanggil dari mana saja.
+    """
+    db = SessionLocal()
+    try:
+        log.info("music_generation_flow:start")
+        journals = (
+            db.query(models.Journal)
+            .order_by(models.Journal.created_at.desc())
+            .limit(5)
+            .all()
+        )
+
+        if not journals:
+            log.warn("music_generation_flow:no_journals_found")
+            return "No journals found to generate music recommendation."
+
+        keyword = await MusicKeywordService().generate_keyword(journals)
+        if not keyword:
+            log.warn("music_generation_flow:no_keyword_generated")
+            return "No keyword generated from journals."
+
+        suggestion = await MusicSuggestionService().suggest_song(keyword)
+        if not suggestion:
+            log.warn("music_generation_flow:no_suggestion_from_service")
+            return "No suggestion returned from music service."
+            
+        youtube_id = ""
+        try:
+            search = VideosSearch(f"{suggestion.title} {suggestion.artist}", limit=1)
+            result = search.result()
+            items = result.get("result", [])
+            if items:
+                youtube_id = items[0].get("id", "")
+                log.info("music_generation_flow:Youtube_success", video_id=youtube_id)
+        except Exception as e:
+            log.error("music_generation_flow:Youtube_failed", error=str(e))
+            youtube_id = "" # Pastikan kosong jika gagal
+
+        if youtube_id:
+            crud.music_track.create(
+                db,
+                obj_in=AudioTrackCreate(
+                    title=suggestion.title,
+                    youtube_id=youtube_id,
+                    artist=suggestion.artist,
+                ),
+            )
+            log.info("music_generation_flow:success", title=suggestion.title)
+            return "Music recommendation generated successfully."
+        else:
+            log.warn("music_generation_flow:no_youtube_result")
+            return "Could not find a suitable YouTube video for the suggestion."
+
+    finally:
+        db.close()
 
 
 @celery_app.task
@@ -37,7 +99,7 @@ async def generate_quote_task():
             db.query(models.Journal).order_by(models.Journal.created_at.desc()).first()
         )
         mood = latest.mood if latest and latest.mood else "Netral"
-        service = QuoteGenerationService(settings=settings)
+        service = QuoteGenerationService()
         text, author = await service.generate_quote(mood)
         if text:
             crud.motivational_quote.create(
@@ -49,51 +111,11 @@ async def generate_quote_task():
     return "Quote generation complete"
 
 
+# Tugas Celery sekarang hanya memanggil fungsi inti
 @celery_app.task
 async def generate_music_recommendation_task():
-    """Generate and store a music recommendation based on recent journals."""
-    db = SessionLocal()
-    try:
-        journals = (
-            db.query(models.Journal)
-            .order_by(models.Journal.created_at.desc())
-            .limit(5)
-            .all()
-        )
-
-        keyword = await MusicKeywordService(settings=settings).generate_keyword(
-            journals
-        )
-        if not keyword:
-            return "No keyword generated"
-
-        suggestion = await MusicSuggestionService(settings=settings).suggest_song(
-            keyword
-        )
-        if not suggestion:
-            return "No suggestion returned"
-        youtube_id = ""
-        try:
-            from youtubesearchpython import VideosSearch
-
-            search = VideosSearch(f"{suggestion.title} {suggestion.artist}", limit=1)
-            result = search.result()
-            items = result.get("result", [])
-            if items:
-                youtube_id = items[0].get("id", "")
-        except Exception:
-            youtube_id = ""
-
-        if youtube_id:
-            crud.music_track.create(
-                db,
-                obj_in=AudioTrackCreate(
-                    title=suggestion.title,
-                    youtube_id=youtube_id,
-                    artist=suggestion.artist,
-                ),
-            )
-            return "Music recommendation generated"
-        return "No YouTube result"
-    finally:
-        db.close()
+    """Tugas Celery terjadwal yang memicu alur generasi musik."""
+    log.info("celery_task:starting_music_generation")
+    result = await run_music_generation_flow()
+    log.info("celery_task:finished_music_generation", result=result)
+    return result
