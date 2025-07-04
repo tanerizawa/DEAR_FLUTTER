@@ -1,3 +1,5 @@
+# backend/app/services/music_suggestion_service.py
+
 import json
 from textwrap import dedent
 from typing import List, Dict, Optional
@@ -29,7 +31,7 @@ class MusicSuggestionService:
                 f"{self.api_base_url}/chat/completions",
                 headers=headers,
                 json=json_data,
-                timeout=20.0,
+                timeout=30.0, # Tambahkan timeout sedikit lebih lama untuk playlist
             )
             response.raise_for_status()
             return response.json()
@@ -37,6 +39,9 @@ class MusicSuggestionService:
     async def suggest_song(
         self, mood: str, user_profile: Optional[UserProfile] = None
     ) -> SongSuggestion | None:
+        # Fungsi ini tetap ada untuk fitur "Lagu Perasaan" Anda
+        # (Tidak perlu diubah)
+        # ... implementasi suggest_song yang sudah ada ...
         profile_summary = ""
         if user_profile:
             emerging = user_profile.emerging_themes or {}
@@ -55,13 +60,10 @@ class MusicSuggestionService:
             Balas dengan JSON {{"title": "...", "artist": "..."}} saja.
             """
         ).strip()
-
         messages = [{"role": "system", "content": prompt}]
-
         try:
             data = await self._call_openrouter(
-                model=self.settings.GENERATOR_MODEL_NAME,
-                messages=messages,
+                model=self.settings.GENERATOR_MODEL_NAME, messages=messages
             )
             content = data["choices"][0]["message"]["content"].strip()
             if content.startswith("```json"):
@@ -74,3 +76,44 @@ class MusicSuggestionService:
         except Exception as e:
             self.log.error("music_suggestion_error", error=str(e))
             return None
+
+
+    # --- FUNGSI BARU UNTUK RADIO STATION ---
+    async def suggest_playlist_for_activity(self, category: str) -> List[SongSuggestion]:
+        """Menyarankan 10 lagu untuk sebuah kategori aktivitas."""
+        
+        prompt_map = {
+            "fokus": "instrumental, lo-fi, atau musik klasik tanpa vokal untuk membantu fokus saat bekerja atau belajar.",
+            "santai": "akustik, ambient, atau jazz yang menenangkan untuk bersantai.",
+            "semangat": "upbeat, pop, atau elektronik yang membangkitkan semangat di pagi hari."
+        }
+        
+        description = prompt_map.get(category, "musik populer umum")
+
+        prompt = dedent(
+            f"""
+            Buat sebuah daftar putar berisi 10 lagu {description}
+            Balas HANYA dengan array JSON valid yang berisi objek dengan key "title" dan "artist".
+            Contoh: [{{"title": "Judul A", "artist": "Artis A"}}, {{"title": "Judul B", "artist": "Artis B"}}]
+            """
+        ).strip()
+
+        messages = [{"role": "system", "content": prompt}]
+
+        try:
+            data = await self._call_openrouter(
+                model=self.settings.GENERATOR_MODEL_NAME, messages=messages
+            )
+            content = data["choices"][0]["message"]["content"].strip()
+            
+            # Membersihkan jika ada blok kode markdown
+            if content.startswith("```json"):
+                content = content[len("```json") :].strip()
+            if content.endswith("```"):
+                content = content[:-3].strip()
+                
+            items = json.loads(content)
+            return [SongSuggestion(**item) for item in items]
+        except Exception as e:
+            self.log.error("playlist_suggestion_error", error=str(e), category=category)
+            return []

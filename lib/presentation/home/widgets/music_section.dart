@@ -263,11 +263,11 @@ class _ShimmerMusicCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
+      baseColor: const Color.fromARGB(255, 224, 224, 224)!,
       highlightColor: Colors.grey[100]!,
       child: Card(
         child: ListTile(
-          leading: Icon(Icons.music_note, color: Colors.grey[400]),
+          leading: Icon(Icons.music_note, color: const Color.fromARGB(255, 39, 79, 191)),
           title: Container(height: 20.0, color: Colors.grey[400]),
           subtitle: Container(height: 15.0, color: Colors.grey[300]),
         ),
