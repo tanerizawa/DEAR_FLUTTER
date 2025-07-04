@@ -48,7 +48,6 @@ quote based on recent journal moods. `generate_music_recommendation_task` runs o
 the same schedule. It extracts a keyword from the most recent journals using
 `MusicKeywordService`, requests song suggestions via `MusicSuggestionService`,
 performs a lightweight YouTube search to resolve a `youtube_id`, and finally
-stores the resulting `AudioTrack` in memory via `set_latest_music`. The most
-recent track can be fetched from `/music/latest`, which the Flutter app polls
-every 15 minutes.
+stores the resulting track in the `musictracks` table. The most recent entry can
+be fetched from `/music/latest`, which the Flutter app polls every 15 minutes.
 
