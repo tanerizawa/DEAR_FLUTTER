@@ -71,7 +71,32 @@ class _MusicSectionState extends State<MusicSection> {
           return const _ShimmerMusicCard();
         }
         if (playlist.isEmpty || idx >= playlist.length) {
-          return const SizedBox.shrink();
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.music_off, size: 64, color: Colors.blueGrey.shade200),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada lagu hari ini. Coba tekan tombol refresh atau cek koneksi internet Anda.',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.blueGrey.shade700),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Coba Lagi'),
+                    onPressed: () async {
+                      _userStartedPlay = false;
+                      await context.read<HomeFeedCubit>().fetchPlaylist();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
         }
         final track = playlist[idx];
         final bool isActivePlayer = _currentTrack?.id == track.id;
