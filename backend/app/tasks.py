@@ -7,6 +7,7 @@ from app import crud
 from app.services.quote_generation_service import QuoteGenerationService
 from app.services.music_keyword_service import MusicKeywordService
 from app.services.music_suggestion_service import MusicSuggestionService
+from app.core.config import settings
 from app.schemas.motivational_quote import MotivationalQuoteCreate
 from app.schemas.audio import AudioTrackCreate
 from app import models
@@ -36,7 +37,7 @@ async def generate_quote_task():
             db.query(models.Journal).order_by(models.Journal.created_at.desc()).first()
         )
         mood = latest.mood if latest and latest.mood else "Netral"
-        service = QuoteGenerationService()
+        service = QuoteGenerationService(settings=settings)
         text, author = await service.generate_quote(mood)
         if text:
             crud.motivational_quote.create(
@@ -60,11 +61,15 @@ async def generate_music_recommendation_task():
             .all()
         )
 
-        keyword = await MusicKeywordService().generate_keyword(journals)
+        keyword = await MusicKeywordService(settings=settings).generate_keyword(
+            journals
+        )
         if not keyword:
             return "No keyword generated"
 
-        suggestion = await MusicSuggestionService().suggest_song(keyword)
+        suggestion = await MusicSuggestionService(settings=settings).suggest_song(
+            keyword
+        )
         if not suggestion:
             return "No suggestion returned"
         youtube_id = ""

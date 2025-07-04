@@ -7,12 +7,12 @@ from app.dependencies import get_current_user, get_db
 router = APIRouter()
 
 
-@router.get("/users/me", response_model=schemas.UserPublic)
+@router.get("/me", response_model=schemas.UserPublic)
 def read_users_me(current_user: models.User = Depends(get_current_user)):
     return current_user
 
 
-@router.delete("/users/me", response_model=schemas.UserPublic)
+@router.delete("/me", response_model=schemas.UserPublic)
 def delete_user_me(
     *,
     db: Session = Depends(get_db),
