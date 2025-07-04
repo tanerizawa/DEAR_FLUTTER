@@ -28,3 +28,4 @@ pytest-asyncio
 
 # --- Utility ---
 youtube-search-python
+yt-dlp
