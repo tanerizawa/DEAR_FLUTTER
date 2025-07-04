@@ -1,3 +1,5 @@
+// lib/presentation/home/cubit/home_feed_state.dart
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:dear_flutter/domain/entities/home_feed.dart';
 
@@ -11,5 +13,6 @@ class HomeFeedState with _$HomeFeedState {
     @Default(HomeFeedStatus.initial) HomeFeedStatus status,
     HomeFeed? feed,
     String? errorMessage,
+    String? lastMood,
   }) = _HomeFeedState;
 }

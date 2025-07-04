@@ -255,7 +255,10 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i183.GetMusicSuggestionsUseCase(gh<_i34.HomeRepository>()),
     );
     gh.factory<_i737.HomeFeedCubit>(
-      () => _i737.HomeFeedCubit(gh<_i34.HomeRepository>()),
+      () => _i737.HomeFeedCubit(
+        gh<_i34.HomeRepository>(),
+        gh<_i614.JournalRepository>(),
+      ),
     );
     gh.factory<_i971.SaveJournalUseCase>(
       () => _i971.SaveJournalUseCase(gh<_i614.JournalRepository>()),
