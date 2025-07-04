@@ -101,6 +101,7 @@ class AudioPlayerHandler extends BaseAudioHandler with SeekHandler {
     await super.stop();
   }
 
+  AudioPlayer get player => _player;
   Duration? get currentDuration => _player.duration;
 
   PlaybackState _transformEvent(PlaybackEvent event) {

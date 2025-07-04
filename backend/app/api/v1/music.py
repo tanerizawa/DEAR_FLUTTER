@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, Query, BackgroundTasks, HTTPException
 from sqlalchemy.orm import Session
 import structlog
 import asyncio # -> Import asyncio
+from app.services.playlist_cache_service import PlaylistCacheService
+import datetime
 
 from app import crud, models, schemas, dependencies
 from app.services.music_suggestion_service import MusicSuggestionService
@@ -54,7 +56,23 @@ async def get_activity_station(
 ):
     """Menghasilkan playlist untuk menemani aktivitas pengguna."""
     log.info("api:get_activity_station", category=category, user_id=current_user.id)
-    
+    today = datetime.date.today().isoformat()
+    # 0. Cek cache dulu
+    cached = PlaylistCacheService.get_playlist(current_user.id, today, category)
+    if cached:
+        log.info("api:playlist_cache_hit", count=len(cached))
+        # Cari YouTube ID untuk lagu yang belum ada youtube_id saja
+        def has_youtube_id(song):
+            return hasattr(song, 'youtube_id') and song.youtube_id
+        playlist = []
+        for song in cached:
+            if has_youtube_id(song):
+                playlist.append(song)
+            else:
+                # fallback: cari youtube_id jika belum ada
+                # (implementasi opsional, bisa dioptimasi)
+                pass
+        return playlist
     # 1. Dapatkan 10 saran lagu dari AI
     suggestions = await suggestion_service.suggest_playlist_for_activity(category=category)
     if not suggestions:
@@ -89,6 +107,9 @@ async def get_activity_station(
     playlist = [track for track in results if track]
     for i, track in enumerate(playlist):
         track.id = i + 1
+
+    # Simpan ke cache (hemat token/AI)
+    PlaylistCacheService.set_playlist(current_user.id, today, category, playlist)
 
     if not playlist:
         raise HTTPException(status_code=404, detail="Tidak dapat menemukan video untuk sugesti lagu yang ada.")

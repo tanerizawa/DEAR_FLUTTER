@@ -22,6 +22,7 @@ class MusicSection extends StatefulWidget {
 class _MusicSectionState extends State<MusicSection> {
   late final AudioPlayerHandler _handler;
   late final StreamSubscription<PlaybackState> _playbackStateSubscription;
+  Timer? _positionTimer;
 
   bool _isPlaying = false;
   Duration _position = Duration.zero;
@@ -29,6 +30,31 @@ class _MusicSectionState extends State<MusicSection> {
   AudioTrack? _currentTrack;
 
   bool _userStartedPlay = false;
+
+  void _startPositionTimer() {
+    _positionTimer?.cancel();
+    _positionTimer = Timer.periodic(const Duration(milliseconds: 200), (_) async {
+      if (!mounted || !_isPlaying) return;
+      final pos = _handler.player.position;
+      final dur = _handler.player.duration;
+      setState(() {
+        _position = pos;
+        _duration = dur ?? _duration;
+      });
+    });
+  }
+
+  void _stopPositionTimer() {
+    _positionTimer?.cancel();
+    _positionTimer = null;
+  }
+
+  @override
+  void dispose() {
+    _positionTimer?.cancel();
+    _playbackStateSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +75,16 @@ class _MusicSectionState extends State<MusicSection> {
         }
         final track = playlist[idx];
         final bool isActivePlayer = _currentTrack?.id == track.id;
+
+        // --- AUTO PLAY jika auto-next aktif dan track berubah ---
+        if (_userStartedPlay && (!isActivePlayer || !_isPlaying)) {
+          // Jangan trigger play jika sedang loading
+          if (!isLoading) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _handlePlayPause(track);
+            });
+          }
+        }
 
         // --- HAPUS AUTOPLAY: hanya play jika user klik manual ---
         // Auto next hanya jika user sudah pernah play manual
@@ -107,6 +143,11 @@ class _MusicSectionState extends State<MusicSection> {
         _position = isPlayingThisTrack ? state.updatePosition : Duration.zero;
         _duration = isPlayingThisTrack ? (mediaDuration ?? Duration.zero) : Duration.zero;
       });
+      if (_isPlaying) {
+        _startPositionTimer();
+      } else {
+        _stopPositionTimer();
+      }
       // Auto next hanya jika user sudah pernah play manual dan playlist belum habis
       if (_userStartedPlay && state.processingState == AudioProcessingState.completed) {
         if (mounted) {
@@ -117,9 +158,11 @@ class _MusicSectionState extends State<MusicSection> {
           final idx = cubit.state.activeIndex;
           if (playlist.isNotEmpty && idx + 1 < playlist.length) {
             cubit.nextSong();
+            // Tetap auto-next ke lagu berikutnya
+            setState(() { _userStartedPlay = true; });
           } else {
             // Playlist habis, stop autoplay
-            _userStartedPlay = false;
+            setState(() { _userStartedPlay = false; });
           }
         }
       }
@@ -136,7 +179,29 @@ class _MusicSectionState extends State<MusicSection> {
         _currentTrack = track;
       });
       await getIt<SongHistoryRepository>().addTrack(track);
-      await _handler.playFromYoutubeId(track.youtubeId, track);
+      try {
+        await _handler.playFromYoutubeId(track.youtubeId, track);
+      } catch (e) {
+        // Error handling: show snackbar, skip to next song, stop auto-play for this track
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal memutar lagu: ${track.title} (\"${e.toString()}\"). Melewati ke lagu berikutnya.'),
+              backgroundColor: Colors.red.shade400,
+            ),
+          );
+          // Skip to next song if available
+          final cubit = context.read<HomeFeedCubit>();
+          final playlist = cubit.state.playlist;
+          final idx = cubit.state.activeIndex;
+          if (playlist.isNotEmpty && idx + 1 < playlist.length) {
+            cubit.nextSong();
+            setState(() { _userStartedPlay = true; });
+          } else {
+            setState(() { _userStartedPlay = false; });
+          }
+        }
+      }
     }
   }
 
