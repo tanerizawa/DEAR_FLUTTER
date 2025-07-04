@@ -37,10 +37,6 @@ class _MusicSectionState extends State<MusicSection> {
 
     _playSub = _handler.playbackState.listen((state) {
       if (!mounted) return;
-
-      // --- PERBAIKAN UTAMA DI SINI ---
-      // Kita hanya perlu memperbarui status 'isPlaying' dan mereset jika lagu selesai.
-      // Kita tidak perlu memeriksa ID lagu di sini.
       if (state.processingState == AudioProcessingState.completed) {
         _resetState();
       } else {
@@ -82,15 +78,13 @@ class _MusicSectionState extends State<MusicSection> {
   }
 
   Future<void> _handlePlayPause(AudioTrack track) async {
-    // Jika lagu yang ditekan berbeda dengan yang sedang diputar
     if (_currentTrack?.id != track.id) {
-      // Set _currentTrack SEBELUM memutar lagu
       setState(() {
         _currentTrack = track;
       });
       await getIt<SongHistoryRepository>().addTrack(track);
       await _handler.playFromYoutubeId(track.youtubeId);
-    } else { // Jika lagu yang sama ditekan
+    } else {
       if (_isPlaying) {
         await _handler.pause();
       } else {
@@ -115,7 +109,6 @@ class _MusicSectionState extends State<MusicSection> {
           return const SizedBox.shrink();
         }
 
-        // Penentuan apakah kartu ini adalah pemutar yang aktif
         final bool isActivePlayer = _currentTrack?.id == track.id;
 
         return Column(
@@ -128,7 +121,6 @@ class _MusicSectionState extends State<MusicSection> {
             const SizedBox(height: 16),
             _MusicCard(
               track: track,
-              // Kirim status isPlaying hanya jika kartu ini aktif
               isPlaying: isActivePlayer && _isPlaying,
               duration: isActivePlayer ? _duration : Duration.zero,
               position: isActivePlayer ? _position : Duration.zero,
@@ -142,7 +134,7 @@ class _MusicSectionState extends State<MusicSection> {
   }
 }
 
-// _MusicCard dan _ShimmerMusicCard tidak perlu diubah, bisa dibiarkan seperti sebelumnya.
+// --- REVISI UTAMA PADA _MusicCard ---
 class _MusicCard extends StatelessWidget {
   const _MusicCard({
     required this.track,
@@ -160,37 +152,112 @@ class _MusicCard extends StatelessWidget {
   final VoidCallback onTap;
   final Function(double) onSeek;
 
+  // Helper untuk format durasi
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return "$minutes:$seconds";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.music_note, size: 40),
-            title: Text(track.title, style: Theme.of(context).textTheme.titleMedium),
-            subtitle: Text(track.artist ?? '', style: Theme.of(context).textTheme.bodySmall),
-            trailing: IconButton(
-              iconSize: 32,
-              icon: Icon(isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled),
-              onPressed: onTap,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                // Cover Art
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    color: Colors.grey.shade300,
+                    child: const Icon(Icons.music_note, size: 30, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Judul dan Artis
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        track.title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        track.artist ?? 'Artis Tidak Diketahui',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                // Tombol Play/Pause dengan animasi
+                IconButton(
+                  iconSize: 42,
+                  icon: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    transitionBuilder: (child, animation) {
+                      return ScaleTransition(scale: animation, child: child);
+                    },
+                    child: Icon(
+                      isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
+                      key: ValueKey<bool>(isPlaying), // Penting untuk animasi
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  onPressed: onTap,
+                ),
+              ],
             ),
-          ),
-          if (isPlaying)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Slider(
-                value: position.inMilliseconds.toDouble().clamp(0.0, duration.inMilliseconds.toDouble()),
-                max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
-                onChanged: onSeek,
-              ),
-            ),
-        ],
+            // Tampilkan Seek Bar hanya jika lagu sedang diputar
+            if (isPlaying)
+              Column(
+                children: [
+                  const SizedBox(height: 8),
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+                      overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+                      trackHeight: 2.0,
+                    ),
+                    child: Slider(
+                      value: position.inMilliseconds.toDouble().clamp(0.0, duration.inMilliseconds.toDouble()),
+                      max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
+                      onChanged: onSeek,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(_formatDuration(position), style: Theme.of(context).textTheme.bodySmall),
+                        Text(_formatDuration(duration), style: Theme.of(context).textTheme.bodySmall),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+          ],
+        ),
       ),
     );
   }
 }
 
+// Shimmer card tidak perlu diubah
 class _ShimmerMusicCard extends StatelessWidget {
   const _ShimmerMusicCard();
   @override
