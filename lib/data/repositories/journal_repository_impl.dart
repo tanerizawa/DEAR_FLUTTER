@@ -4,18 +4,21 @@ import 'package:dear_flutter/data/datasources/local/app_database.dart';
 import 'package:dear_flutter/data/datasources/local/journal_dao.dart';
 import 'package:dear_flutter/data/datasources/remote/journal_api_service.dart';
 import 'package:dear_flutter/data/models/requests.dart';
+// --- PERBAIKAN: Perbaiki path import ---
 import 'package:dear_flutter/domain/entities/journal.dart';
+import 'package:dear_flutter/domain/repositories/home_repository.dart';
 import 'package:dear_flutter/domain/repositories/journal_repository.dart';
 import 'package:injectable/injectable.dart';
+import 'package:flutter/foundation.dart'; // Import untuk debugPrint
 
-@LazySingleton(as: JournalRepository) // <-- INI PERBAIKANNYA
+@LazySingleton(as: JournalRepository)
 class JournalRepositoryImpl implements JournalRepository {
   final JournalApiService _apiService;
   final JournalDao _journalDao;
+  final HomeRepository _homeRepository;
 
-  JournalRepositoryImpl(this._apiService, this._journalDao);
+  JournalRepositoryImpl(this._apiService, this._journalDao, this._homeRepository);
 
-  // ... (sisa kode mapper dan fungsi lainnya tetap sama)
   Journal _mapJournalEntryToDomain(JournalEntry entry) {
     return Journal(
         id: entry.id,
@@ -45,8 +48,17 @@ class JournalRepositoryImpl implements JournalRepository {
 
   @override
   Future<void> createJournal(CreateJournalRequest request) async {
-    final newJournalFromServer = await _apiService.createJournal(request);
-    await _journalDao.insertJournal(_mapDomainToJournalEntry(newJournalFromServer));
+    try {
+      final newJournalFromServer = await _apiService.createJournal(request);
+      await _journalDao.insertJournal(_mapDomainToJournalEntry(newJournalFromServer));
+
+      debugPrint('Memicu generasi konten baru setelah membuat jurnal...');
+      _homeRepository.triggerMusicGeneration();
+      _homeRepository.triggerQuoteGeneration();
+    } catch (e) {
+      debugPrint('Error saat membuat jurnal: $e');
+      rethrow;
+    }
   }
 
   @override

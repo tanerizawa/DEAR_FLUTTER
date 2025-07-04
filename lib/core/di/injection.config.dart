@@ -231,6 +231,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i34.HomeRepository>(
       () => _i405.HomeRepositoryImpl(gh<_i104.HomeApiService>()),
     );
+    gh.lazySingleton<_i614.JournalRepository>(
+      () => _i485.JournalRepositoryImpl(
+        gh<_i416.JournalApiService>(),
+        gh<_i1044.JournalDao>(),
+        gh<_i34.HomeRepository>(),
+      ),
+    );
     gh.lazySingleton<_i500.QuoteUpdateService>(
       () => _i500.QuoteUpdateService(
         gh<_i104.HomeApiService>(),
@@ -250,11 +257,23 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i737.HomeFeedCubit>(
       () => _i737.HomeFeedCubit(gh<_i34.HomeRepository>()),
     );
+    gh.factory<_i971.SaveJournalUseCase>(
+      () => _i971.SaveJournalUseCase(gh<_i614.JournalRepository>()),
+    );
+    gh.factory<_i300.GetJournalsUseCase>(
+      () => _i300.GetJournalsUseCase(gh<_i614.JournalRepository>()),
+    );
+    gh.factory<_i677.SyncJournalsUseCase>(
+      () => _i677.SyncJournalsUseCase(gh<_i614.JournalRepository>()),
+    );
     gh.lazySingleton<_i374.ChatRepository>(
       () => _i41.ChatRepositoryImpl(
         gh<_i1065.ChatApiService>(),
         gh<_i596.ChatMessageDao>(),
       ),
+    );
+    gh.factory<_i114.JournalEditorCubit>(
+      () => _i114.JournalEditorCubit(gh<_i971.SaveJournalUseCase>()),
     );
     gh.factory<_i819.GetChatHistoryUseCase>(
       () => _i819.GetChatHistoryUseCase(gh<_i374.ChatRepository>()),
@@ -262,16 +281,16 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i696.SendMessageUseCase>(
       () => _i696.SendMessageUseCase(gh<_i374.ChatRepository>()),
     );
+    gh.factory<_i941.HomeCubit>(
+      () => _i941.HomeCubit(
+        gh<_i300.GetJournalsUseCase>(),
+        gh<_i677.SyncJournalsUseCase>(),
+      ),
+    );
     gh.lazySingleton<_i434.MusicUpdateService>(
       () => _i434.MusicUpdateService(
         gh<_i104.HomeApiService>(),
         gh<_i12.LatestMusicCacheRepository>(),
-      ),
-    );
-    gh.lazySingleton<_i614.JournalRepository>(
-      () => _i485.JournalRepositoryImpl(
-        gh<_i416.JournalApiService>(),
-        gh<_i1044.JournalDao>(),
       ),
     );
     gh.factory<_i119.LatestMusicCubit>(
@@ -310,24 +329,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i945.DeleteAccountUseCase>(
       () => _i945.DeleteAccountUseCase(gh<_i528.AuthRepository>()),
-    );
-    gh.factory<_i971.SaveJournalUseCase>(
-      () => _i971.SaveJournalUseCase(gh<_i614.JournalRepository>()),
-    );
-    gh.factory<_i300.GetJournalsUseCase>(
-      () => _i300.GetJournalsUseCase(gh<_i614.JournalRepository>()),
-    );
-    gh.factory<_i677.SyncJournalsUseCase>(
-      () => _i677.SyncJournalsUseCase(gh<_i614.JournalRepository>()),
-    );
-    gh.factory<_i114.JournalEditorCubit>(
-      () => _i114.JournalEditorCubit(gh<_i971.SaveJournalUseCase>()),
-    );
-    gh.factory<_i941.HomeCubit>(
-      () => _i941.HomeCubit(
-        gh<_i300.GetJournalsUseCase>(),
-        gh<_i677.SyncJournalsUseCase>(),
-      ),
     );
     gh.factory<_i776.ProfileCubit>(
       () => _i776.ProfileCubit(

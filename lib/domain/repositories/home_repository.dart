@@ -8,4 +8,6 @@ abstract class HomeRepository {
   Future<MotivationalQuote> getLatestQuote();
   Future<AudioTrack?> getLatestMusic();
   Future<List<SongSuggestion>> getMusicSuggestions(String mood);
+  Future<void> triggerMusicGeneration();
+  Future<void> triggerQuoteGeneration();
 }
