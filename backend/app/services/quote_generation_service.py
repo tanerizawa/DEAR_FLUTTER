@@ -2,7 +2,6 @@
 
 import httpx
 import structlog
-import re # -> Import library regular expression
 from fastapi import Depends
 from textwrap import dedent
 from typing import List, Dict, Tuple
@@ -31,17 +30,23 @@ class QuoteGenerationService:
             response.raise_for_status()
             return response.json()
 
+    # --- PERBAIKAN UTAMA DI FUNGSI PARSING INI ---
     def _parse_quote(self, content: str) -> Tuple[str, str]:
         """
-        Memisahkan teks kutipan dan penulis dengan lebih cerdas.
+        Memisahkan teks kutipan dan penulis dengan metode yang lebih andal.
         """
-        # Pola untuk mencari pemisah seperti ' - ' atau ' — '
-        match = re.search(r'\s+[-—]\s+([\w\s]+)$', content)
-        
-        if match:
-            # Jika ditemukan, pisahkan berdasarkan pola tersebut
-            author = match.group(1).strip()
-            text = content[:match.start()].strip().strip('"')
+        # Menentukan pemisah yang mungkin digunakan ('—' atau '-')
+        separator = " — "
+        if separator not in content:
+            separator = " - "
+
+        # Memisahkan string dari KANAN berdasarkan pemisah terakhir
+        before, sep, after = content.rpartition(separator)
+
+        # Jika pemisah ditemukan DAN ada teks setelahnya (penulis)
+        if sep and after:
+            text = before.strip().strip('"')
+            author = after.strip()
             return text, author
         else:
             # Jika tidak ada pemisah, anggap penulisnya 'Unknown'
@@ -50,7 +55,6 @@ class QuoteGenerationService:
     async def generate_quote(self, mood: str) -> Tuple[str, str]:
         """Menghasilkan satu kutipan motivasi singkat dan penulisnya."""
         
-        # --- PERBAIKAN PADA PROMPT ---
         prompt = dedent(
             f"""
             Buat HANYA SATU kutipan motivasi yang singkat (maksimal 160 karakter) 
@@ -70,10 +74,9 @@ class QuoteGenerationService:
             )
             content = data["choices"][0]["message"]["content"].strip()
             
-            # --- PERBAIKAN PADA LOGIKA PARSING ---
+            # Menggunakan fungsi parsing yang baru dan lebih baik
             text, author = self._parse_quote(content)
             
-            # Memastikan teks tidak melebihi batas (sebagai pengaman tambahan)
             if len(text) > 160:
                 text = text[:157] + "..."
             
