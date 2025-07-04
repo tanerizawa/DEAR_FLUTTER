@@ -99,6 +99,7 @@ import 'package:dear_flutter/presentation/journal/cubit/journal_editor_cubit.dar
 import 'package:dear_flutter/presentation/profile/cubit/profile_cubit.dart'
     as _i776;
 import 'package:dear_flutter/services/audio_player_handler.dart' as _i133;
+import 'package:dear_flutter/services/audio_url_cache_service.dart' as _i441;
 import 'package:dear_flutter/services/music_update_service.dart' as _i434;
 import 'package:dear_flutter/services/notification_service.dart' as _i448;
 import 'package:dear_flutter/services/quote_update_service.dart' as _i500;
@@ -134,11 +135,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i989.LoggingInterceptor>(
       () => _i989.LoggingInterceptor(),
     );
-    gh.lazySingleton<_i133.AudioPlayerHandler>(
-      () => _i133.AudioPlayerHandler(),
-    );
     gh.lazySingleton<_i448.NotificationService>(
       () => _i448.NotificationService(),
+    );
+    gh.lazySingleton<_i441.AudioUrlCacheService>(
+      () => _i441.AudioUrlCacheService(),
     );
     gh.lazySingleton<_i1030.UserPreferencesRepository>(
       () => _i1030.UserPreferencesRepository(gh<_i460.SharedPreferences>()),
@@ -157,6 +158,9 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i227.SongHistoryRepositoryImpl(
         gh<_i979.Box<Map<dynamic, dynamic>>>(instanceName: 'songBox'),
       ),
+    );
+    gh.lazySingleton<_i133.AudioPlayerHandler>(
+      () => _i133.AudioPlayerHandler(gh<_i441.AudioUrlCacheService>()),
     );
     await gh.lazySingletonAsync<_i979.Box<Map<dynamic, dynamic>>>(
       () => registerModule.latestMusicBox,
@@ -251,12 +255,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i183.GetMusicSuggestionsUseCase>(
       () => _i183.GetMusicSuggestionsUseCase(gh<_i34.HomeRepository>()),
     );
-    gh.factory<_i737.HomeFeedCubit>(
-      () => _i737.HomeFeedCubit(
-        gh<_i34.HomeRepository>(),
-        gh<_i614.JournalRepository>(),
-      ),
-    );
     gh.factory<_i971.SaveJournalUseCase>(
       () => _i971.SaveJournalUseCase(gh<_i614.JournalRepository>()),
     );
@@ -280,6 +278,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i696.SendMessageUseCase>(
       () => _i696.SendMessageUseCase(gh<_i374.ChatRepository>()),
+    );
+    gh.factory<_i737.HomeFeedCubit>(
+      () => _i737.HomeFeedCubit(
+        gh<_i34.HomeRepository>(),
+        gh<_i614.JournalRepository>(),
+        gh<_i441.AudioUrlCacheService>(),
+      ),
     );
     gh.factory<_i941.HomeCubit>(
       () => _i941.HomeCubit(
