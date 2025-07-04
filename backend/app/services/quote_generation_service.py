@@ -1,5 +1,8 @@
+# backend/app/services/quote_generation_service.py
+
 import httpx
 import structlog
+import re # -> Import library regular expression
 from fastapi import Depends
 from textwrap import dedent
 from typing import List, Dict, Tuple
@@ -28,12 +31,33 @@ class QuoteGenerationService:
             response.raise_for_status()
             return response.json()
 
+    def _parse_quote(self, content: str) -> Tuple[str, str]:
+        """
+        Memisahkan teks kutipan dan penulis dengan lebih cerdas.
+        """
+        # Pola untuk mencari pemisah seperti ' - ' atau ' — '
+        match = re.search(r'\s+[-—]\s+([\w\s]+)$', content)
+        
+        if match:
+            # Jika ditemukan, pisahkan berdasarkan pola tersebut
+            author = match.group(1).strip()
+            text = content[:match.start()].strip().strip('"')
+            return text, author
+        else:
+            # Jika tidak ada pemisah, anggap penulisnya 'Unknown'
+            return content.strip().strip('"'), "Unknown"
+
     async def generate_quote(self, mood: str) -> Tuple[str, str]:
-        """Return a motivational quote text and author."""
+        """Menghasilkan satu kutipan motivasi singkat dan penulisnya."""
+        
+        # --- PERBAIKAN PADA PROMPT ---
         prompt = dedent(
             f"""
-            Buat satu kutipan motivasi singkat sesuai suasana hati berikut: {mood}.
-            Jika relevan, sertakan nama penulis setelah tanda dash.
+            Buat HANYA SATU kutipan motivasi yang singkat (maksimal 160 karakter) 
+            sesuai dengan suasana hati '{mood}'.
+            Setelah kutipan, sertakan nama penulisnya diawali dengan tanda pemisah ' - '.
+            Contoh: "Ini adalah kutipan. - Penulis"
+            JANGAN membuat beberapa kutipan. JANGAN menggunakan format list atau bullet.
             """
         ).strip()
 
@@ -45,10 +69,15 @@ class QuoteGenerationService:
                 messages=messages,
             )
             content = data["choices"][0]["message"]["content"].strip()
-            if " - " in content:
-                text, author = content.split(" - ", 1)
-                return text.strip(), author.strip()
-            return content, "Unknown"
+            
+            # --- PERBAIKAN PADA LOGIKA PARSING ---
+            text, author = self._parse_quote(content)
+            
+            # Memastikan teks tidak melebihi batas (sebagai pengaman tambahan)
+            if len(text) > 160:
+                text = text[:157] + "..."
+            
+            return text, author
         except Exception as e:
             self.log.error("quote_generation_error", error=str(e))
             return "", ""
