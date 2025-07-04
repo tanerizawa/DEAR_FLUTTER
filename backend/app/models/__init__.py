@@ -4,6 +4,7 @@ from .chat import ChatMessage
 from .journal import Journal
 from .article import Article
 from .motivational_quote import MotivationalQuote
+from .music_track import MusicTrack
 
 __all__ = [
     "User",
@@ -12,4 +13,5 @@ __all__ = [
     "Journal",
     "Article",
     "MotivationalQuote",
+    "MusicTrack",
 ]

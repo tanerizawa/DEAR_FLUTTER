@@ -6,7 +6,6 @@ import structlog
 
 from app import crud, models, schemas, dependencies
 from app.services.music_suggestion_service import MusicSuggestionService
-from app.state.music import get_latest_music as _get_latest_music
 
 router = APIRouter()
 log = structlog.get_logger(__name__)
@@ -25,6 +24,8 @@ async def recommend_music(
 
 
 @router.get("/latest", response_model=schemas.AudioTrack | None)
-def get_latest_music() -> schemas.AudioTrack | None:
+def get_latest_music(
+    db: Session = Depends(dependencies.get_db),
+) -> schemas.AudioTrack | None:
     """Return the most recently generated music recommendation."""
-    return _get_latest_music()
+    return crud.music_track.get_latest(db)
