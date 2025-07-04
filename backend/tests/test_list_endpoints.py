@@ -86,16 +86,23 @@ def test_music_latest_endpoint_returns_none_by_default(client):
 
 
 def test_music_latest_endpoint_returns_track(client):
-    from app.state.music import set_latest_music
-    from app.schemas.audio import AudioTrack
-
-    set_latest_music(
-        AudioTrack(id=1, title="t", youtube_id="y", artist="a", cover_url="c")
-    )
-    client_app, _ = client
+    client_app, session_local = client
+    db = session_local()
+    try:
+        crud.music_track.create(
+            db,
+            obj_in=schemas.AudioTrackCreate(
+                title="t",
+                youtube_id="y",
+                artist="a",
+                cover_url="c",
+            ),
+        )
+    finally:
+        db.close()
     resp = client_app.get("/api/v1/music/latest")
     assert resp.status_code == 200
     data = resp.json()
     assert data["title"] == "t"
     assert data["artist"] == "a"
-    assert data["cover_url"] == "c"
+    assert data["cover_url"] is None

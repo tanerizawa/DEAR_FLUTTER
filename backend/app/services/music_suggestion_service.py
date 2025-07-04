@@ -16,7 +16,7 @@ class MusicSuggestionService:
 
     def __init__(self, settings: Settings = Depends(lambda: settings)):
         self.settings = settings
-        self.api_base_url = "https://openrouter.ai/api/v1"
+        self.api_base_url = self.settings.OPENROUTER_BASE_URL
         self.log = structlog.get_logger(__name__)
 
     async def _call_openrouter(

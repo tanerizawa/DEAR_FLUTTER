@@ -1,11 +1,10 @@
 from datetime import datetime
 
 import pytest
-from app import models
+from app import models, crud
 from app.services.music_keyword_service import MusicKeywordService
 from app.services.music_suggestion_service import MusicSuggestionService
 from app.schemas.song import SongSuggestion
-from app.state.music import get_latest_music
 
 
 @pytest.mark.asyncio
@@ -46,7 +45,11 @@ async def test_generate_music_recommendation_task_sets_track(monkeypatch, temp_s
     monkeypatch.setattr("youtubesearchpython.VideosSearch", DummySearch)
 
     await generate_music_recommendation_task()
-    track = get_latest_music()
-    assert track is not None
-    assert track.title == "Song"
-    assert track.youtube_id == "ytid"
+    db = temp_session()
+    try:
+        track = crud.music_track.get_latest(db)
+        assert track is not None
+        assert track.title == "Song"
+        assert track.youtube_id == "ytid"
+    finally:
+        db.close()

@@ -8,8 +8,7 @@ from app.services.quote_generation_service import QuoteGenerationService
 from app.services.music_keyword_service import MusicKeywordService
 from app.services.music_suggestion_service import MusicSuggestionService
 from app.schemas.motivational_quote import MotivationalQuoteCreate
-from app.schemas.audio import AudioTrack
-from app.state.music import set_latest_music
+from app.schemas.audio import AudioTrackCreate
 from app import models
 
 
@@ -81,13 +80,14 @@ async def generate_music_recommendation_task():
             youtube_id = ""
 
         if youtube_id:
-            track = AudioTrack(
-                id=0,
-                title=suggestion.title,
-                youtube_id=youtube_id,
-                artist=suggestion.artist,
+            crud.music_track.create(
+                db,
+                obj_in=AudioTrackCreate(
+                    title=suggestion.title,
+                    youtube_id=youtube_id,
+                    artist=suggestion.artist,
+                ),
             )
-            set_latest_music(track)
             return "Music recommendation generated"
         return "No YouTube result"
     finally:

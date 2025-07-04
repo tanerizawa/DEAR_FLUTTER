@@ -205,6 +205,7 @@ The backend reads several variables from the environment. Provide a
 - `DATABASE_URL` – SQLAlchemy database URL (defaults to SQLite `sqlite:///./test.db`).
 - `SECRET_KEY` – secret key used for JWT creation (defaults to `supersecretkey`).
 - `OPENROUTER_API_KEY` – API key for the OpenRouter chat and music recommendation service (required for `/music/recommend`).
+- `OPENROUTER_BASE_URL` – base URL for OpenRouter API.
 - `PLANNER_MODEL_NAME` – model name used by the conversation planner.
 - `GENERATOR_MODEL_NAME` – model name used by the response generator.
 - `APP_SITE_URL` – site URL sent in OpenRouter requests for identification.
@@ -220,6 +221,7 @@ Create a `.env` file inside the `backend/` directory and define these variables:
 
 ```bash
 OPENROUTER_API_KEY=<your-key>
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 PLANNER_MODEL_NAME=mistralai/mistral-7b-instruct
 GENERATOR_MODEL_NAME=google/gemma-7b-it
 APP_SITE_URL=https://yourdomain.com

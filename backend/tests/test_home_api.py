@@ -1,5 +1,4 @@
 from app import crud, schemas
-from app.state.music import set_latest_music
 
 
 def test_home_feed_returns_latest_data(client):
@@ -15,16 +14,25 @@ def test_home_feed_returns_latest_data(client):
     finally:
         db.close()
 
-    set_latest_music(
-        schemas.AudioTrack(id=1, title="t", youtube_id="y", artist="a", cover_url=None)
-    )
+    db = session_local()
+    try:
+        crud.music_track.create(
+            db,
+            obj_in=schemas.AudioTrackCreate(
+                title="t",
+                youtube_id="y",
+                artist="a",
+                cover_url=None,
+            ),
+        )
+    finally:
+        db.close()
 
     resp = client_app.get("/api/v1/home-feed")
     assert resp.status_code == 200
     data = resp.json()
     assert data["quote"]["id"] == latest.id
     assert data["music"]["title"] == "t"
-    set_latest_music(None)
 
 
 def test_home_feed_without_music(client):
@@ -36,8 +44,6 @@ def test_home_feed_without_music(client):
         )
     finally:
         db.close()
-
-    set_latest_music(None)
 
     resp = client_app.get("/api/v1/home-feed")
     assert resp.status_code == 200

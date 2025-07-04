@@ -40,6 +40,7 @@ class Settings(BaseSettings):
 
     # Kredensial & Konfigurasi Layanan Eksternal
     OPENROUTER_API_KEY: str | None = None
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     PLANNER_MODEL_NAME: str = "deepseek/deepseek-chat-v3-0324"
     GENERATOR_MODEL_NAME: str = "deepseek/deepseek-chat-v3-0324"
 
