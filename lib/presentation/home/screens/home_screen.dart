@@ -1,17 +1,18 @@
 // lib/presentation/home/screens/home_screen.dart
 
+import 'dart:async'; // <-- PERBAIKAN: Baris ini yang terlewat dan menyebabkan error
+
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:dear_flutter/presentation/home/widgets/widgets.dart';
-import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// Home page showing the latest quote and music recommendation.
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,19 +39,23 @@ class _HomeScreenState extends State<HomeScreen> {
     _playSub = _handler.playbackState.listen((state) async {
       if (state.processingState == AudioProcessingState.completed) {
         await _handler.seek(Duration.zero);
+        if (!mounted) return;
         setState(() {
           _isPlaying = false;
           _currentTrack = null;
         });
       } else {
+        if (!mounted) return;
         setState(() => _isPlaying = state.playing);
       }
     });
     _posSub = _handler.positionStream.listen((d) {
+      if (!mounted) return;
       setState(() => _position = d);
     });
     _durSub = _handler.durationStream.listen((d) {
       if (d != null) {
+        if (!mounted) return;
         setState(() => _duration = d);
       }
     });
@@ -64,29 +69,26 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // Play selected track and add to history
   Future<void> _playTrack(AudioTrack track) async {
     try {
-      setState(() => _loading = true); // Show loading indicator
-
-      // Save track to history and start playback
+      if (!mounted) return;
+      setState(() => _loading = true);
       await getIt<SongHistoryRepository>().addTrack(track);
       await _handler.playFromYoutubeId(track.youtubeId);
       if (!mounted) return;
       setState(() {
         _currentTrack = track;
-        _loading = false; // Hide loading indicator
+        _loading = false;
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _loading = false); // Hide loading indicator on error
+      setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gagal memuat lagu. Coba lagi.')),
       );
     }
   }
 
-  // Toggle play/pause
   Future<void> _toggle() async {
     if (_isPlaying) {
       await _handler.pause();
@@ -99,7 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
     await _handler.seek(Duration(milliseconds: value.round()));
   }
 
-  // Handle refresh
   Future<void> _onRefresh(BuildContext ctx) async {
     await ctx.read<HomeFeedCubit>().fetchHomeFeed();
   }
@@ -114,36 +115,39 @@ class _HomeScreenState extends State<HomeScreen> {
           body: Column(
             children: [
               Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () => _onRefresh(context),
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      const QuoteSection(),
-                      const SizedBox(height: 24),
-                      MusicSection(
-                        onPlay: _playTrack,
-                        loading: _loading,
+                child: BlocBuilder<HomeFeedCubit, HomeFeedState>(
+                  builder: (context, state) {
+                    return RefreshIndicator(
+                      onRefresh: () => _onRefresh(context),
+                      child: ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          const QuoteSection(),
+                          const SizedBox(height: 24),
+                          MusicSection(
+                            onPlay: _playTrack,
+                            loading: _loading,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
-            if (_currentTrack != null)
-              PlayerBar(
-                track: _currentTrack!,
-                isPlaying: _isPlaying,
-                isLoading: _loading,
-                position: _position,
-                duration: _duration,
-                onToggle: _toggle,
-                onSeek: _seek,
-              ),
-          ],
+              if (_currentTrack != null)
+                PlayerBar(
+                  track: _currentTrack!,
+                  isPlaying: _isPlaying,
+                  isLoading: _loading,
+                  position: _position,
+                  duration: _duration,
+                  onToggle: _toggle,
+                  onSeek: _seek,
+                ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
 }
-
