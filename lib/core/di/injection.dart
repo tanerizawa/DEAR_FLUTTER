@@ -1,6 +1,7 @@
 //lib/core/di/injection.dart
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
+import 'package:dear_flutter/services/radio_audio_player_handler.dart';
 
 // Import hasil generate injectable dan module utama
 import 'injection.config.dart';       // <--- auto-generated oleh build_runner

@@ -20,37 +20,67 @@ class RadioSection extends StatelessWidget {
           final bool isPlaying = state.status == RadioStatus.playing;
           final bool isLoading = state.status == RadioStatus.loading;
 
-          return Card(
-            elevation: 2,
-            clipBehavior: Clip.antiAlias,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              leading: Icon(
-                // Ikon berubah jika sedang diputar
-                isPlaying ? Icons.radio_button_checked_rounded : Icons.radio_rounded,
-                size: 30,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: const Text('Radio Dear Diary', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(
-                isPlaying ? "Menemani harimu..." : "Putar playlist untuk aktivitasmu",
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              trailing: isLoading
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                  : IconButton(
-                      icon: Icon(isPlaying ? Icons.stop_circle_outlined : Icons.play_arrow_rounded, size: 32),
-                      onPressed: () {
-                        final cubit = context.read<RadioCubit>();
-                        if (isPlaying) {
-                          cubit.stopRadio();
-                        } else {
-                          // Selalu putar kategori 'santai' sebagai default
-                          cubit.playRadio('santai');
-                        }
-                      },
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withOpacity(0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                children: [
+                  Icon(
+                    // Ikon berubah jika sedang diputar
+                    isPlaying ? Icons.radio_button_checked_rounded : Icons.radio_rounded,
+                    size: 44,
+                    color: Colors.orange.shade400,
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Radio Dear Diary',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Colors.orange.shade900,
+                                )),
+                        const SizedBox(height: 4),
+                        Text(
+                          isPlaying ? "Menemani harimu..." : "Putar playlist untuk aktivitasmu",
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.orange.shade700,
+                              ),
+                        ),
+                      ],
                     ),
+                  ),
+                  const SizedBox(width: 8),
+                  isLoading
+                      ? const SizedBox(width: 32, height: 32, child: CircularProgressIndicator(strokeWidth: 2))
+                      : IconButton(
+                          icon: Icon(isPlaying ? Icons.stop_circle_outlined : Icons.play_arrow_rounded, size: 44),
+                          color: Colors.orange.shade700,
+                          onPressed: () {
+                            final cubit = context.read<RadioCubit>();
+                            if (isPlaying) {
+                              cubit.stopRadio();
+                            } else {
+                              // Selalu putar kategori 'santai' sebagai default
+                              cubit.playRadio('santai');
+                            }
+                          },
+                        ),
+                ],
+              ),
             ),
           );
         },

@@ -28,57 +28,102 @@ class _MusicSectionState extends State<MusicSection> {
   Duration _duration = Duration.zero;
   AudioTrack? _currentTrack;
 
+  bool _userStartedPlay = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HomeFeedCubit, HomeFeedState>(
+      buildWhen: (prev, curr) =>
+        prev.playlist != curr.playlist ||
+        prev.activeIndex != curr.activeIndex ||
+        prev.status != curr.status,
+      builder: (context, state) {
+        final playlist = state.playlist;
+        final idx = state.activeIndex;
+        final isLoading = state.status == HomeFeedStatus.loading;
+        if (isLoading && playlist.isEmpty) {
+          return const _ShimmerMusicCard();
+        }
+        if (playlist.isEmpty || idx >= playlist.length) {
+          return const SizedBox.shrink();
+        }
+        final track = playlist[idx];
+        final bool isActivePlayer = _currentTrack?.id == track.id;
+
+        // --- HAPUS AUTOPLAY: hanya play jika user klik manual ---
+        // Auto next hanya jika user sudah pernah play manual
+        // (auto next di _playbackStateSubscription, bukan di build)
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Untukmu Hari Ini',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 16),
+            _MusicCard(
+              track: track,
+              isPlaying: isActivePlayer && _isPlaying,
+              duration: isActivePlayer ? _duration : Duration.zero,
+              position: isActivePlayer ? _position : Duration.zero,
+              onTap: isLoading ? null : () async {
+                _userStartedPlay = true;
+                await _handlePlayPause(track);
+              },
+              onSeek: isLoading ? null : _seek,
+              onRefresh: isLoading
+                  ? null
+                  : () async {
+                      _userStartedPlay = false;
+                      await context.read<HomeFeedCubit>().fetchPlaylist();
+                    },
+              isLoading: isLoading,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _handler = getIt<AudioPlayerHandler>();
-
-    // --- PERBAIKAN UTAMA: Dengarkan satu stream utama untuk semua data ---
-    _playbackStateSubscription = _handler.playbackState.listen((state) {
+    _playbackStateSubscription = _handler.playbackState.listen((state) async {
       if (!mounted) return;
-      
       final currentMediaItem = _handler.mediaItem.value;
-      // Tentukan apakah lagu yang sedang diputar adalah lagu di kartu ini
       final isPlayingThisTrack = _currentTrack?.id.toString() == currentMediaItem?.id;
-
+      Duration? mediaDuration = currentMediaItem?.duration;
+      if (mediaDuration == null) {
+        try {
+          mediaDuration = _handler.currentDuration;
+        } catch (_) {
+          mediaDuration = Duration.zero;
+        }
+      }
       setState(() {
         _isPlaying = state.playing && isPlayingThisTrack;
         _position = isPlayingThisTrack ? state.updatePosition : Duration.zero;
-        _duration = isPlayingThisTrack ? (currentMediaItem?.duration ?? Duration.zero) : Duration.zero;
-
-        // Reset state jika lagu sudah selesai atau tidak ada yang diputar
-        if (state.processingState == AudioProcessingState.completed) {
-            _resetStateAfterDelay();
-        }
+        _duration = isPlayingThisTrack ? (mediaDuration ?? Duration.zero) : Duration.zero;
       });
-    });
-  }
-
-  // Memberi jeda singkat sebelum mereset agar UI tidak "lompat"
-  void _resetStateAfterDelay() {
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (!mounted) return;
-      // Hanya reset jika benar-benar tidak ada yang diputar
-      if (!_handler.playbackState.value.playing) {
-          _resetState();
+      // Auto next hanya jika user sudah pernah play manual dan playlist belum habis
+      if (_userStartedPlay && state.processingState == AudioProcessingState.completed) {
+        if (mounted) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          if (!mounted) return;
+          final cubit = context.read<HomeFeedCubit>();
+          final playlist = cubit.state.playlist;
+          final idx = cubit.state.activeIndex;
+          if (playlist.isNotEmpty && idx + 1 < playlist.length) {
+            cubit.nextSong();
+          } else {
+            // Playlist habis, stop autoplay
+            _userStartedPlay = false;
+          }
+        }
       }
     });
-  }
-
-  void _resetState() {
-    if (!mounted) return;
-    setState(() {
-      _currentTrack = null;
-      _isPlaying = false;
-      _position = Duration.zero;
-      _duration = Duration.zero;
-    });
-  }
-
-  @override
-  void dispose() {
-    _playbackStateSubscription.cancel();
-    super.dispose();
   }
 
   Future<void> _handlePlayPause(AudioTrack track) async {
@@ -91,49 +136,12 @@ class _MusicSectionState extends State<MusicSection> {
         _currentTrack = track;
       });
       await getIt<SongHistoryRepository>().addTrack(track);
-      // Kirim objek track ke handler agar bisa membuat MediaItem
       await _handler.playFromYoutubeId(track.youtubeId, track);
     }
   }
 
   Future<void> _seek(double value) async {
     await _handler.seek(Duration(milliseconds: value.round()));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<HomeFeedCubit, HomeFeedState>(
-      builder: (context, state) {
-        if (state.status == HomeFeedStatus.loading && state.feed == null) {
-          return const _ShimmerMusicCard();
-        }
-        final track = state.feed?.music;
-        if (track == null) {
-          return const SizedBox.shrink();
-        }
-
-        final bool isActivePlayer = _currentTrack?.id == track.id;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Untukmu Hari Ini', // Judul baru yang lebih personal
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            _MusicCard(
-              track: track,
-              isPlaying: isActivePlayer && _isPlaying,
-              duration: isActivePlayer ? _duration : Duration.zero,
-              position: isActivePlayer ? _position : Duration.zero,
-              onTap: () => _handlePlayPause(track),
-              onSeek: _seek,
-            ),
-          ],
-        );
-      },
-    );
   }
 }
 
@@ -145,14 +153,18 @@ class _MusicCard extends StatelessWidget {
     required this.position,
     required this.onTap,
     required this.onSeek,
+    this.onRefresh,
+    this.isLoading = false,
   });
 
   final AudioTrack track;
   final bool isPlaying;
   final Duration duration;
   final Duration position;
-  final VoidCallback onTap;
-  final Function(double) onSeek;
+  final VoidCallback? onTap;
+  final Function(double)? onSeek;
+  final Future<void> Function()? onRefresh;
+  final bool isLoading;
 
   String _formatDuration(Duration d) {
     final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -162,92 +174,130 @@ class _MusicCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    color: Colors.grey.shade300,
-                    child: const Icon(Icons.music_note, size: 30, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        track.title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        track.artist ?? 'Artis Tidak Diketahui',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  iconSize: 42,
-                  icon: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    transitionBuilder: (child, animation) {
-                      return ScaleTransition(scale: animation, child: child);
-                    },
-                    child: Icon(
-                      isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
-                      key: ValueKey<bool>(isPlaying),
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  onPressed: onTap,
-                ),
-              ],
+    return Opacity(
+      opacity: isLoading ? 0.5 : 1.0,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade100, Colors.purple.shade50],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.purple.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
-            if (isPlaying)
-              Column(
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 8),
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
-                      overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
-                      trackHeight: 2.0,
-                    ),
-                    child: Slider(
-                      value: position.inMilliseconds.toDouble().clamp(0.0, duration.inMilliseconds.toDouble()),
-                      max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
-                      onChanged: onSeek,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      width: 72,
+                      height: 72,
+                      color: Colors.grey.shade300,
+                      child: track.coverUrl != null
+                          ? Image.network(track.coverUrl!, fit: BoxFit.cover)
+                          : const Icon(Icons.music_note, size: 40, color: Colors.white),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_formatDuration(position), style: Theme.of(context).textTheme.bodySmall),
-                        Text(_formatDuration(duration), style: Theme.of(context).textTheme.bodySmall),
+                        Text(
+                          track.title,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                color: Colors.blue.shade900,
+                              ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          track.artist ?? 'Artis Tidak Diketahui',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.blueGrey.shade700,
+                              ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  Column(
+                    children: [
+                      IconButton(
+                        iconSize: 48,
+                        icon: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          transitionBuilder: (child, animation) {
+                            return ScaleTransition(scale: animation, child: child);
+                          },
+                          child: Icon(
+                            isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
+                            key: ValueKey<bool>(isPlaying),
+                            color: Colors.blue.shade700,
+                          ),
+                        ),
+                        onPressed: isLoading ? null : onTap,
+                      ),
+                      if (onRefresh != null)
+                        IconButton(
+                          icon: const Icon(Icons.refresh_rounded, color: Color(0xFF1DB954)),
+                          tooltip: 'Ganti Lagu',
+                          onPressed: isLoading ? null : onRefresh,
+                        ),
+                    ],
+                  ),
                 ],
-              )
-          ],
+              ),
+              if (isPlaying)
+                Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
+                        trackHeight: 3.0,
+                      ),
+                      child: Slider(
+                        value: position.inMilliseconds.toDouble().clamp(0.0, duration.inMilliseconds.toDouble()),
+                        max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
+                        onChanged: isLoading ? null : onSeek,
+                        activeColor: Colors.blue.shade700,
+                        inactiveColor: Colors.blue.shade100,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(_formatDuration(position), style: Theme.of(context).textTheme.bodySmall),
+                          Text(_formatDuration(duration), style: Theme.of(context).textTheme.bodySmall),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+            ],
+          ),
         ),
       ),
     );

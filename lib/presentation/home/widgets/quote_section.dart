@@ -57,11 +57,41 @@ class _QuoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
-        leading: const Icon(Icons.format_quote),
-        title: Text('"${quote.text}"'),
-        subtitle: Text(quote.author),
-        onTap: () => context.go('/quote', extra: quote),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      elevation: 0,
+      color: Colors.purple.shade50,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.format_quote_rounded, size: 40, color: Colors.purple.shade300),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '"${quote.text}"',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          color: Colors.purple.shade900,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    quote.author,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.purple.shade700,
+                          fontStyle: FontStyle.italic,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:dear_flutter/domain/entities/home_feed.dart';
+import 'package:dear_flutter/domain/entities/audio_track.dart';
 
 part 'home_feed_state.freezed.dart';
 
@@ -14,5 +15,7 @@ class HomeFeedState with _$HomeFeedState {
     HomeFeed? feed,
     String? errorMessage,
     String? lastMood,
+    @Default([]) List<AudioTrack> playlist,
+    @Default(0) int activeIndex,
   }) = _HomeFeedState;
 }

@@ -7,12 +7,15 @@ import 'package:just_audio/just_audio.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dear_flutter/services/audio_url_cache_service.dart';
+import 'package:dear_flutter/services/audio_metadata_cache_service.dart';
+import 'package:dear_flutter/services/radio_audio_player_handler.dart';
 
 @lazySingleton
 class AudioPlayerHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer();
   final YoutubeExplode _yt = YoutubeExplode();
   final AudioUrlCacheService _cacheService;
+  final AudioMetadataCacheService _metadataCache = AudioMetadataCacheService();
 
   AudioPlayerHandler(this._cacheService) {
     _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
@@ -25,16 +28,38 @@ class AudioPlayerHandler extends BaseAudioHandler with SeekHandler {
   Future<void> playFromYoutubeId(String youtubeId, AudioTrack track) async {
     try {
       String? audioUrl;
-      
-      // --- LOGIKA BARU: PERIKSA CACHE DULU ---
-      if (_cacheService.has(youtubeId)) {
+      Duration? duration;
+      // --- Cek metadata cache dulu ---
+      final cached = await _metadataCache.getMetadata(youtubeId);
+      if (cached != null && cached['audioUrl'] != null) {
+        debugPrint("[AudioPlayerHandler] Memutar audio dari metadata cache...");
+        audioUrl = cached['audioUrl'] as String;
+        duration = cached['duration'] != null ? Duration(milliseconds: cached['duration']) : null;
+      } else if (_cacheService.has(youtubeId)) {
         debugPrint("[AudioPlayerHandler] Memutar audio dari cache...");
         audioUrl = _cacheService.get(youtubeId);
       } else {
-        // Fallback: jika tidak ada di cache, ekstrak seperti biasa
+        // Fallback: ekstrak dari YouTube
         debugPrint("[AudioPlayerHandler] URL tidak ada di cache, melakukan ekstraksi...");
         var manifest = await _yt.videos.streamsClient.getManifest(youtubeId);
-        audioUrl = manifest.audioOnly.withHighestBitrate().url.toString();
+        // Hanya pilih dari manifest.audioOnly, tidak pernah dari video/muxed
+        final audioOnlyStreams = manifest.audioOnly.where((e) =>
+          (e.tag == 140 || e.bitrate.kiloBitsPerSecond <= 128) &&
+          (e.codec.mimeType.contains('audio') || e.codec.mimeType.startsWith('audio/'))
+        ).toList();
+        if (audioOnlyStreams.isEmpty) {
+          debugPrint('[AudioPlayerHandler] manifest.audioOnly: ' + manifest.audioOnly.map((e) => 'itag:${e.tag}, bitrate:${e.bitrate.kiloBitsPerSecond}, mime:${e.codec.mimeType}').join(' | '));
+          throw Exception('Tidak ada audio-only stream yang valid (itag 140 atau <=128kbps).');
+        }
+        // Prefer itag 140 jika ada, jika tidak ambil bitrate tertinggi <=128kbps
+        AudioOnlyStreamInfo chosen;
+        try {
+          chosen = audioOnlyStreams.firstWhere((e) => e.tag == 140);
+        } catch (_) {
+          audioOnlyStreams.sort((a, b) => a.bitrate.compareTo(b.bitrate));
+          chosen = audioOnlyStreams.last;
+        }
+        audioUrl = chosen.url.toString();
         // Simpan ke cache untuk penggunaan berikutnya
         _cacheService.set(youtubeId, audioUrl);
       }
@@ -48,12 +73,13 @@ class AudioPlayerHandler extends BaseAudioHandler with SeekHandler {
         title: track.title,
         artist: track.artist,
         artUri: track.coverUrl != null ? Uri.parse(track.coverUrl!) : null,
+        duration: duration, // gunakan durasi dari cache jika ada
       );
-      
       this.mediaItem.add(mediaItem);
-      
       await _player.setAudioSource(AudioSource.uri(Uri.parse(audioUrl), tag: mediaItem));
       await play();
+      // Setelah berhasil set audio, simpan metadata ke cache (termasuk durasi aktual)
+      await _metadataCache.saveMetadata(track, audioUrl, _player.duration);
     } catch (e) {
       debugPrint('[AudioPlayerHandler] Error playing from YouTube ID: $e');
       rethrow;
@@ -74,6 +100,8 @@ class AudioPlayerHandler extends BaseAudioHandler with SeekHandler {
     await _player.stop();
     await super.stop();
   }
+
+  Duration? get currentDuration => _player.duration;
 
   PlaybackState _transformEvent(PlaybackEvent event) {
     return PlaybackState(
