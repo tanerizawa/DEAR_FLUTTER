@@ -186,6 +186,11 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
   Future<void> nextSong() async {
     final currIdx = state.activeIndex;
     final playlist = state.playlist;
+    // --- Tambahan: Mark lagu yang sudah diputar ke history agar tidak terulang ---
+    if (playlist.isNotEmpty && currIdx < playlist.length) {
+      final track = playlist[currIdx];
+      await _songHistoryRepository.addTrack(track);
+    }
     if (playlist.isEmpty || currIdx + 1 >= playlist.length) {
       // Playlist habis, fetch baru
       await fetchPlaylist();
