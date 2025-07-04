@@ -1,3 +1,5 @@
+// lib/presentation/home/screens/audio_player_screen.dart
+
 import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
@@ -7,10 +9,7 @@ import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
-/// Fullscreen audio player for a single track.
-
 class AudioPlayerScreen extends StatefulWidget {
-
   const AudioPlayerScreen({super.key, required this.track});
 
   final AudioTrack track;
@@ -21,10 +20,8 @@ class AudioPlayerScreen extends StatefulWidget {
 
 class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   late final AudioPlayerHandler _handler;
-  late final StreamSubscription<PlaybackState> _sub;
-  late final StreamSubscription<Duration> _posSub;
-  late final StreamSubscription<Duration> _bufSub;
-  late final StreamSubscription<Duration?> _durSub;
+  late final StreamSubscription<PlaybackState> _playbackStateSubscription;
+
   bool _isPlaying = false;
   Duration _position = Duration.zero;
   Duration _buffered = Duration.zero;
@@ -34,28 +31,21 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   void initState() {
     super.initState();
     _handler = getIt<AudioPlayerHandler>();
-    _sub = _handler.playbackState.listen((state) {
-      setState(() => _isPlaying = state.playing);
-    });
-    _posSub = _handler.positionStream.listen((d) {
-      setState(() => _position = d);
-    });
-    _bufSub = _handler.bufferedPositionStream.listen((d) {
-      setState(() => _buffered = d);
-    });
-    _durSub = _handler.durationStream.listen((d) {
-      if (d != null) {
-        setState(() => _duration = d);
-      }
+
+    _playbackStateSubscription = _handler.playbackState.listen((state) {
+      if (!mounted) return;
+      setState(() {
+        _isPlaying = state.playing;
+        _position = state.updatePosition;
+        _buffered = state.bufferedPosition;
+        _duration = _handler.mediaItem.value?.duration ?? Duration.zero;
+      });
     });
   }
 
   @override
   void dispose() {
-    _sub.cancel();
-    _posSub.cancel();
-    _bufSub.cancel();
-    _durSub.cancel();
+    _playbackStateSubscription.cancel();
     super.dispose();
   }
 
@@ -65,8 +55,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     } else {
       await getIt<SongHistoryRepository>().addTrack(widget.track);
       try {
-        await _handler.playFromYoutubeId(widget.track.youtubeId);
-        if (!mounted) return;
+        // --- PERBAIKAN DI SINI: Tambahkan 'widget.track' sebagai argumen kedua ---
+        await _handler.playFromYoutubeId(widget.track.youtubeId, widget.track);
       } on YoutubeExplodeException catch (_) {
         if (!mounted) return;
         ScaffoldMessenger.of(context)
@@ -93,8 +83,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   Widget build(BuildContext context) {
     final max = _duration.inMilliseconds.toDouble();
     final value = _position.inMilliseconds.clamp(0, max).toDouble();
-    final buffer =
-        max == 0 ? 0.0 : _buffered.inMilliseconds.toDouble() / max;
+    final buffer = max == 0 ? 0.0 : _buffered.inMilliseconds.toDouble() / max;
+    
     return Scaffold(
       appBar: AppBar(title: Text(widget.track.title)),
       body: Padding(
@@ -116,25 +106,29 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
               Container(
                 height: 250,
                 width: 250,
-                color: Colors.grey,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.music_note, size: 100, color: Colors.white),
               ),
             const SizedBox(height: 16),
             Text(widget.track.title,
-                style: Theme.of(context).textTheme.titleLarge),
+                style: Theme.of(context).textTheme.headlineSmall),
             if (widget.track.artist != null)
-              Text(widget.track.artist!),
+              Text(widget.track.artist!, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 24),
             Slider(
               min: 0,
               max: max > 0 ? max : 1,
               value: value,
-              onChanged: (v) => _seek(v),
+              onChanged: _seek,
             ),
             LinearProgressIndicator(value: buffer),
             const SizedBox(height: 24),
             IconButton(
               iconSize: 64,
-              icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
+              icon: Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled),
               onPressed: _toggle,
             ),
           ],

@@ -93,6 +93,7 @@ import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart'
     as _i119;
 import 'package:dear_flutter/presentation/home/cubit/latest_quote_cubit.dart'
     as _i568;
+import 'package:dear_flutter/presentation/home/cubit/radio_cubit.dart' as _i387;
 import 'package:dear_flutter/presentation/journal/cubit/journal_editor_cubit.dart'
     as _i114;
 import 'package:dear_flutter/presentation/profile/cubit/profile_cubit.dart'
@@ -132,6 +133,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i989.LoggingInterceptor>(
       () => _i989.LoggingInterceptor(),
+    );
+    gh.lazySingleton<_i133.AudioPlayerHandler>(
+      () => _i133.AudioPlayerHandler(),
     );
     gh.lazySingleton<_i448.NotificationService>(
       () => _i448.NotificationService(),
@@ -204,13 +208,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.dio(
         gh<_i498.AuthInterceptor>(),
         gh<_i989.LoggingInterceptor>(),
-      ),
-    );
-    gh.lazySingleton<_i133.AudioPlayerHandler>(
-      () => _i133.AudioPlayerHandler(
-        gh<_i288.YoutubeAudioService>(),
-        player: gh<_i501.AudioPlayer>(),
-        loadConfiguration: gh<_i501.AudioLoadConfiguration>(),
       ),
     );
     gh.factory<_i104.HomeApiService>(
@@ -294,6 +291,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i434.MusicUpdateService(
         gh<_i104.HomeApiService>(),
         gh<_i12.LatestMusicCacheRepository>(),
+      ),
+    );
+    gh.factory<_i387.RadioCubit>(
+      () => _i387.RadioCubit(
+        gh<_i34.HomeRepository>(),
+        gh<_i133.AudioPlayerHandler>(),
       ),
     );
     gh.factory<_i119.LatestMusicCubit>(

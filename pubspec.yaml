@@ -55,6 +55,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  mockito: ^5.4.2
+
 
   flutter_lints: ^3.0.0                  # Linter resmi dari Flutter
 

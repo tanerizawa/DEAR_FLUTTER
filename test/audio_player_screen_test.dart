@@ -1,117 +1,92 @@
-import 'dart:async';
+// test/audio_player_screen_test.dart
 
+import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:dear_flutter/presentation/home/screens/audio_player_screen.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
-import 'package:dear_flutter/services/youtube_audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
+import 'package:audio_service/audio_service.dart';
+import 'package:rxdart/rxdart.dart';
 
-class _MockYoutubeService extends Mock implements YoutubeAudioService {}
+import 'audio_player_screen_test.mocks.dart';
 
-class _MockAudioPlayer extends Mock implements AudioPlayer {}
-
-class _FakeSongHistoryRepository implements SongHistoryRepository {
-  @override
-  Future<void> addTrack(AudioTrack track) async {}
-
-  @override
-  List<AudioTrack> getHistory() => [];
-}
-
+@GenerateMocks([AudioPlayerHandler, SongHistoryRepository])
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-  final getIt = GetIt.instance;
+  late MockAudioPlayerHandler mockAudioHandler;
+  late MockSongHistoryRepository mockSongHistoryRepo;
+
+  final testTrack = AudioTrack(
+    id: 1,
+    title: 'Lagu Tes',
+    artist: 'Artis Tes',
+    youtubeId: 'xyz123',
+  );
 
   setUp(() {
-    getIt.reset();
-    registerFallbackValue(PlayerState(false, ProcessingState.idle));
+    mockAudioHandler = MockAudioPlayerHandler();
+    mockSongHistoryRepo = MockSongHistoryRepository();
+
+    GetIt.instance.reset();
+
+    getIt.registerSingleton<AudioPlayerHandler>(mockAudioHandler);
+    getIt.registerSingleton<SongHistoryRepository>(mockSongHistoryRepo);
+
+    // --- PERBAIKAN UTAMA: Gunakan BehaviorSubject untuk mock stream ---
+    final playbackStateSubject = BehaviorSubject<PlaybackState>.seeded(PlaybackState());
+    when(mockAudioHandler.playbackState).thenAnswer((_) => playbackStateSubject);
+
+    final mediaItemSubject = BehaviorSubject<MediaItem?>.seeded(null);
+    when(mockAudioHandler.mediaItem).thenAnswer((_) => mediaItemSubject);
   });
 
-  tearDown(getIt.reset);
-
-  testWidgets('tapping play toggles icon and resolves url',
-      (WidgetTester tester) async {
-    final yt = _MockYoutubeService();
-    final player = _MockAudioPlayer();
-    final repo = _FakeSongHistoryRepository();
-    final controller = StreamController<PlayerState>();
-
-    when(() => yt.getAudioUrl('id')).thenAnswer((_) async => 'u');
-    when(() => player.playerStateStream).thenAnswer((_) => controller.stream);
-    when(() => player.setUrl('u')).thenAnswer((_) async => Duration.zero);
-    when(player.play).thenAnswer((_) async {
-      controller.add(PlayerState(true, ProcessingState.ready));
-    });
-    when(player.pause).thenAnswer((_) async {
-      controller.add(PlayerState(false, ProcessingState.ready));
-    });
-
-    final handler = AudioPlayerHandler(yt, player: player);
-    controller.add(PlayerState(false, ProcessingState.ready));
-
-    getIt.registerSingleton<AudioPlayerHandler>(handler);
-    getIt.registerSingleton<SongHistoryRepository>(repo);
-
-    const track = AudioTrack(
-      id: 1,
-      title: 't',
-      youtubeId: 'id',
-      artist: 'a',
-      coverUrl: 'c',
+  Future<void> pumpAudioPlayerScreen(WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AudioPlayerScreen(track: testTrack),
+      ),
     );
+    await tester.pumpAndSettle();
+  }
 
-    await tester.pumpWidget(const MaterialApp(home: AudioPlayerScreen(track: track)));
+  testWidgets('AudioPlayerScreen should display track title and artist', (WidgetTester tester) async {
+    await pumpAudioPlayerScreen(tester);
 
-    expect(find.byIcon(Icons.play_arrow), findsOneWidget);
-
-    await tester.tap(find.byType(IconButton));
-    await tester.pump();
-
-    expect(find.byIcon(Icons.pause), findsOneWidget);
-    verify(() => yt.getAudioUrl('id')).called(1);
-
-    await tester.tap(find.byType(IconButton));
-    await tester.pump();
-
-    expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+    expect(find.text('Lagu Tes'), findsOneWidget);
+    expect(find.text('Artis Tes'), findsOneWidget);
   });
 
-  testWidgets('shows SnackBar when youtube lookup fails',
-      (WidgetTester tester) async {
-    final yt = _MockYoutubeService();
-    final player = _MockAudioPlayer();
-    final repo = _FakeSongHistoryRepository();
-    final controller = StreamController<PlayerState>();
+  testWidgets('tapping play button calls the correct handler methods', (WidgetTester tester) async {
+    when(mockSongHistoryRepo.addTrack(any)).thenAnswer((_) async {});
+    when(mockAudioHandler.playFromYoutubeId(any, any)).thenAnswer((_) async {});
 
-    when(() => yt.getAudioUrl('id'))
-        .thenThrow(YoutubeExplodeException('fail'));
-    when(() => player.playerStateStream).thenAnswer((_) => controller.stream);
-    final handler = AudioPlayerHandler(yt, player: player);
-    controller.add(PlayerState(false, ProcessingState.ready));
+    await pumpAudioPlayerScreen(tester);
 
-    getIt.registerSingleton<AudioPlayerHandler>(handler);
-    getIt.registerSingleton<SongHistoryRepository>(repo);
-
-    const track = AudioTrack(
-      id: 1,
-      title: 't',
-      youtubeId: 'id',
-      artist: 'a',
-      coverUrl: 'c',
-    );
-
-    await tester
-        .pumpWidget(const MaterialApp(home: AudioPlayerScreen(track: track)));
-
-    await tester.tap(find.byType(IconButton));
+    final playButton = find.byIcon(Icons.play_circle_filled);
+    expect(playButton, findsOneWidget);
+    await tester.tap(playButton);
     await tester.pump();
 
-    expect(find.text('Gagal memutar audio dari YouTube'), findsOneWidget);
+    verify(mockSongHistoryRepo.addTrack(testTrack)).called(1);
+    verify(mockAudioHandler.playFromYoutubeId(testTrack.youtubeId, testTrack)).called(1);
+  });
+
+  testWidgets('tapping pause button calls handler.pause', (WidgetTester tester) async {
+    final playingStateSubject = BehaviorSubject<PlaybackState>.seeded(PlaybackState(playing: true));
+    when(mockAudioHandler.playbackState).thenAnswer((_) => playingStateSubject);
+    when(mockAudioHandler.pause()).thenAnswer((_) async {});
+
+    await pumpAudioPlayerScreen(tester);
+
+    final pauseButton = find.byIcon(Icons.pause_circle_filled);
+    expect(pauseButton, findsOneWidget);
+    await tester.tap(pauseButton);
+    await tester.pump();
+
+    verify(mockAudioHandler.pause()).called(1);
   });
 }

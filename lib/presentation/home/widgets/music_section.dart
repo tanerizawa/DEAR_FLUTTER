@@ -21,9 +21,7 @@ class MusicSection extends StatefulWidget {
 
 class _MusicSectionState extends State<MusicSection> {
   late final AudioPlayerHandler _handler;
-  late final StreamSubscription<PlaybackState> _playSub;
-  late final StreamSubscription<Duration> _posSub;
-  late final StreamSubscription<Duration?> _durSub;
+  late final StreamSubscription<PlaybackState> _playbackStateSubscription;
 
   bool _isPlaying = false;
   Duration _position = Duration.zero;
@@ -35,26 +33,34 @@ class _MusicSectionState extends State<MusicSection> {
     super.initState();
     _handler = getIt<AudioPlayerHandler>();
 
-    _playSub = _handler.playbackState.listen((state) {
+    // --- PERBAIKAN UTAMA: Dengarkan satu stream utama untuk semua data ---
+    _playbackStateSubscription = _handler.playbackState.listen((state) {
       if (!mounted) return;
-      if (state.processingState == AudioProcessingState.completed) {
-        _resetState();
-      } else {
-        setState(() {
-          _isPlaying = state.playing;
-        });
-      }
-    });
+      
+      final currentMediaItem = _handler.mediaItem.value;
+      // Tentukan apakah lagu yang sedang diputar adalah lagu di kartu ini
+      final isPlayingThisTrack = _currentTrack?.id.toString() == currentMediaItem?.id;
 
-    _posSub = _handler.positionStream.listen((d) {
-      if (!mounted || !_isPlaying) return;
-      setState(() => _position = d);
-    });
+      setState(() {
+        _isPlaying = state.playing && isPlayingThisTrack;
+        _position = isPlayingThisTrack ? state.updatePosition : Duration.zero;
+        _duration = isPlayingThisTrack ? (currentMediaItem?.duration ?? Duration.zero) : Duration.zero;
 
-    _durSub = _handler.durationStream.listen((d) {
-      if (!mounted || !_isPlaying) return;
-      if (d != null) {
-        setState(() => _duration = d);
+        // Reset state jika lagu sudah selesai atau tidak ada yang diputar
+        if (state.processingState == AudioProcessingState.completed) {
+            _resetStateAfterDelay();
+        }
+      });
+    });
+  }
+
+  // Memberi jeda singkat sebelum mereset agar UI tidak "lompat"
+  void _resetStateAfterDelay() {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      // Hanya reset jika benar-benar tidak ada yang diputar
+      if (!_handler.playbackState.value.playing) {
+          _resetState();
       }
     });
   }
@@ -71,25 +77,22 @@ class _MusicSectionState extends State<MusicSection> {
 
   @override
   void dispose() {
-    _playSub.cancel();
-    _posSub.cancel();
-    _durSub.cancel();
+    _playbackStateSubscription.cancel();
     super.dispose();
   }
 
   Future<void> _handlePlayPause(AudioTrack track) async {
-    if (_currentTrack?.id != track.id) {
+    final isCurrentlyPlaying = _currentTrack?.id == track.id && _isPlaying;
+
+    if (isCurrentlyPlaying) {
+      await _handler.pause();
+    } else {
       setState(() {
         _currentTrack = track;
       });
       await getIt<SongHistoryRepository>().addTrack(track);
-      await _handler.playFromYoutubeId(track.youtubeId);
-    } else {
-      if (_isPlaying) {
-        await _handler.pause();
-      } else {
-        await _handler.play();
-      }
+      // Kirim objek track ke handler agar bisa membuat MediaItem
+      await _handler.playFromYoutubeId(track.youtubeId, track);
     }
   }
 
@@ -115,7 +118,7 @@ class _MusicSectionState extends State<MusicSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Rekomendasi Musik',
+              'Untukmu Hari Ini', // Judul baru yang lebih personal
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 16),
@@ -134,7 +137,6 @@ class _MusicSectionState extends State<MusicSection> {
   }
 }
 
-// --- REVISI UTAMA PADA _MusicCard ---
 class _MusicCard extends StatelessWidget {
   const _MusicCard({
     required this.track,
@@ -152,7 +154,6 @@ class _MusicCard extends StatelessWidget {
   final VoidCallback onTap;
   final Function(double) onSeek;
 
-  // Helper untuk format durasi
   String _formatDuration(Duration d) {
     final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -172,7 +173,6 @@ class _MusicCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                // Cover Art
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
@@ -183,7 +183,6 @@ class _MusicCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Judul dan Artis
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +202,6 @@ class _MusicCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Tombol Play/Pause dengan animasi
                 IconButton(
                   iconSize: 42,
                   icon: AnimatedSwitcher(
@@ -213,7 +211,7 @@ class _MusicCard extends StatelessWidget {
                     },
                     child: Icon(
                       isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
-                      key: ValueKey<bool>(isPlaying), // Penting untuk animasi
+                      key: ValueKey<bool>(isPlaying),
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
@@ -221,7 +219,6 @@ class _MusicCard extends StatelessWidget {
                 ),
               ],
             ),
-            // Tampilkan Seek Bar hanya jika lagu sedang diputar
             if (isPlaying)
               Column(
                 children: [
@@ -257,17 +254,16 @@ class _MusicCard extends StatelessWidget {
   }
 }
 
-// Shimmer card tidak perlu diubah
 class _ShimmerMusicCard extends StatelessWidget {
   const _ShimmerMusicCard();
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: const Color.fromARGB(255, 224, 224, 224)!,
+      baseColor: Colors.grey[300]!,
       highlightColor: Colors.grey[100]!,
       child: Card(
         child: ListTile(
-          leading: Icon(Icons.music_note, color: const Color.fromARGB(255, 39, 79, 191)),
+          leading: Icon(Icons.music_note, color: Colors.grey[400]),
           title: Container(height: 20.0, color: Colors.grey[400]),
           subtitle: Container(height: 15.0, color: Colors.grey[300]),
         ),

@@ -1,103 +1,82 @@
+// lib/services/audio_player_handler.dart
+
 import 'package:audio_service/audio_service.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:injectable/injectable.dart';
+import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:flutter/foundation.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:injectable/injectable.dart';
 
-import 'youtube_audio_service.dart';
+@lazySingleton
+class AudioPlayerHandler extends BaseAudioHandler with SeekHandler {
+  final AudioPlayer _player = AudioPlayer();
+  final YoutubeExplode _yt = YoutubeExplode();
 
-/// [AudioPlayerHandler] manages playback using [AudioPlayer] and exposes
-/// controls via `audio_service`.
-@LazySingleton()
-class AudioPlayerHandler extends BaseAudioHandler {
-  /// Creates a handler managing [AudioPlayer] playback.
-  ///
-  /// The optional [player] can be supplied for testing. When omitted, a new
-  /// [AudioPlayer] is created. To customize buffering behavior provide a
-  /// [loadConfiguration], otherwise the default configuration is used.
-  AudioPlayerHandler(
-    this._youtube, {
-    AudioPlayer? player,
-    AudioLoadConfiguration? loadConfiguration,
-  }) : _player =
-            player ?? AudioPlayer(audioLoadConfiguration: loadConfiguration ?? const AudioLoadConfiguration()) {
-    _player.playerStateStream.listen(_broadcastState);
+  AudioPlayerHandler() {
+    _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
   }
 
-  final YoutubeAudioService _youtube;
-  final AudioPlayer _player;
-  String? _currentId;
+  Future<void> playPlaylist(List<AudioTrack> tracks) async {
+    if (tracks.isEmpty) return;
 
-  Stream<Duration> get positionStream => _player.positionStream;
-  Stream<Duration> get bufferedPositionStream => _player.bufferedPositionStream;
-  Stream<Duration?> get durationStream => _player.durationStream;
+    final mediaItems = tracks.map((track) => MediaItem(
+      id: track.id.toString(),
+      title: track.title,
+      artist: track.artist,
+      artUri: track.coverUrl != null ? Uri.parse(track.coverUrl!) : null,
+    )).toList();
 
-  Future<void> _broadcastState(PlayerState state) async {
-    playbackState.add(
-      PlaybackState(
-        playing: state.playing,
-        processingState: _mapProcessingState(state.processingState),
-        controls: const [MediaControl.play, MediaControl.pause, MediaControl.stop],
-      ),
-    );
-  }
-
-  AudioProcessingState _mapProcessingState(ProcessingState state) {
-    switch (state) {
-      case ProcessingState.idle:
-        return AudioProcessingState.idle;
-      case ProcessingState.loading:
-        return AudioProcessingState.loading;
-      case ProcessingState.buffering:
-        return AudioProcessingState.buffering;
-      case ProcessingState.ready:
-        return AudioProcessingState.ready;
-      case ProcessingState.completed:
-        return AudioProcessingState.completed;
-    }
-  }
-
-  /// Resolve [youtubeId] and begin playback.
-  ///
-  /// Throws a [YoutubeExplodeException] if resolving the video fails or a
-  /// [StateError] when no suitable audio stream is found. A
-  /// [PlayerException] may also be thrown if playback fails.
-  Future<void> playFromYoutubeId(String youtubeId) async {
-    try {
-      if (_currentId != youtubeId) {
-        String url;
-        try {
-          url = await _youtube.getAudioUrl(youtubeId);
-        } on YoutubeExplodeException catch (e) {
-          debugPrint('Failed to resolve YouTube audio: $e');
-          rethrow;
-        } on StateError catch (e) {
-          debugPrint('No suitable audio stream: ${e.message}');
-          rethrow;
-        }
-        await _player.setUrl(url);
-        _currentId = youtubeId;
+    final audioSources = <AudioSource>[];
+    for (int i = 0; i < tracks.length; i++) {
+      try {
+        var manifest = await _yt.videos.streamsClient.getManifest(tracks[i].youtubeId);
+        var audioUrl = manifest.audioOnly.withHighestBitrate().url;
+        audioSources.add(AudioSource.uri(audioUrl, tag: mediaItems[i]));
+      } catch (e) {
+        debugPrint('Gagal memproses lagu ${tracks[i].title}: $e');
       }
-      await _player.play();
-    } on PlayerException catch (e) {
-      debugPrint('Player error: ${e.message}');
+    }
+
+    if (audioSources.isEmpty) {
+      debugPrint('Tidak ada lagu yang valid untuk diputar di playlist.');
+      return;
+    }
+    
+    // PERBAIKAN: Menggunakan metode baru untuk playlist
+    await _player.setAudioSource(
+      ConcatenatingAudioSource(children: audioSources),
+      initialIndex: 0,
+      initialPosition: Duration.zero
+    );
+    
+    queue.add(mediaItems);
+    await play();
+  }
+
+  Future<void> playFromYoutubeId(String youtubeId, AudioTrack track) async {
+    try {
+      var manifest = await _yt.videos.streamsClient.getManifest(youtubeId);
+      var audioUrl = manifest.audioOnly.withHighestBitrate().url;
+
+      final mediaItem = MediaItem(
+        id: track.id.toString(),
+        title: track.title,
+        artist: track.artist,
+        artUri: track.coverUrl != null ? Uri.parse(track.coverUrl!) : null,
+      );
+      
+      this.mediaItem.add(mediaItem);
+      
+      await _player.setAudioSource(AudioSource.uri(Uri.parse(audioUrl.toString()), tag: mediaItem));
+      await play();
+    } catch (e) {
+      debugPrint('Error playing from YouTube ID: $e');
       rethrow;
-    } on PlayerInterruptedException catch (e) {
-      debugPrint('Playback interrupted: ${e.message}');
     }
   }
 
   @override
-  Future<void> play() async {
-    try {
-      await _player.play();
-    } on PlayerException catch (e) {
-      debugPrint('Player error: ${e.message}');
-      rethrow;
-    } on PlayerInterruptedException catch (e) {
-      debugPrint('Playback interrupted: ${e.message}');
-    }
-  }
+  Future<void> play() => _player.play();
 
   @override
   Future<void> pause() => _player.pause();
@@ -107,9 +86,32 @@ class AudioPlayerHandler extends BaseAudioHandler {
 
   @override
   Future<void> stop() async {
-    await _player.dispose();
-    _youtube.close();
-    return super.stop();
+    await _player.stop();
+    await super.stop();
   }
 
+  PlaybackState _transformEvent(PlaybackEvent event) {
+    return PlaybackState(
+      controls: [
+        if (_player.playing) MediaControl.pause else MediaControl.play,
+        MediaControl.stop,
+      ],
+      systemActions: const {
+        MediaAction.seek,
+      },
+      androidCompactActionIndices: const [0],
+      processingState: const {
+        ProcessingState.idle: AudioProcessingState.idle,
+        ProcessingState.loading: AudioProcessingState.loading,
+        ProcessingState.buffering: AudioProcessingState.buffering,
+        ProcessingState.ready: AudioProcessingState.ready,
+        ProcessingState.completed: AudioProcessingState.completed,
+      }[_player.processingState]!,
+      playing: _player.playing,
+      updatePosition: _player.position,
+      bufferedPosition: _player.bufferedPosition,
+      speed: _player.speed,
+      queueIndex: event.currentIndex,
+    );
+  }
 }
