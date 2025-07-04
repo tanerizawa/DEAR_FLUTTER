@@ -9,3 +9,5 @@ This file tracks configuration updates across the project.
 [YYYY-MM-DD] Author - Reason for change
 ```
 
+[2025-07-04] Codex - Added OPENROUTER_BASE_URL to .env for configurable OpenRouter host
+
