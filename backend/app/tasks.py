@@ -1,4 +1,4 @@
-# backend/app/tasks.py
+# backend/app/tasks.py (Versi Perbaikan)
 
 from app.celery_app import celery_app
 from app.services.profile_analyzer_service import profile_analyzer
@@ -12,13 +12,14 @@ from app.schemas.audio import AudioTrackCreate
 from youtubesearchpython import VideosSearch
 import structlog
 
+# --- PERBAIKAN: Import 'settings' secara langsung ---
+from app.core.config import settings
+
 log = structlog.get_logger(__name__)
 
-# --- FUNGSI LOGIKA INTI YANG BISA DIGUNAKAN KEMBALI ---
 async def run_music_generation_flow():
     """
     Menjalankan alur lengkap untuk menghasilkan dan menyimpan rekomendasi musik.
-    Fungsi ini sekarang terpisah agar bisa dipanggil dari mana saja.
     """
     db = SessionLocal()
     try:
@@ -34,12 +35,18 @@ async def run_music_generation_flow():
             log.warn("music_generation_flow:no_journals_found")
             return "No journals found to generate music recommendation."
 
-        keyword = await MusicKeywordService().generate_keyword(journals)
+        # --- PERBAIKAN: Berikan 'settings' saat membuat service ---
+        keyword_service = MusicKeywordService(settings=settings)
+        keyword = await keyword_service.generate_keyword(journals)
+        
         if not keyword:
             log.warn("music_generation_flow:no_keyword_generated")
             return "No keyword generated from journals."
 
-        suggestion = await MusicSuggestionService().suggest_song(keyword)
+        # --- PERBAIKAN: Berikan 'settings' saat membuat service ---
+        suggestion_service = MusicSuggestionService(settings=settings)
+        suggestion = await suggestion_service.suggest_song(keyword)
+
         if not suggestion:
             log.warn("music_generation_flow:no_suggestion_from_service")
             return "No suggestion returned from music service."
@@ -54,7 +61,7 @@ async def run_music_generation_flow():
                 log.info("music_generation_flow:Youtube_success", video_id=youtube_id)
         except Exception as e:
             log.error("music_generation_flow:Youtube_failed", error=str(e))
-            youtube_id = "" # Pastikan kosong jika gagal
+            youtube_id = ""
 
         if youtube_id:
             crud.music_track.create(
@@ -74,12 +81,8 @@ async def run_music_generation_flow():
     finally:
         db.close()
 
-
 @celery_app.task
 def analyze_profile_task(user_id: int):
-    """
-    Tugas Celery untuk menganalisis profil pengguna.
-    """
     db = SessionLocal()
     try:
         user = crud.user.get(db, id=user_id)
@@ -89,17 +92,17 @@ def analyze_profile_task(user_id: int):
         db.close()
     return f"Profile analysis complete for user_id {user_id}"
 
-
 @celery_app.task
 async def generate_quote_task():
-    """Generate a motivational quote based on the latest journal mood."""
     db = SessionLocal()
     try:
         latest = (
             db.query(models.Journal).order_by(models.Journal.created_at.desc()).first()
         )
         mood = latest.mood if latest and latest.mood else "Netral"
-        service = QuoteGenerationService()
+        
+        # --- PERBAIKAN: Berikan 'settings' saat membuat service ---
+        service = QuoteGenerationService(settings=settings)
         text, author = await service.generate_quote(mood)
         if text:
             crud.motivational_quote.create(
@@ -110,11 +113,8 @@ async def generate_quote_task():
         db.close()
     return "Quote generation complete"
 
-
-# Tugas Celery sekarang hanya memanggil fungsi inti
 @celery_app.task
 async def generate_music_recommendation_task():
-    """Tugas Celery terjadwal yang memicu alur generasi musik."""
     log.info("celery_task:starting_music_generation")
     result = await run_music_generation_flow()
     log.info("celery_task:finished_music_generation", result=result)
