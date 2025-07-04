@@ -1,46 +1,44 @@
-# backend/tests/test_tasks.py
+# backend/tests/test_tasks.py (Kode Final yang Sudah Diperbaiki)
 
 from datetime import datetime
 import pytest
 from app import models, crud
 from app.schemas.song import SongSuggestion
 
-# --- PERBAIKAN: Import layanan yang akan kita mock ---
 from app.services.music_keyword_service import MusicKeywordService
 from app.services.music_suggestion_service import MusicSuggestionService
-
 
 @pytest.mark.asyncio
 async def test_generate_music_recommendation_task_sets_track(monkeypatch, temp_session):
     db = temp_session()
     try:
+        # Menambahkan jurnal sebagai prasyarat untuk alur kerja
         db.add(models.Journal(content="j1", created_at=datetime.utcnow()))
         db.commit()
     finally:
         db.close()
 
-    # --- PERBAIKAN: setenv tidak diperlukan jika settings tidak digunakan ---
-    # monkeypatch.setenv(...) bisa dihapus jika tidak ada pengaruh
-
+    # Import tugas yang akan diuji
     from app.tasks import generate_music_recommendation_task
 
-    # --- PERBAIKAN: Mock __init__ agar tidak error saat dipanggil ---
+    # Mock __init__ dari service agar tidak error saat dipanggil di luar konteks API
     def fake_init(self, settings=None):
-        """Mencegah __init__ asli berjalan dan menyebabkan AttributeError."""
         pass
 
     monkeypatch.setattr(MusicKeywordService, "__init__", fake_init)
     monkeypatch.setattr(MusicSuggestionService, "__init__", fake_init)
-    # --- AKHIR PERBAIKAN ---
 
+    # Mengatur agar tugas menggunakan database tes sementara
     monkeypatch.setattr("app.tasks.SessionLocal", temp_session)
 
+    # Mock fungsi-fungsi yang bergantung pada layanan eksternal
     async def fake_keyword(self, journals):
         return "lofi"
 
-    async def fake_suggest(self, mood, user_profile=None): # Tambahkan user_profile agar cocok
+    async def fake_suggest(self, mood, user_profile=None):
         return SongSuggestion(title="Song", artist="Artist")
 
+    # Kelas tiruan untuk pencarian YouTube
     class DummySearch:
         def __init__(self, query, limit=1):
             self.query = query
@@ -49,17 +47,24 @@ async def test_generate_music_recommendation_task_sets_track(monkeypatch, temp_s
         def result(self):
             return {"result": [{"id": "ytid"}]}
 
+    # Mengatur patch pada fungsi-fungsi yang relevan
     monkeypatch.setattr(MusicKeywordService, "generate_keyword", fake_keyword)
     monkeypatch.setattr(MusicSuggestionService, "suggest_song", fake_suggest)
-    monkeypatch.setattr("youtubesearchpython.VideosSearch", DummySearch)
-
-    await generate_music_recommendation_task()
     
+    # --- PERBAIKAN UTAMA DI SINI ---
+    # Targetkan 'VideosSearch' di dalam modul 'app.tasks' tempat ia diimpor dan digunakan
+    monkeypatch.setattr("app.tasks.VideosSearch", DummySearch)
+    # --- AKHIR PERBAIKAN ---
+
+    # Jalankan tugas yang sedang diuji
+    await generate_music_recommendation_task()
+
+    # Verifikasi hasilnya di database
     db = temp_session()
     try:
         track = crud.music_track.get_latest(db)
-        assert track is not None  # <-- Ini seharusnya berhasil sekarang
+        assert track is not None
         assert track.title == "Song"
-        assert track.youtube_id == "ytid"
+        assert track.youtube_id == "ytid"  # <-- Assert ini sekarang akan berhasil
     finally:
         db.close()
