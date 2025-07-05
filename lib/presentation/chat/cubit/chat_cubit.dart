@@ -33,10 +33,15 @@ class ChatCubit extends Cubit<ChatState> {
     emit(state.copyWith(isSending: true));
     try {
       await _sendMessageUseCase(message);
+      emit(state.copyWith(isSending: false, lastFailedMessage: null, status: ChatStatus.success));
     } catch (e) {
-      // Error sudah ditangani di repository, di sini kita hanya menghentikan loading
+      emit(state.copyWith(
+        isSending: false,
+        status: ChatStatus.failure,
+        lastFailedMessage: message,
+        errorMessage: e.toString(),
+      ));
     }
-    emit(state.copyWith(isSending: false));
   }
 
   @override

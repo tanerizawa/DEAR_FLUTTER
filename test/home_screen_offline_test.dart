@@ -24,6 +24,9 @@ class _OfflineMusicCubit extends Cubit<LatestMusicState>
 
   @override
   Future<void> fetchLatestMusic() async {}
+
+  @override
+  Future<void> refreshMusicAndPlay(BuildContext context) async {}
 }
 
 class _CachedQuoteCubit extends Cubit<LatestQuoteState>
@@ -46,6 +49,9 @@ class _FakeSongHistoryRepository implements SongHistoryRepository {
 
   @override
   List<AudioTrack> getHistory() => [];
+
+  @override
+  List<AudioTrack> getHistoryToday() => [];
 }
 
 void main() {

@@ -21,6 +21,9 @@ class _FakeSongHistoryRepository implements SongHistoryRepository {
 
   @override
   List<AudioTrack> getHistory() => [];
+
+  @override
+  List<AudioTrack> getHistoryToday() => [];
 }
 
 void main() {

@@ -14,5 +14,6 @@ class ChatState with _$ChatState {
     @Default([]) List<ChatMessage> messages,
     @Default(false) bool isSending,
     String? errorMessage,
+    String? lastFailedMessage,
   }) = _ChatState;
 }

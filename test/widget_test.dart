@@ -3,6 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/core/di/injection.dart';
 
 // Import the test helper
 import 'helpers/test_helper.dart';

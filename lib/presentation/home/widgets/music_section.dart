@@ -29,8 +29,6 @@ class _MusicSectionState extends State<MusicSection> {
   Duration _duration = Duration.zero;
   AudioTrack? _currentTrack;
 
-  bool _userStartedPlay = false;
-
   void _startPositionTimer() {
     _positionTimer?.cancel();
     _positionTimer = Timer.periodic(const Duration(milliseconds: 200), (_) async {
@@ -60,24 +58,22 @@ class _MusicSectionState extends State<MusicSection> {
   Widget build(BuildContext context) {
     return BlocBuilder<HomeFeedCubit, HomeFeedState>(
       buildWhen: (prev, curr) =>
-        prev.playlist != curr.playlist ||
-        prev.activeIndex != curr.activeIndex ||
+        prev.music != curr.music ||
         prev.status != curr.status,
       builder: (context, state) {
-        final playlist = state.playlist;
-        final idx = state.activeIndex;
+        final track = state.music;
         final isLoading = state.status == HomeFeedStatus.loading;
-        if (isLoading && playlist.isEmpty) {
+        if (isLoading && track == null) {
           return const _ShimmerMusicCard();
         }
-        if (playlist.isEmpty || idx >= playlist.length) {
+        if (track == null) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.music_off, size: 64, color: Colors.blueGrey.shade200),
+                  Icon(Icons.music_off, size: 64, color: Colors.blueGrey.shade200), // Monochrome for empty state icon
                   const SizedBox(height: 16),
                   Text(
                     'Belum ada lagu hari ini. Coba tekan tombol refresh atau cek koneksi internet Anda.',
@@ -89,8 +85,7 @@ class _MusicSectionState extends State<MusicSection> {
                     icon: const Icon(Icons.refresh_rounded),
                     label: const Text('Coba Lagi'),
                     onPressed: () async {
-                      _userStartedPlay = false;
-                      await context.read<HomeFeedCubit>().fetchPlaylist();
+                      await context.read<HomeFeedCubit>().fetchHomeFeed();
                     },
                   ),
                 ],
@@ -98,50 +93,214 @@ class _MusicSectionState extends State<MusicSection> {
             ),
           );
         }
-        final track = playlist[idx];
         final bool isActivePlayer = _currentTrack?.id == track.id;
-
-        // --- AUTO PLAY jika auto-next aktif dan track berubah ---
-        if (_userStartedPlay && (!isActivePlayer || !_isPlaying)) {
-          // Jangan trigger play jika sedang loading
-          if (!isLoading) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _handlePlayPause(track);
-            });
-          }
+        final bool isPlaying = isActivePlayer && _isPlaying;
+        final Duration position = isActivePlayer ? _position : Duration.zero;
+        final Duration duration = isActivePlayer ? _duration : Duration.zero;
+        void onTap() => _handlePlayPause(track);
+        Future<void> onRefresh() async => await context.read<HomeFeedCubit>().fetchHomeFeed();
+        void onSeek(double value) => _seek(value);
+        String _formatDuration(Duration d) {
+          final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+          final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+          return "$minutes:$seconds";
         }
 
         // --- HAPUS AUTOPLAY: hanya play jika user klik manual ---
-        // Auto next hanya jika user sudah pernah play manual
-        // (auto next di _playbackStateSubscription, bukan di build)
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Untukmu Hari Ini',
-              style: Theme.of(context).textTheme.headlineSmall,
+        return Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 420),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                colors: [Color(0xFF232526), Color(0xFF232526)], // Monochrome dark grey
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 24,
+                  offset: Offset(0, 8),
+                ),
+              ],
+              border: Border.all(color: Color(0x1A1A1A).withOpacity(0.15), width: 1.2),
+              backgroundBlendMode: BlendMode.overlay,
             ),
-            const SizedBox(height: 16),
-            _MusicCard(
-              track: track,
-              isPlaying: isActivePlayer && _isPlaying,
-              duration: isActivePlayer ? _duration : Duration.zero,
-              position: isActivePlayer ? _position : Duration.zero,
-              onTap: isLoading ? null : () async {
-                _userStartedPlay = true;
-                await _handlePlayPause(track);
-              },
-              onSeek: isLoading ? null : _seek,
-              onRefresh: isLoading
-                  ? null
-                  : () async {
-                      _userStartedPlay = false;
-                      await context.read<HomeFeedCubit>().fetchPlaylist();
-                    },
-              isLoading: isLoading,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Cover Art
+                  Container(
+                    width: 96,
+                    height: 96,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.18),
+                          blurRadius: 16,
+                          offset: Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: track.coverUrl != null
+                          ? Image.network(track.coverUrl!, fit: BoxFit.cover)
+                          : Container(
+                              color: Colors.grey.shade900,
+                              child: Icon(Icons.music_note, size: 48, color: Colors.white),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Judul Lagu
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+                    child: Text(
+                      track.title,
+                      key: ValueKey<String>(track.title),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Colors.white,
+                            letterSpacing: -0.5,
+                            shadows: [Shadow(blurRadius: 6, color: Colors.black45)],
+                          ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  // Artis
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+                    child: Text(
+                      track.artist ?? 'Artis Tidak Diketahui',
+                      key: ValueKey<String?>(track.artist),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontFamily: 'Montserrat',
+                            color: Color(0xFFD1D1D1), // Light grey for secondary text (artist, subtitle)
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            shadows: [Shadow(blurRadius: 4, color: Colors.black38)],
+                          ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Tombol Play/Pause & Refresh
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AnimatedScale(
+                        scale: isPlaying ? 1.1 : 1.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: IconButton(
+                          iconSize: 44,
+                          icon: isLoading
+                              ? SizedBox(
+                                  width: 28,
+                                  height: 28,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF2850)), // Apple Music red
+                                  ),
+                                )
+                              : AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 250),
+                                  transitionBuilder: (child, animation) {
+                                    return ScaleTransition(scale: animation, child: child);
+                                  },
+                                  child: Icon(
+                                    isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
+                                    key: ValueKey<bool>(isPlaying),
+                                    color: Color(0xFFB0B0B0), // Monochrome light grey for play/pause icon
+                                    shadows: [Shadow(color: Colors.black.withOpacity(0.25), blurRadius: 8)],
+                                  ),
+                                ),
+                          onPressed: isLoading ? null : onTap,
+                          tooltip: isPlaying ? 'Pause' : 'Play',
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: isLoading ? null : onRefresh,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Icon(Icons.refresh_rounded, color: Colors.white70, size: 24),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Progress Bar
+                  if (isPlaying)
+                    Column(
+                      children: [
+                        const SizedBox(height: 8),
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7.0),
+                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+                            trackHeight: 2.0,
+                            activeTrackColor: Color(0xFF888888), // Monochrome medium grey
+                            inactiveTrackColor: Color(0xFFCCCCCC), // Monochrome light grey
+                            thumbColor: Color(0xFF5A5D6C), // Subtle blue-grey accent for slider thumb
+                          ),
+                          child: Slider(
+                            value: position.inMilliseconds.toDouble().clamp(0.0, duration.inMilliseconds.toDouble()),
+                            max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
+                            onChanged: isLoading ? null : onSeek,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(_formatDuration(position),
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Colors.white.withOpacity(0.85),
+                                        fontSize: 12,
+                                        fontFamily: 'Montserrat',
+                                        fontWeight: FontWeight.w600,
+                                        shadows: [Shadow(blurRadius: 2, color: Colors.black26)],
+                                      )),
+                              Text(_formatDuration(duration),
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Colors.white.withOpacity(0.85),
+                                        fontSize: 12,
+                                        fontFamily: 'Montserrat',
+                                        fontWeight: FontWeight.w600,
+                                        shadows: [Shadow(blurRadius: 2, color: Colors.black26)],
+                                      )),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
             ),
-          ],
+          ),
         );
       },
     );
@@ -173,24 +332,7 @@ class _MusicSectionState extends State<MusicSection> {
       } else {
         _stopPositionTimer();
       }
-      // Auto next hanya jika user sudah pernah play manual dan playlist belum habis
-      if (_userStartedPlay && state.processingState == AudioProcessingState.completed) {
-        if (mounted) {
-          await Future.delayed(const Duration(milliseconds: 500));
-          if (!mounted) return;
-          final cubit = context.read<HomeFeedCubit>();
-          final playlist = cubit.state.playlist;
-          final idx = cubit.state.activeIndex;
-          if (playlist.isNotEmpty && idx + 1 < playlist.length) {
-            cubit.nextSong();
-            // Tetap auto-next ke lagu berikutnya
-            setState(() { _userStartedPlay = true; });
-          } else {
-            // Playlist habis, stop autoplay
-            setState(() { _userStartedPlay = false; });
-          }
-        }
-      }
+      // Tidak ada auto-next/playlist
     });
   }
 
@@ -207,24 +349,14 @@ class _MusicSectionState extends State<MusicSection> {
       try {
         await _handler.playFromYoutubeId(track.youtubeId, track);
       } catch (e) {
-        // Error handling: show snackbar, skip to next song, stop auto-play for this track
+        // Error handling: show snackbar
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Gagal memutar lagu: ${track.title} (\"${e.toString()}\"). Melewati ke lagu berikutnya.'),
+              content: Text('Gagal memutar lagu: ${track.title} ("${e.toString()}")'),
               backgroundColor: Colors.red.shade400,
             ),
           );
-          // Skip to next song if available
-          final cubit = context.read<HomeFeedCubit>();
-          final playlist = cubit.state.playlist;
-          final idx = cubit.state.activeIndex;
-          if (playlist.isNotEmpty && idx + 1 < playlist.length) {
-            cubit.nextSong();
-            setState(() { _userStartedPlay = true; });
-          } else {
-            setState(() { _userStartedPlay = false; });
-          }
         }
       }
     }
@@ -232,165 +364,6 @@ class _MusicSectionState extends State<MusicSection> {
 
   Future<void> _seek(double value) async {
     await _handler.seek(Duration(milliseconds: value.round()));
-  }
-}
-
-class _MusicCard extends StatelessWidget {
-  const _MusicCard({
-    required this.track,
-    required this.isPlaying,
-    required this.duration,
-    required this.position,
-    required this.onTap,
-    required this.onSeek,
-    this.onRefresh,
-    this.isLoading = false,
-  });
-
-  final AudioTrack track;
-  final bool isPlaying;
-  final Duration duration;
-  final Duration position;
-  final VoidCallback? onTap;
-  final Function(double)? onSeek;
-  final Future<void> Function()? onRefresh;
-  final bool isLoading;
-
-  String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return "$minutes:$seconds";
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: isLoading ? 0.5 : 1.0,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blue.shade100, Colors.purple.shade50],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.purple.withOpacity(0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      width: 72,
-                      height: 72,
-                      color: Colors.grey.shade300,
-                      child: track.coverUrl != null
-                          ? Image.network(track.coverUrl!, fit: BoxFit.cover)
-                          : const Icon(Icons.music_note, size: 40, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          track.title,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                                color: Colors.blue.shade900,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          track.artist ?? 'Artis Tidak Diketahui',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.blueGrey.shade700,
-                              ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    children: [
-                      IconButton(
-                        iconSize: 48,
-                        icon: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 200),
-                          transitionBuilder: (child, animation) {
-                            return ScaleTransition(scale: animation, child: child);
-                          },
-                          child: Icon(
-                            isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
-                            key: ValueKey<bool>(isPlaying),
-                            color: Colors.blue.shade700,
-                          ),
-                        ),
-                        onPressed: isLoading ? null : onTap,
-                      ),
-                      if (onRefresh != null)
-                        IconButton(
-                          icon: const Icon(Icons.refresh_rounded, color: Color(0xFF1DB954)),
-                          tooltip: 'Ganti Lagu',
-                          onPressed: isLoading ? null : onRefresh,
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-              if (isPlaying)
-                Column(
-                  children: [
-                    const SizedBox(height: 12),
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
-                        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
-                        trackHeight: 3.0,
-                      ),
-                      child: Slider(
-                        value: position.inMilliseconds.toDouble().clamp(0.0, duration.inMilliseconds.toDouble()),
-                        max: duration.inMilliseconds.toDouble() > 0 ? duration.inMilliseconds.toDouble() : 1.0,
-                        onChanged: isLoading ? null : onSeek,
-                        activeColor: Colors.blue.shade700,
-                        inactiveColor: Colors.blue.shade100,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(_formatDuration(position), style: Theme.of(context).textTheme.bodySmall),
-                          Text(_formatDuration(duration), style: Theme.of(context).textTheme.bodySmall),
-                        ],
-                      ),
-                    ),
-                  ],
-                )
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 
@@ -403,7 +376,7 @@ class _ShimmerMusicCard extends StatelessWidget {
       highlightColor: Colors.grey[100]!,
       child: Card(
         child: ListTile(
-          leading: Icon(Icons.music_note, color: Colors.grey[400]),
+          leading: Icon(Icons.music_note, color: Colors.grey[400]), // Monochrome for shimmer icon
           title: Container(height: 20.0, color: Colors.grey[400]),
           subtitle: Container(height: 15.0, color: Colors.grey[300]),
         ),

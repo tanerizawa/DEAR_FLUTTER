@@ -6,7 +6,7 @@ import 'package:dear_flutter/presentation/chat/screens/chat_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/home_screen.dart';
 import 'package:dear_flutter/presentation/main/main_screen.dart';
 import 'package:dear_flutter/presentation/profile/screens/profile_screen.dart'; // Sudah ditambahkan
-import 'package:dear_flutter/presentation/journal/screens/journal_editor_screen.dart';
+import 'package:dear_flutter/presentation/journal/screens/journal_list_screen.dart';
 import 'package:dear_flutter/presentation/psy/screens/psy_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/article_detail_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/audio_player_screen.dart';
@@ -50,13 +50,13 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
-        // Tab 2: Create Journal
+        // Tab 2: Journal List (was JournalEditorScreen)
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: '/journal',
               pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: JournalEditorScreen()),
+                  const NoTransitionPage(child: JournalListScreen()),
             ),
           ],
         ),

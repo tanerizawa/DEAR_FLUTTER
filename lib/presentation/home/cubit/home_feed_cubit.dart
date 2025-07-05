@@ -1,6 +1,5 @@
 // lib/presentation/home/cubit/home_feed_cubit.dart
 
-import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/entities/home_feed.dart';
 import 'package:dear_flutter/domain/entities/journal.dart';
 import 'package:dear_flutter/domain/repositories/home_repository.dart';
@@ -10,7 +9,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 
 import 'home_feed_state.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
@@ -21,7 +19,6 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
   final JournalRepository _journalRepository;
   final AudioUrlCacheService _cacheService;
   final YoutubeExplode _yt = YoutubeExplode();
-  final SongHistoryRepository _songHistoryRepository = getIt<SongHistoryRepository>();
 
   HomeFeedCubit(this._homeRepository, this._journalRepository, this._cacheService)
       : super(const HomeFeedState());
@@ -34,43 +31,19 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
 
     try {
       final results = await Future.wait([
-        _homeRepository.getHomeFeed(),
+        _homeRepository.getLatestMusic(),
         _journalRepository.getJournals().first,
       ]);
-
-      final feed = results[0] as HomeFeed;
+      final music = results[0] as AudioTrack?;
       final journals = results[1] as List<Journal>;
       final lastMood = journals.isNotEmpty ? journals.first.mood : null;
-
-      debugPrint("[HomeFeedCubit] DATA BERHASIL DITERIMA. Mood terakhir: $lastMood");
-      // Fallback: jika playlist kosong, isi dengan 1 lagu dari music
-      var playlist = (feed.playlist.isNotEmpty)
-          ? List<AudioTrack>.from(feed.playlist)
-          : (feed.music != null ? [feed.music!] : <AudioTrack>[]);
-      // --- FILTER: Hanya lagu yang belum diputar hari ini ---
-      final playedToday = _songHistoryRepository.getHistoryToday();
-      playlist = playlist.where((track) => !playedToday.any((t) => t.id == track.id)).toList();
-      // Jika semua lagu sudah diputar hari ini, paksa ambil lagu baru dari backend
-      if (playlist.isEmpty) {
-        debugPrint('[HomeFeedCubit] Semua lagu hari ini sudah diputar, ambil lagu baru dari backend...');
-        await _homeRepository.triggerMusicGeneration();
-        final newFeed = await _homeRepository.getHomeFeed();
-        playlist = (newFeed.playlist.isNotEmpty)
-            ? List<AudioTrack>.from(newFeed.playlist)
-            : (newFeed.music != null ? [newFeed.music!] : <AudioTrack>[]);
-        playlist = playlist.where((track) => !playedToday.any((t) => t.id == track.id)).toList();
-      }
-      if (playlist.isNotEmpty) {
-        for (final track in playlist) {
-          _prefetchAudioUrl(track.youtubeId);
-        }
+      if (music != null) {
+        _prefetchAudioUrl(music.youtubeId);
       }
       emit(state.copyWith(
         status: HomeFeedStatus.success,
-        feed: feed,
+        music: music,
         lastMood: lastMood,
-        playlist: playlist,
-        activeIndex: 0,
       ));
     } catch (e, stackTrace) {
       debugPrint("[HomeFeedCubit] GAGAL MENGAMBIL DATA: $e");
@@ -150,52 +123,5 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
     }
     // Jika gagal berubah, fallback ke fetch biasa
     await fetchHomeFeed();
-  }
-
-  /// Ambil playlist lagu (10 lagu sekaligus) dari endpoint khusus, selalu panggil backend agar playlist fresh
-  Future<void> fetchPlaylist() async {
-    emit(state.copyWith(status: HomeFeedStatus.loading));
-    try {
-      // Selalu ambil playlist baru dari backend (bukan cache lama)
-      List<AudioTrack> playlist = [];
-      try {
-        playlist = await _homeRepository.getRadioStation('santai'); // Pastikan endpoint ini mengembalikan 10 lagu
-      } catch (_) {}
-      if (playlist.isEmpty) {
-        final feed = await _homeRepository.getHomeFeed();
-        playlist = feed.playlist.isNotEmpty ? feed.playlist : (feed.music != null ? [feed.music!] : []);
-      }
-      // Ambil maksimal 10 lagu
-      if (playlist.length > 10) playlist = playlist.take(10).toList();
-      if (playlist.isEmpty) throw Exception('Playlist kosong');
-      for (final track in playlist) {
-        _prefetchAudioUrl(track.youtubeId);
-      }
-      emit(state.copyWith(
-        status: HomeFeedStatus.success,
-        playlist: playlist,
-        activeIndex: 0,
-      ));
-    } catch (e) {
-      debugPrint('[HomeFeedCubit] Gagal fetch playlist: $e');
-      emit(state.copyWith(status: HomeFeedStatus.failure, errorMessage: 'Gagal memuat playlist.'));
-    }
-  }
-
-  /// Pindah ke lagu berikutnya di playlist, jika habis fetch playlist baru
-  Future<void> nextSong() async {
-    final currIdx = state.activeIndex;
-    final playlist = state.playlist;
-    // --- Tambahan: Mark lagu yang sudah diputar ke history agar tidak terulang ---
-    if (playlist.isNotEmpty && currIdx < playlist.length) {
-      final track = playlist[currIdx];
-      await _songHistoryRepository.addTrack(track);
-    }
-    if (playlist.isEmpty || currIdx + 1 >= playlist.length) {
-      // Playlist habis, fetch baru
-      await fetchPlaylist();
-      return;
-    }
-    emit(state.copyWith(activeIndex: currIdx + 1));
   }
 }

@@ -13,8 +13,9 @@ import 'package:audio_service/audio_service.dart';
 import 'package:rxdart/rxdart.dart';
 
 // Import the test helper
-import '../helpers/test_helper.dart';
-import '../helpers/test_helper.mocks.dart';
+import 'helpers/test_helper.dart';
+import 'helpers/test_helper.mocks.dart';
+import 'package:dear_flutter/core/di/injection.dart';
 
 void main() {
   late MockHomeFeedCubit mockHomeFeedCubit;
@@ -50,7 +51,7 @@ void main() {
     when(mockHomeFeedCubit.stream).thenAnswer((_) => Stream.value(mockHomeFeedCubit.state));
     when(mockSongHistoryRepo.addTrack(any)).thenAnswer((_) async {});
     when(mockAudioHandler.playFromYoutubeId(any, any)).thenAnswer((_) async {});
-    when(mockAudioHandler.playbackState).thenAnswer((_) => Stream.value(PlaybackState()));
+    when(mockAudioHandler.playbackState).thenAnswer((_) => BehaviorSubject<PlaybackState>.seeded(PlaybackState()));
     when(mockAudioHandler.mediaItem).thenAnswer((_) => BehaviorSubject.seeded(null));
 
     // Act

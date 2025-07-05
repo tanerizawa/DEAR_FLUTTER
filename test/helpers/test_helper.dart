@@ -5,6 +5,7 @@ import 'package:dear_flutter/domain/repositories/home_repository.dart';
 import 'package:dear_flutter/domain/repositories/journal_repository.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
+import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -18,6 +19,7 @@ import 'test_helper.mocks.dart';
   JournalRepository,
   SongHistoryRepository,
   AudioPlayerHandler,
+  HomeFeedCubit,
 ])
 void setupTestDependencies() {
   // Clear all previous registrations

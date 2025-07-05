@@ -15,7 +15,6 @@ class HomeFeedState with _$HomeFeedState {
     HomeFeed? feed,
     String? errorMessage,
     String? lastMood,
-    @Default([]) List<AudioTrack> playlist,
-    @Default(0) int activeIndex,
+    AudioTrack? music,
   }) = _HomeFeedState;
 }

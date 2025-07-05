@@ -2,6 +2,7 @@
 
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
+import 'package:dear_flutter/services/audio_url_cache_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Karena kita tidak bisa meng-inject mock player, kita tidak perlu mockito di sini.
@@ -10,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   
-  final mockTrack = AudioTrack(
+  final mockTrack = const AudioTrack(
     id: 1,
     title: 'Test Song',
     artist: 'Test Artist',
@@ -21,7 +22,7 @@ void main() {
     late AudioPlayerHandler handler;
 
     setUp(() {
-      handler = AudioPlayerHandler();
+      handler = AudioPlayerHandler(AudioUrlCacheService());
     });
 
     // Catatan: Tes ini hanya memastikan fungsi publik tidak crash saat dipanggil.
