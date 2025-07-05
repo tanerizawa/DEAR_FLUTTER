@@ -96,4 +96,38 @@ class RadioAudioPlayerHandler extends BaseAudioHandler with SeekHandler {
       rethrow;
     }
   }
+
+  @override
+  Future<void> play() async {
+    debugPrint('[RadioAudioPlayerHandler] Play requested');
+    await _player.play();
+  }
+
+  @override
+  Future<void> pause() async {
+    debugPrint('[RadioAudioPlayerHandler] Pause requested');
+    await _player.pause();
+  }
+
+  @override
+  Future<void> stop() async {
+    debugPrint('[RadioAudioPlayerHandler] Stop requested');
+    await _player.stop();
+    mediaItem.add(null);
+  }
+
+  @override
+  Future<void> seek(Duration position) async {
+    await _player.seek(position);
+  }
+
+  @override
+  Future<void> onTaskRemoved() async {
+    await stop();
+  }
+
+  void dispose() {
+    _player.dispose();
+    _yt.close();
+  }
 }

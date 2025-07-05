@@ -13,6 +13,9 @@ class JournalDao extends DatabaseAccessor<AppDatabase> with _$JournalDaoMixin {
   Stream<List<JournalEntry>> watchAllJournals() =>
       (select(journalEntries)..orderBy([(t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc)])).watch();
 
+  Future<List<JournalEntry>> getAllJournals() =>
+      (select(journalEntries)..orderBy([(t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc)])).get();
+
   Stream<JournalEntry?> watchJournalById(int id) =>
       (select(journalEntries)..where((tbl) => tbl.id.equals(id))).watchSingleOrNull();
 

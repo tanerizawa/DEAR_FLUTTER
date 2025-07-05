@@ -90,6 +90,8 @@ import 'package:dear_flutter/presentation/auth/cubit/register_cubit.dart'
 import 'package:dear_flutter/presentation/chat/cubit/chat_cubit.dart' as _i195;
 import 'package:dear_flutter/presentation/home/cubit/enhanced_home_feed_cubit.dart'
     as _i654;
+import 'package:dear_flutter/presentation/home/cubit/enhanced_radio_cubit.dart'
+    as _i812;
 import 'package:dear_flutter/presentation/home/cubit/home_cubit.dart' as _i941;
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart'
     as _i737;
@@ -316,6 +318,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i387.RadioCubit>(
       () => _i387.RadioCubit(
+        gh<_i34.HomeRepository>(),
+        gh<_i15.RadioAudioPlayerHandler>(),
+      ),
+    );
+    gh.factory<_i812.EnhancedRadioCubit>(
+      () => _i812.EnhancedRadioCubit(
         gh<_i34.HomeRepository>(),
         gh<_i15.RadioAudioPlayerHandler>(),
       ),

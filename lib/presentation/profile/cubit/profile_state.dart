@@ -11,5 +11,8 @@ class ProfileState with _$ProfileState {
     @Default(ProfileStatus.initial) ProfileStatus status,
     User? user,
     String? errorMessage,
+    Map<String, dynamic>? userStats,
+    Map<String, dynamic>? analyticsData,
+    String? currentMood,
   }) = _ProfileState;
 }

@@ -3,7 +3,7 @@
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/widgets/enhanced_quote_section.dart';
 import 'package:dear_flutter/presentation/home/widgets/enhanced_music_section.dart';
-import 'package:dear_flutter/presentation/home/widgets/radio_section.dart';
+import 'package:dear_flutter/presentation/home/widgets/enhanced_radio_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -190,9 +190,9 @@ class _HomeScreenState extends State<HomeScreen>
                   
                   // Radio Section
                   _buildSection(
-                    title: 'Radio Santai',
+                    title: 'Dear Radio',
                     icon: Icons.radio,
-                    child: const RadioSection(),
+                    child: const EnhancedRadioSection(),
                   ),
                   
                   const SizedBox(height: 40),

@@ -51,13 +51,13 @@ final GoRouter router = GoRouter(
             ),
           ],
         ),
-        // Tab 2: Journal List (was JournalEditorScreen)
+        // Tab 2: Enhanced Journal List with Analytics
         StatefulShellBranch(
           routes: [
             GoRoute(
               path: '/journal',
               pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: JournalListScreen()),
+                  NoTransitionPage(child: const JournalListScreen()),
             ),
           ],
         ),

@@ -10,14 +10,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+class EnhancedProfileScreen extends StatefulWidget {
+  const EnhancedProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<EnhancedProfileScreen> createState() => _EnhancedProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen>
+class _EnhancedProfileScreenState extends State<EnhancedProfileScreen>
     with AutomaticKeepAliveClientMixin {
   
   @override

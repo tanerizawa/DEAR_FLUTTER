@@ -13,7 +13,17 @@ class ChatState with _$ChatState {
     @Default(ChatStatus.initial) ChatStatus status,
     @Default([]) List<ChatMessage> messages,
     @Default(false) bool isSending,
+    @Default(false) bool isTyping,
+    @Default(false) bool hasMoreMessages,
+    @Default(false) bool isLoadingMore,
+    @Default(false) bool isSearching,
     String? errorMessage,
     String? lastFailedMessage,
+    String? searchQuery,
+    @Default([]) List<ChatMessage> searchResults,
+    ChatMessage? editingMessage,
+    ChatMessage? replyingTo,
+    @Default(false) bool isRecordingVoice,
+    Duration? voiceRecordingDuration,
   }) = _ChatState;
 }

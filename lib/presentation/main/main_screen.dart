@@ -98,22 +98,41 @@ class MainScreen extends StatelessWidget {
           ),
         ),
         floatingActionButton: selectedIndex == 2
-            ? FloatingActionButton.extended(
-                backgroundColor: const Color(0xFF1DB954),
-                foregroundColor: Colors.white,
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Tulis Jurnal'),
-                elevation: 4,
-                highlightElevation: 8,
-                onPressed: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const JournalEditorScreen()),
-                  );
-                  // Tidak perlu reload di sini, biarkan JournalListScreen handle refresh
-                },
+            ? Container(
+                margin: const EdgeInsets.only(bottom: 80), // Space for bottom nav
+                child: FloatingActionButton.extended(
+                  backgroundColor: const Color(0xFF1DB954),
+                  foregroundColor: Colors.white,
+                  elevation: 6,
+                  highlightElevation: 10,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  icon: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.edit, size: 18),
+                  ),
+                  label: const Text(
+                    'Tulis Jurnal',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  onPressed: () async {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const JournalEditorScreen()),
+                    );
+                    // Refresh journal list if needed
+                  },
+                ),
               )
             : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }
