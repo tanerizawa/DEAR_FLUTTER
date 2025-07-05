@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../cubit/tree_cubit.dart';
+import '../models/tree_state.dart';
 
 class CrisisResourcesCard extends StatelessWidget {
   const CrisisResourcesCard({super.key});
@@ -17,6 +20,27 @@ class CrisisResourcesCard extends StatelessWidget {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       debugPrint('Could not launch $uri');
     }
+  }
+
+  void _handleCrisisResourceAccess(BuildContext context, String resourceName) {
+    // Award points for accessing crisis resources (seeking help is positive)
+    final treeCubit = context.read<TreeCubit>();
+    treeCubit.addActivity(TreeActivity.crisisResourceView);
+    
+    // Show supportive feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.eco, color: Colors.green),
+            const SizedBox(width: 8),
+            Text('Good on you for seeking help! Your tree earned ${TreeActivity.crisisResourceView.points} points 🤗'),
+          ],
+        ),
+        backgroundColor: Colors.green.withOpacity(0.8),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   @override
@@ -134,6 +158,7 @@ class CrisisResourcesCard extends StatelessWidget {
             actionText: '988',
             onTap: () {
               HapticFeedback.lightImpact();
+              _handleCrisisResourceAccess(context, 'National Suicide Prevention Lifeline');
               _launchPhone('988');
             },
           ),
@@ -145,6 +170,7 @@ class CrisisResourcesCard extends StatelessWidget {
             actionText: 'Text HOME to 741741',
             onTap: () {
               HapticFeedback.lightImpact();
+              _handleCrisisResourceAccess(context, 'Crisis Text Line');
               _launchPhone('741741');
             },
           ),
@@ -156,6 +182,7 @@ class CrisisResourcesCard extends StatelessWidget {
             actionText: '911',
             onTap: () {
               HapticFeedback.heavyImpact();
+              _handleCrisisResourceAccess(context, 'Emergency Services');
               _launchPhone('911');
             },
           ),

@@ -229,7 +229,8 @@ class ProfileAnalyticsWidget extends StatelessWidget {
 
   Widget _buildWeeklyProgress() {
     final weeklyData = analyticsData?['weeklyProgress'] as List<dynamic>? ?? [3, 5, 2, 6, 4, 7, 3];
-    final maxEntries = weeklyData.isNotEmpty ? weeklyData.reduce((a, b) => a > b ? a : b) : 7;
+    final weeklyInts = weeklyData.map((e) => e is int ? e : int.tryParse(e.toString()) ?? 0).toList();
+    final maxEntries = weeklyInts.isNotEmpty ? weeklyInts.reduce((a, b) => a > b ? a : b) : 7;
     final days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
     
     return Column(
@@ -239,7 +240,7 @@ class ProfileAnalyticsWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: List.generate(7, (index) {
-            final entries = weeklyData.length > index ? weeklyData[index] as num : 0;
+            final entries = weeklyInts.length > index ? weeklyInts[index] : 0;
             final height = maxEntries > 0 ? (entries / maxEntries) * 60 : 0.0;
             final isToday = index == DateTime.now().weekday - 1;
             

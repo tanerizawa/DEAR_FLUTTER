@@ -10,6 +10,7 @@ import '../widgets/progress_section.dart';
 import '../widgets/crisis_resources_card.dart';
 import '../widgets/tree_of_life_card.dart';
 import '../cubit/tree_cubit.dart';
+import '../models/tree_state.dart';
 
 class PsyMainScreen extends StatefulWidget {
   const PsyMainScreen({super.key});
@@ -61,123 +62,146 @@ class _PsyMainScreenState extends State<PsyMainScreen> with AutomaticKeepAliveCl
   Widget build(BuildContext context) {
     super.build(context);
     
-    return Scaffold(
-      backgroundColor: const Color(0xFF121212),
-      body: RefreshIndicator(
-        onRefresh: _onRefresh,
-        backgroundColor: const Color(0xFF1E1E1E),
-        color: const Color(0xFF6C5CE7),
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            // App Bar with gradient
-            SliverAppBar(
-              expandedHeight: 120,
-              floating: true,
-              pinned: true,
-              backgroundColor: Colors.transparent,
-              flexibleSpace: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF6C5CE7),
-                      Color(0xFF74B9FF),
-                      Color(0xFF00CEC9),
+    return BlocProvider(
+      create: (context) => TreeCubit(),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF121212),
+        body: RefreshIndicator(
+          onRefresh: _onRefresh,
+          backgroundColor: const Color(0xFF1E1E1E),
+          color: const Color(0xFF6C5CE7),
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // App Bar with gradient
+              SliverAppBar(
+                expandedHeight: 120,
+                floating: true,
+                pinned: true,
+                backgroundColor: Colors.transparent,
+                flexibleSpace: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF6C5CE7),
+                        Color(0xFF74B9FF),
+                        Color(0xFF00CEC9),
+                      ],
+                    ),
+                  ),
+                  child: FlexibleSpaceBar(
+                    title: const Text(
+                      'Mental Wellness Hub',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    centerTitle: false,
+                    titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
+                    background: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF6C5CE7),
+                            Color(0xFF74B9FF),
+                            Color(0xFF00CEC9),
+                          ],
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.psychology,
+                          size: 40,
+                          color: Colors.white54,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Main Content
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Dashboard Header with daily check-in
+                      const PsyDashboardHeader(),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Tree of Life Feature
+                      const TreeOfLifeCard(),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Mood Assessment Card
+                      const MoodAssessmentCard(),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Mindfulness & Meditation Section
+                      const MindfulnessSection(),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // CBT Tools Section
+                      const CBTToolsSection(),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Education Section
+                      BlocBuilder<TreeCubit, TreeState>(
+                        builder: (context, state) {
+                          return EducationSection(
+                            onActivityComplete: () {
+                              final treeCubit = context.read<TreeCubit>();
+                              treeCubit.addActivity(TreeActivity.educationRead);
+                              
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      const Icon(Icons.eco, color: Colors.green),
+                                      const SizedBox(width: 8),
+                                      Text('Great learning! Your tree earned ${TreeActivity.educationRead.points} points 📚'),
+                                    ],
+                                  ),
+                                  backgroundColor: Colors.green.withOpacity(0.8),
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Progress & Analytics Section
+                      const ProgressSection(),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // Crisis Resources Card (always accessible)
+                      const CrisisResourcesCard(),
+                      
+                      const SizedBox(height: 32),
                     ],
                   ),
                 ),
-                child: FlexibleSpaceBar(
-                  title: const Text(
-                    'Mental Wellness Hub',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  centerTitle: false,
-                  titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
-                  background: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF6C5CE7),
-                          Color(0xFF74B9FF),
-                          Color(0xFF00CEC9),
-                        ],
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.psychology,
-                        size: 40,
-                        color: Colors.white54,
-                      ),
-                    ),
-                  ),
-                ),
               ),
-            ),
-            
-            // Main Content
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Dashboard Header with daily check-in
-                    const PsyDashboardHeader(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Tree of Life Feature
-                    BlocProvider(
-                      create: (context) => TreeCubit(),
-                      child: const TreeOfLifeCard(),
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Mood Assessment Card
-                    const MoodAssessmentCard(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Mindfulness & Meditation Section
-                    const MindfulnessSection(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // CBT Tools Section
-                    const CBTToolsSection(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Education Section
-                    const EducationSection(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Progress & Analytics Section
-                    const ProgressSection(),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Crisis Resources Card (always accessible)
-                    const CrisisResourcesCard(),
-                    
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

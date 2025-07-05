@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubit/tree_cubit.dart';
-import '../models/tree_state.dart';
 
 class EducationSection extends StatelessWidget {
-  const EducationSection({super.key});
+  final VoidCallback? onActivityComplete;
+  
+  const EducationSection({super.key, this.onActivityComplete});
 
   @override
   Widget build(BuildContext context) {
@@ -244,6 +243,7 @@ class EducationSection extends StatelessWidget {
                   subtitle: 'Test knowledge',
                   onTap: () {
                     HapticFeedback.lightImpact();
+                    onActivityComplete?.call();
                     // TODO: Navigate to psychology quiz
                   },
                 ),

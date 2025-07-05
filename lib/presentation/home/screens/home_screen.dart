@@ -2,8 +2,7 @@
 
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/widgets/enhanced_quote_section.dart';
-import 'package:dear_flutter/presentation/home/widgets/enhanced_music_section.dart';
-import 'package:dear_flutter/presentation/home/widgets/enhanced_radio_section.dart';
+import 'package:dear_flutter/presentation/home/widgets/unified_media_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -177,22 +176,13 @@ class _HomeScreenState extends State<HomeScreen>
                   
                   const SizedBox(height: 32),
                   
-                  // Music Section
+                  // Unified Media Section (Music + Radio)
                   _buildSection(
-                    title: 'Musik Untukmu',
-                    icon: Icons.music_note_rounded,
-                    child: const EnhancedMusicSection(),
+                    title: 'Media Player',
+                    icon: Icons.library_music_rounded,
+                    child: const UnifiedMediaSection(),
                     showRefreshButton: true,
                     onRefresh: () => _onRefresh(context),
-                  ),
-                  
-                  const SizedBox(height: 32),
-                  
-                  // Radio Section
-                  _buildSection(
-                    title: 'Dear Radio',
-                    icon: Icons.radio,
-                    child: const EnhancedRadioSection(),
                   ),
                   
                   const SizedBox(height: 40),
