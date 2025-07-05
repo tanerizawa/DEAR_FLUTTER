@@ -87,16 +87,19 @@ def debug_music_tracks():
     
     try:
         db = SessionLocal()
-        tracks = db.execute("SELECT id, title, youtube_id, status, created_at FROM musictracks ORDER BY created_at DESC LIMIT 10").fetchall()
+        # Use SQLAlchemy ORM instead of raw SQL
+        from app.models.music_track import MusicTrack
+        tracks = db.query(MusicTrack).order_by(MusicTrack.created_at.desc()).limit(10).all()
         db.close()
         return {
             "tracks": [
                 {
-                    "id": track[0],
-                    "title": track[1], 
-                    "youtube_id": track[2],
-                    "status": track[3],
-                    "created_at": str(track[4])
+                    "id": track.id,
+                    "title": track.title, 
+                    "youtube_id": track.youtube_id,
+                    "status": track.status,
+                    "stream_url": track.stream_url[:50] + "..." if track.stream_url else None,
+                    "created_at": str(track.created_at)
                 } for track in tracks
             ]
         }
