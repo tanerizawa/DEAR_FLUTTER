@@ -35,7 +35,11 @@ def get_latest_music(
     db: Session = Depends(dependencies.get_db),
 ) -> schemas.AudioTrack | None:
     """Return the most recently generated music recommendation."""
-    return crud.music_track.get_latest(db)
+    track = crud.music_track.get_latest(db)
+    # Filter: hanya return jika status bukan 'failed' dan field wajib valid
+    if not track or track.status == 'failed' or not (track.id and track.title and track.youtube_id and track.stream_url):
+        return None
+    return track
 
 
 @router.post("/trigger-generation", status_code=202)

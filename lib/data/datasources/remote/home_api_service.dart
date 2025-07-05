@@ -30,6 +30,8 @@ class HomeApiService {
   Future<AudioTrack?> getLatestMusic() async {
     final response = await _dio.get('music/latest');
     final data = response.data;
+    print('[DEBUG] Response music/latest:');
+    print(data);
     if (data == null) {
       return null;
     }
