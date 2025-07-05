@@ -17,5 +17,6 @@ class HomeFeedState with _$HomeFeedState {
     String? lastMood,
     AudioTrack? music,
     @Default("done") String musicStatus,
+    @Default([]) List<AudioTrack> playlist,
   }) = _HomeFeedState;
 }

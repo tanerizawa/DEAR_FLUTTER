@@ -1,6 +1,6 @@
 # backend/app/api/v1/music.py
 
-from fastapi import APIRouter, Depends, Query, BackgroundTasks, HTTPException
+from fastapi import APIRouter, Depends, Query, BackgroundTasks, HTTPException, Body
 from sqlalchemy.orm import Session
 import structlog
 import asyncio # -> Import asyncio
@@ -11,6 +11,7 @@ from app import crud, models, schemas, dependencies
 from app.services.music_suggestion_service import MusicSuggestionService
 from app.tasks import run_music_generation_flow
 from youtubesearchpython import VideosSearch
+from app.services.youtube_audio_extractor import extract_audio_url
 
 
 router = APIRouter()
@@ -45,3 +46,17 @@ async def trigger_music_generation(
     log.info("api:trigger_music_generation", user_id=current_user.id)
     background_tasks.add_task(run_music_generation_flow)
     return {"message": "Music recommendation generation process has been started."}
+
+
+@router.post("/extract-audio")
+def extract_audio(
+    data: dict = Body(...)
+):
+    """Ekstrak audio YouTube yang playable di Indonesia (ID), hanya audio stream."""
+    youtube_url = data.get("youtube_url")
+    if not youtube_url:
+        raise HTTPException(status_code=400, detail="youtube_url is required")
+    result = extract_audio_url(youtube_url)
+    if not result or not result.get("audio_url"):
+        raise HTTPException(status_code=422, detail="Gagal ekstrak audio dari YouTube (region/geo-block atau format tidak tersedia)")
+    return result

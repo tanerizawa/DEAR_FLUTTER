@@ -85,14 +85,20 @@ async def run_music_generation_flow():
         temp_id = temp_track.id
 
         if youtube_id:
+            # Ekstrak audio_url yang playable di Indonesia
+            from app.services.youtube_audio_extractor import extract_audio_url
+            youtube_url = f"https://www.youtube.com/watch?v={youtube_id}"
+            audio_info = extract_audio_url(youtube_url)
+            stream_url = audio_info["audio_url"] if audio_info else None
             # Update entry yang tadi dibuat
             temp_track.title = suggestion.title
             temp_track.youtube_id = youtube_id
             temp_track.artist = suggestion.artist
             temp_track.status = "done"
+            temp_track.stream_url = stream_url
             db.commit()
-            log.info("music_generation_flow:success", title=suggestion.title, youtube_id=youtube_id)
-            return "Music recommendation (ID only) generated successfully."
+            log.info("music_generation_flow:success", title=suggestion.title, youtube_id=youtube_id, stream_url=stream_url)
+            return "Music recommendation (ID+audio) generated successfully."
         else:
             temp_track.status = "failed"
             db.commit()

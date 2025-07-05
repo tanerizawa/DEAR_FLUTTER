@@ -64,45 +64,51 @@ class AudioPlayerHandler extends BaseAudioHandler with SeekHandler {
         debugPrint('[AudioPlayerHandler] Play event: ${track.title} (YouTube ID: $youtubeId)');
         String? audioUrl;
         Duration? duration;
-        // --- Cek metadata cache dulu ---
-        final cached = await _metadataCache.getMetadata(youtubeId);
-        DateTime? cacheTimestamp;
-        bool cacheExpired = true;
-        if (cached != null && cached['timestamp'] != null) {
-          cacheTimestamp = DateTime.tryParse(cached['timestamp']);
-          if (cacheTimestamp != null) {
-            cacheExpired = DateTime.now().difference(cacheTimestamp) > const Duration(hours: 2);
-          }
-        }
-        if (cached != null && cached['audioUrl'] != null && !cacheExpired) {
-          debugPrint("[AudioPlayerHandler] Memutar audio dari metadata cache...");
-          audioUrl = cached['audioUrl'] as String;
-          duration = cached['duration'] != null ? Duration(milliseconds: cached['duration']) : null;
-        } else if (_cacheService.has(youtubeId) && !cacheExpired) {
-          debugPrint("[AudioPlayerHandler] Memutar audio dari cache...");
-          audioUrl = _cacheService.get(youtubeId);
+        // --- Gunakan streamUrl dari backend jika ada ---
+        if (track.streamUrl != null && track.streamUrl!.isNotEmpty) {
+          debugPrint('[AudioPlayerHandler] Menggunakan streamUrl dari backend');
+          audioUrl = track.streamUrl;
         } else {
-          debugPrint("[AudioPlayerHandler] URL tidak ada di cache, melakukan ekstraksi...");
-          var manifest = await _yt.videos.streamsClient.getManifest(youtubeId);
-          final audioOnlyStreams = manifest.audioOnly.toList();
-          // Prioritaskan itag 140, lalu bitrate tertinggi <256kbps
-          AudioOnlyStreamInfo? chosen;
-          chosen = audioOnlyStreams.firstWhere(
-            (e) => e.tag == 140,
-            orElse: () {
-              final filtered = audioOnlyStreams.where((e) => e.bitrate.kiloBitsPerSecond < 256).toList();
-              if (filtered.isEmpty) return audioOnlyStreams.first;
-              filtered.sort((a, b) => b.bitrate.kiloBitsPerSecond.compareTo(a.bitrate.kiloBitsPerSecond));
-              return filtered.first;
-            },
-          );
-          audioUrl = chosen.url.toString();
-          // YoutubeExplode tidak expose durasi di stream, ambil dari Video objek
-          final video = await _yt.videos.get(youtubeId);
-          duration = video.duration;
-          // Simpan ke cache dengan timestamp
-          _cacheService.set(youtubeId, audioUrl);
-          await _metadataCache.saveMetadata(track, audioUrl, duration);
+          // --- Cek metadata cache dulu ---
+          final cached = await _metadataCache.getMetadata(youtubeId);
+          DateTime? cacheTimestamp;
+          bool cacheExpired = true;
+          if (cached != null && cached['timestamp'] != null) {
+            cacheTimestamp = DateTime.tryParse(cached['timestamp']);
+            if (cacheTimestamp != null) {
+              cacheExpired = DateTime.now().difference(cacheTimestamp) > const Duration(hours: 2);
+            }
+          }
+          if (cached != null && cached['audioUrl'] != null && !cacheExpired) {
+            debugPrint("[AudioPlayerHandler] Memutar audio dari metadata cache...");
+            audioUrl = cached['audioUrl'] as String;
+            duration = cached['duration'] != null ? Duration(milliseconds: cached['duration']) : null;
+          } else if (_cacheService.has(youtubeId) && !cacheExpired) {
+            debugPrint("[AudioPlayerHandler] Memutar audio dari cache...");
+            audioUrl = _cacheService.get(youtubeId);
+          } else {
+            debugPrint("[AudioPlayerHandler] URL tidak ada di cache, melakukan ekstraksi...");
+            var manifest = await _yt.videos.streamsClient.getManifest(youtubeId);
+            final audioOnlyStreams = manifest.audioOnly.toList();
+            // Prioritaskan itag 140, lalu bitrate tertinggi <256kbps
+            AudioOnlyStreamInfo? chosen;
+            chosen = audioOnlyStreams.firstWhere(
+              (e) => e.tag == 140,
+              orElse: () {
+                final filtered = audioOnlyStreams.where((e) => e.bitrate.kiloBitsPerSecond < 256).toList();
+                if (filtered.isEmpty) return audioOnlyStreams.first;
+                filtered.sort((a, b) => b.bitrate.kiloBitsPerSecond.compareTo(a.bitrate.kiloBitsPerSecond));
+                return filtered.first;
+              },
+            );
+            audioUrl = chosen.url.toString();
+            // YoutubeExplode tidak expose durasi di stream, ambil dari Video objek
+            final video = await _yt.videos.get(youtubeId);
+            duration = video.duration;
+            // Simpan ke cache dengan timestamp
+            _cacheService.set(youtubeId, audioUrl);
+            await _metadataCache.saveMetadata(track, audioUrl, duration);
+          }
         }
         if (audioUrl == null) {
           throw Exception("Tidak dapat menemukan URL audio yang valid.");

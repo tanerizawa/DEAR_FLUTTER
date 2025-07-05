@@ -10,6 +10,13 @@ class AudioTrackBase(BaseModel):
     # --- TAMBAHAN BARU: Field untuk URL audio ---
     stream_url: str | None = None
 
+    def model_dump(self, *args, **kwargs):
+        d = super().model_dump(*args, **kwargs)
+        for k in ['artist', 'cover_url', 'stream_url']:
+            if d.get(k) == "":
+                d[k] = None
+        return d
+
 class AudioTrackCreate(AudioTrackBase):
     pass
 

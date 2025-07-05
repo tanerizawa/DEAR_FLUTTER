@@ -8,12 +8,21 @@ class AudioTrack with _$AudioTrack {
   const factory AudioTrack({
     required int id,
     required String title,
-    @JsonKey(name: 'youtube_id') // ignore: invalid_annotation_target
     required String youtubeId,
     String? artist,
-    @JsonKey(name: 'cover_url') // ignore: invalid_annotation_target
     String? coverUrl,
+    String? streamUrl,
   }) = _AudioTrack;
 
   factory AudioTrack.fromJson(Map<String, dynamic> json) => _$AudioTrackFromJson(json);
+}
+
+// Freezed field mapping
+extension AudioTrackJson on AudioTrack {
+  @JsonKey(name: 'youtube_id')
+  String? get youtubeIdJson => youtubeId;
+  @JsonKey(name: 'cover_url')
+  String? get coverUrlJson => coverUrl;
+  @JsonKey(name: 'stream_url')
+  String? get streamUrlJson => streamUrl;
 }

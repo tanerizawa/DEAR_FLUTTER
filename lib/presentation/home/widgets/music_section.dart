@@ -28,6 +28,7 @@ class _MusicSectionState extends State<MusicSection> {
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
   AudioTrack? _currentTrack;
+  int _currentIndex = 0;
 
   void _startPositionTimer() {
     _positionTimer?.cancel();
@@ -54,38 +55,52 @@ class _MusicSectionState extends State<MusicSection> {
     super.dispose();
   }
 
+  void _playTrackAtIndex(List<AudioTrack> playlist, int index) async {
+    if (index < 0 || index >= playlist.length) return;
+    final track = playlist[index];
+    setState(() {
+      _currentTrack = track;
+      _currentIndex = index;
+    });
+    await getIt<SongHistoryRepository>().addTrack(track);
+    try {
+      await _handler.playFromYoutubeId(track.youtubeId, track);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memutar lagu: [${track.title}] ("${e.toString()}")'),
+            backgroundColor: Colors.red.shade400,
+          ),
+        );
+      }
+    }
+  }
+
+  void _handleNext(List<AudioTrack> playlist) {
+    if (_currentIndex < playlist.length - 1) {
+      _playTrackAtIndex(playlist, _currentIndex + 1);
+    }
+  }
+
+  void _handlePrev(List<AudioTrack> playlist) {
+    if (_currentIndex > 0) {
+      _playTrackAtIndex(playlist, _currentIndex - 1);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeFeedCubit, HomeFeedState>(
       buildWhen: (prev, curr) =>
         prev.music != curr.music ||
-        prev.status != curr.status,
+        prev.status != curr.status ||
+        prev.playlist != curr.playlist,
       builder: (context, state) {
         final track = state.music;
+        final playlist = state.playlist;
         final musicStatus = state.feed?.musicStatus ?? "done";
         final isLoading = state.status == HomeFeedStatus.loading || musicStatus == "generating";
-        if (isLoading && track == null) {
-          return const _ShimmerMusicCard();
-        }
-        if (musicStatus == "generating") {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Lagu sedang diproses...\nTunggu beberapa detik.',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.blueGrey.shade700),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
         if (track == null) {
           return Center(
             child: Padding(
@@ -115,71 +130,119 @@ class _MusicSectionState extends State<MusicSection> {
             ),
           );
         }
+        // Sync _currentIndex with playlist
+        final idx = playlist.indexWhere((t) => t.id == track.id);
+        if (idx != -1 && idx != _currentIndex) {
+          _currentIndex = idx;
+        }
         final bool isActivePlayer = _currentTrack?.id == track.id;
         final bool isPlaying = isActivePlayer && _isPlaying;
         final Duration position = isActivePlayer ? _position : Duration.zero;
         final Duration duration = isActivePlayer ? _duration : Duration.zero;
-        void onTap() => _handlePlayPause(track);
-        Future<void> onRefresh() async => await context.read<HomeFeedCubit>().fetchHomeFeed();
         void onSeek(double value) => _seek(value);
         String _formatDuration(Duration d) {
           final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
           final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
           return "$minutes:$seconds";
         }
-
-        // --- HAPUS AUTOPLAY: hanya play jika user klik manual ---
-
+        // UI utama
         return Center(
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 420),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(32),
               gradient: LinearGradient(
-                colors: [Color(0xFF232526), Color(0xFF232526)], // Monochrome dark grey
+                colors: [const Color(0xFF232526), const Color(0xFF1DB954).withOpacity(0.15)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.18),
-                  blurRadius: 24,
-                  offset: Offset(0, 8),
+                  blurRadius: 32,
+                  offset: const Offset(0, 16),
                 ),
               ],
-              border: Border.all(color: Color(0x1A1A1A).withOpacity(0.15), width: 1.2),
+              border: Border.all(color: const Color(0x1A1A1A).withOpacity(0.15), width: 1.5),
               backgroundBlendMode: BlendMode.overlay,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Cover Art
+                  // Playlist horizontal list (lebih kecil)
+                  if (playlist.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: SizedBox(
+                        height: 40,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: playlist.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 6),
+                          itemBuilder: (context, i) {
+                            final t = playlist[i];
+                            final isActive = i == _currentIndex;
+                            return GestureDetector(
+                              onTap: () => _playTrackAtIndex(playlist, i),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isActive ? Colors.white.withOpacity(0.08) : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: isActive ? Border.all(color: Colors.white, width: 1.2) : null,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.music_note, color: isActive ? Colors.white : Colors.white54, size: 16),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      t.title,
+                                      style: TextStyle(
+                                        color: isActive ? Colors.white : Colors.white70,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Montserrat',
+                                        fontSize: 11,
+                                        letterSpacing: 0.5,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  // Cover Art lingkaran
                   Container(
-                    width: 96,
-                    height: 96,
+                    width: 72,
+                    height: 72,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.08),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.18),
                           blurRadius: 16,
-                          offset: Offset(0, 6),
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
+                    child: ClipOval(
                       child: track.coverUrl != null
                           ? Image.network(track.coverUrl!, fit: BoxFit.cover)
                           : Container(
-                              color: Colors.grey.shade900,
-                              child: Icon(Icons.music_note, size: 48, color: Colors.white),
+                              color: Colors.black,
+                              child: Icon(Icons.music_note, size: 36, color: Colors.white),
                             ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   // Judul Lagu
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 350),
@@ -188,19 +251,19 @@ class _MusicSectionState extends State<MusicSection> {
                       track.title,
                       key: ValueKey<String>(track.title),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
-                            shadows: [Shadow(blurRadius: 6, color: Colors.black45)],
-                          ),
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.white,
+                        letterSpacing: -0.5,
+                        shadows: [const Shadow(blurRadius: 6, color: Colors.black45)],
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   // Artis
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 350),
@@ -209,22 +272,30 @@ class _MusicSectionState extends State<MusicSection> {
                       track.artist ?? 'Artis Tidak Diketahui',
                       key: ValueKey<String?>(track.artist),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontFamily: 'Montserrat',
-                            color: Color(0xFFD1D1D1), // Light grey for secondary text (artist, subtitle)
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            shadows: [Shadow(blurRadius: 4, color: Colors.black38)],
-                          ),
+                        fontFamily: 'Montserrat',
+                        color: const Color(0xFFD1D1D1),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        shadows: [const Shadow(blurRadius: 4, color: Colors.black38)],
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // Tombol Play/Pause & Refresh
+                  // Tombol prev, play/pause, next
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      IconButton(
+                        icon: const Icon(Icons.skip_previous_rounded),
+                        color: _currentIndex > 0 ? Colors.white : Colors.white24,
+                        iconSize: 30,
+                        onPressed: _currentIndex > 0 ? () => _handlePrev(playlist) : null,
+                        tooltip: 'Sebelumnya',
+                      ),
+                      const SizedBox(width: 10),
                       AnimatedScale(
                         scale: isPlaying ? 1.1 : 1.0,
                         duration: const Duration(milliseconds: 200),
@@ -232,11 +303,11 @@ class _MusicSectionState extends State<MusicSection> {
                           iconSize: 44,
                           icon: isLoading
                               ? SizedBox(
-                                  width: 28,
-                                  height: 28,
+                                  width: 26,
+                                  height: 26,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 3,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF2850)), // Apple Music red
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                   ),
                                 )
                               : AnimatedSwitcher(
@@ -247,29 +318,21 @@ class _MusicSectionState extends State<MusicSection> {
                                   child: Icon(
                                     isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
                                     key: ValueKey<bool>(isPlaying),
-                                    color: Color(0xFFB0B0B0), // Monochrome light grey for play/pause icon
+                                    color: Colors.white,
                                     shadows: [Shadow(color: Colors.black.withOpacity(0.25), blurRadius: 8)],
                                   ),
                                 ),
-                          onPressed: isLoading ? null : onTap,
+                          onPressed: isLoading ? null : () => _handlePlayPause(track),
                           tooltip: isPlaying ? 'Pause' : 'Play',
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: isLoading ? null : onRefresh,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Icon(Icons.refresh_rounded, color: Colors.white70, size: 24),
-                          ),
-                        ),
+                      const SizedBox(width: 10),
+                      IconButton(
+                        icon: const Icon(Icons.skip_next_rounded),
+                        color: _currentIndex < playlist.length - 1 ? Colors.white : Colors.white24,
+                        iconSize: 30,
+                        onPressed: _currentIndex < playlist.length - 1 ? () => _handleNext(playlist) : null,
+                        tooltip: 'Berikutnya',
                       ),
                     ],
                   ),
@@ -277,15 +340,15 @@ class _MusicSectionState extends State<MusicSection> {
                   if (isPlaying)
                     Column(
                       children: [
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7.0),
-                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+                            overlayShape: const RoundSliderOverlayShape(overlayRadius: 10.0),
                             trackHeight: 2.0,
-                            activeTrackColor: Color(0xFF888888), // Monochrome medium grey
-                            inactiveTrackColor: Color(0xFFCCCCCC), // Monochrome light grey
-                            thumbColor: Color(0xFF5A5D6C), // Subtle blue-grey accent for slider thumb
+                            activeTrackColor: Colors.white,
+                            inactiveTrackColor: Colors.white38,
+                            thumbColor: Colors.white,
                           ),
                           child: Slider(
                             value: position.inMilliseconds.toDouble().clamp(0.0, duration.inMilliseconds.toDouble()),
@@ -294,26 +357,24 @@ class _MusicSectionState extends State<MusicSection> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(_formatDuration(position),
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Colors.white.withOpacity(0.85),
-                                        fontSize: 12,
-                                        fontFamily: 'Montserrat',
-                                        fontWeight: FontWeight.w600,
-                                        shadows: [Shadow(blurRadius: 2, color: Colors.black26)],
-                                      )),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.w600,
+                                  )),
                               Text(_formatDuration(duration),
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Colors.white.withOpacity(0.85),
-                                        fontSize: 12,
-                                        fontFamily: 'Montserrat',
-                                        fontWeight: FontWeight.w600,
-                                        shadows: [Shadow(blurRadius: 2, color: Colors.black26)],
-                                      )),
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 11,
+                                    fontFamily: 'Montserrat',
+                                    fontWeight: FontWeight.w600,
+                                  )),
                             ],
                           ),
                         ),
@@ -354,24 +415,39 @@ class _MusicSectionState extends State<MusicSection> {
       } else {
         _stopPositionTimer();
       }
-      // Tidak ada auto-next/playlist
+      // Trigger fetch jika sudah di akhir playlist dan playback completed
+      if (state.processingState == AudioProcessingState.completed) {
+        final cubit = context.read<HomeFeedCubit>();
+        final playlist = cubit.state.playlist;
+        if (_currentIndex >= playlist.length - 1) {
+          // Sudah di akhir playlist, fetch baru
+          await cubit.fetchHomeFeed();
+        }
+      }
     });
   }
 
   Future<void> _handlePlayPause(AudioTrack track) async {
     final isCurrentlyPlaying = _currentTrack?.id == track.id && _isPlaying;
+    final isTrackChanged = _currentTrack?.id != track.id;
 
     if (isCurrentlyPlaying) {
       await _handler.pause();
+      setState(() {
+        _isPlaying = false;
+      });
     } else {
       setState(() {
         _currentTrack = track;
+        _isPlaying = false; // Reset agar UI langsung update
       });
       await getIt<SongHistoryRepository>().addTrack(track);
       try {
         await _handler.playFromYoutubeId(track.youtubeId, track);
+        setState(() {
+          _isPlaying = true;
+        });
       } catch (e) {
-        // Error handling: show snackbar
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
