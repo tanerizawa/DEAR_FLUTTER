@@ -62,9 +62,29 @@ class _MusicSectionState extends State<MusicSection> {
         prev.status != curr.status,
       builder: (context, state) {
         final track = state.music;
-        final isLoading = state.status == HomeFeedStatus.loading;
+        final musicStatus = state.feed?.musicStatus ?? "done";
+        final isLoading = state.status == HomeFeedStatus.loading || musicStatus == "generating";
         if (isLoading && track == null) {
           return const _ShimmerMusicCard();
+        }
+        if (musicStatus == "generating") {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Lagu sedang diproses...\nTunggu beberapa detik.',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.blueGrey.shade700),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
         }
         if (track == null) {
           return Center(
@@ -84,9 +104,11 @@ class _MusicSectionState extends State<MusicSection> {
                   ElevatedButton.icon(
                     icon: const Icon(Icons.refresh_rounded),
                     label: const Text('Coba Lagi'),
-                    onPressed: () async {
-                      await context.read<HomeFeedCubit>().fetchHomeFeed();
-                    },
+                    onPressed: musicStatus == "generating"
+                        ? null
+                        : () async {
+                            await context.read<HomeFeedCubit>().fetchHomeFeed();
+                          },
                   ),
                 ],
               ),
