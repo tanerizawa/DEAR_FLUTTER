@@ -243,12 +243,14 @@ class _JournalListScreenState extends State<JournalListScreen> {
                                                 ),
                                                 SlidableAction(
                                                   onPressed: (_) async {
-                                                    await Navigator.of(context).push(
+                                                    final result = await Navigator.of(context).push(
                                                       MaterialPageRoute(
                                                         builder: (_) => JournalEditorScreen(initialEntry: journal),
                                                       ),
                                                     );
-                                                    _loadJournals();
+                                                    if (result == 'refresh') {
+                                                      _loadJournals();
+                                                    }
                                                   },
                                                   backgroundColor: accentColor,
                                                   foregroundColor: Colors.white,

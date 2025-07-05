@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class JournalEditorScreen extends StatefulWidget {
   final JournalEntry? initialEntry;
@@ -47,14 +49,61 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
     if (widget.initialEntry != null) {
       _contentController.text = widget.initialEntry!.content;
       _selectedMood = widget.initialEntry!.mood;
+    } else {
+      _restoreDraftIfAny();
     }
   }
 
   @override
   void dispose() {
+    _saveDraftIfNeeded();
     _contentController.dispose();
     _contentFocusNode.dispose();
     super.dispose();
+  }
+
+  void _saveDraftIfNeeded() {
+    if (_contentController.text.trim().isNotEmpty && !_showSuccess) {
+      // Simpan draft ke SharedPreferences (atau storage lokal lain)
+      // Key: 'journal_draft', Value: content + mood
+      // Implementasi sederhana, bisa diimprove ke Hive jika perlu
+      final draft = {
+        'content': _contentController.text,
+        'mood': _selectedMood,
+      };
+      // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final prefs = await SharedPreferences.getInstance();
+        prefs.setString('journal_draft', jsonEncode(draft));
+      });
+    }
+  }
+
+  void _deleteDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove('journal_draft');
+  }
+
+  void _restoreDraftIfAny() async {
+    final prefs = await SharedPreferences.getInstance();
+    final draftStr = prefs.getString('journal_draft');
+    if (draftStr != null) {
+      final draft = jsonDecode(draftStr);
+      if (draft['content'] != null && draft['content'].toString().trim().isNotEmpty) {
+        setState(() {
+          _contentController.text = draft['content'];
+          _selectedMood = draft['mood'] ?? 'Netral 😐';
+        });
+        // Show notification/snackbar if draft is restored
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Draft dipulihkan')),
+            );
+          }
+        });
+      }
+    }
   }
 
   Future<bool> _onWillPop() async {
@@ -83,7 +132,10 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
     setState(() => _showSuccess = true);
     HapticFeedback.mediumImpact();
     await Future.delayed(const Duration(milliseconds: 900));
-    if (mounted) context.go('/journal'); // redirect ke list jurnal
+    _deleteDraft();
+    if (mounted) {
+      Navigator.of(context).pop('refresh'); // Kirim sinyal refresh ke list
+    }
   }
 
   Future<void> _saveJournal() async {
@@ -131,7 +183,6 @@ class _JournalEditorScreenState extends State<JournalEditorScreen> {
     // Define warna konsisten dengan Home
     const bgColor = Color(0xFF232526); // dark
     const cardColor = Color(0xFF2C2F34); // dark card
-    const accentColor = Color(0xFF1DB954); // green accent
     const textColor = Colors.white;
     const accentTextColor = Color(0xFFB4B8C5);
 

@@ -157,9 +157,16 @@ class MockAudioPlayerHandler extends _i1.Mock
           as _i3.BehaviorSubject<dynamic>);
 
   @override
-  _i6.Future<void> playPlaylist(List<_i7.AudioTrack>? tracks) =>
+  _i6.Future<void> playPlaylist(
+    List<_i7.AudioTrack>? tracks, {
+    int? startIndex = 0,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#playPlaylist, [tracks]),
+            Invocation.method(
+              #playPlaylist,
+              [tracks],
+              {#startIndex: startIndex},
+            ),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )

@@ -12,3 +12,4 @@ class MusicTrack(Base):
     # --- TAMBAHAN BARU: Kolom untuk menyimpan URL audio ---
     stream_url = Column(Text, nullable=True) # Gunakan Text untuk URL yang panjang
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    status = Column(String, default="done")  # status: generating, done, failed

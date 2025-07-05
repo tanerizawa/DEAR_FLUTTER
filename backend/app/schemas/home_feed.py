@@ -10,3 +10,4 @@ class HomeFeed(BaseModel):
 
     quote: Optional[MotivationalQuote] = None
     music: Optional[AudioTrack] = None
+    music_status: str = "done"

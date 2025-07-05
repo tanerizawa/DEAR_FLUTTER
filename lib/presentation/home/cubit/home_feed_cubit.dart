@@ -99,17 +99,19 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
   Future<void> refreshHomeFeed() async {
     // Paksa backend untuk generate lagu baru
     HomeFeed? oldFeed = state.feed;
+    int? oldMusicId = oldFeed?.music?.id;
     try {
       await _homeRepository.triggerMusicGeneration();
     } catch (e) {
       debugPrint('[HomeFeedCubit] triggerMusicGeneration gagal: $e');
     }
-    // Polling sampai lagu benar-benar berubah (max 5x percobaan, delay 1 detik)
-    for (int i = 0; i < 5; i++) {
+    // Polling sampai lagu benar-benar berubah (max 12x percobaan, delay 1 detik)
+    for (int i = 0; i < 12; i++) {
       await Future.delayed(const Duration(seconds: 1));
       try {
         final newFeed = await _homeRepository.getHomeFeed();
-        if (oldFeed == null || newFeed.music?.title != oldFeed.music?.title || newFeed.music?.artist != oldFeed.music?.artist) {
+        final newMusicId = newFeed.music?.id;
+        if (oldFeed == null || newMusicId != oldMusicId) {
           emit(state.copyWith(feed: newFeed, status: HomeFeedStatus.success));
           // Jalankan prefetch jika ada lagu baru
           if (newFeed.music != null) {
@@ -118,10 +120,10 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
           return;
         }
       } catch (e) {
-        debugPrint('[HomeFeedCubit] Polling gagal: $e');
+        debugPrint('[HomeFeedCubit] Polling home feed gagal: $e');
       }
     }
-    // Jika gagal berubah, fallback ke fetch biasa
-    await fetchHomeFeed();
+    // Jika tidak ada perubahan setelah polling, emit state lama
+    emit(state.copyWith(status: HomeFeedStatus.success));
   }
 }

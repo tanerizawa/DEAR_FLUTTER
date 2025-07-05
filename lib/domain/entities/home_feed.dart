@@ -5,8 +5,9 @@ class HomeFeed {
   final MotivationalQuote? quote;
   final AudioTrack? music;
   final List<AudioTrack> playlist;
+  final String musicStatus;
 
-  HomeFeed({this.quote, this.music, this.playlist = const []});
+  HomeFeed({this.quote, this.music, this.playlist = const [], this.musicStatus = "done"});
 
   factory HomeFeed.fromJson(Map<String, dynamic> json) {
     return HomeFeed(
@@ -21,6 +22,7 @@ class HomeFeed {
               .map((e) => AudioTrack.fromJson(e as Map<String, dynamic>))
               .toList()
           : [],
+      musicStatus: json['music_status'] ?? "done",
     );
   }
 }

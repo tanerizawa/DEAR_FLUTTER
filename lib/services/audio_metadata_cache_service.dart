@@ -14,6 +14,7 @@ class AudioMetadataCacheService {
       'coverUrl': track.coverUrl,
       'audioUrl': audioUrl,
       'duration': duration?.inMilliseconds,
+      'timestamp': DateTime.now().toIso8601String(),
     };
     await box.put(track.youtubeId, data);
   }
@@ -28,5 +29,10 @@ class AudioMetadataCacheService {
   Future<void> clear() async {
     final box = await Hive.openBox(boxName);
     await box.clear();
+  }
+
+  Future<void> removeMetadata(String youtubeId) async {
+    final box = await Hive.openBox(boxName);
+    await box.delete(youtubeId);
   }
 }

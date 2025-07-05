@@ -31,4 +31,9 @@ class AudioUrlCacheService {
   void clear() {
     _cache.clear();
   }
+
+  /// Menghapus satu entry cache berdasarkan youtubeId.
+  void remove(String youtubeId) {
+    _cache.remove(youtubeId);
+  }
 }

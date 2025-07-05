@@ -18,4 +18,5 @@ class AudioTrackUpdate(AudioTrackBase):
 
 class AudioTrack(AudioTrackBase):
     id: int
+    status: str = "done"
     model_config = ConfigDict(from_attributes=True)
