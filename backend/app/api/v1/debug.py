@@ -108,3 +108,64 @@ def debug_music_tracks():
         return {
             "error": str(e)
         }
+
+@router.get("/music-stats")
+def debug_music_stats():
+    """Music generation statistics - debug only"""
+    env = os.environ.get("ENVIRONMENT", "development")
+    debug_mode = os.environ.get("DEBUG_LOCAL", "0") == "1"
+    
+    # Temporarily allow debug endpoints in production for troubleshooting
+    # if env == "production" and not debug_mode:
+    #     raise HTTPException(status_code=403, detail="Debug endpoint not available in production")
+    
+    try:
+        db = SessionLocal()
+        from app.models.music_track import MusicTrack
+        
+        # Get stats for last 24 hours
+        from datetime import datetime, timedelta
+        yesterday = datetime.now() - timedelta(days=1)
+        
+        total_attempts = db.query(MusicTrack).filter(MusicTrack.created_at >= yesterday).count()
+        successful = db.query(MusicTrack).filter(
+            MusicTrack.created_at >= yesterday,
+            MusicTrack.status == 'done'
+        ).count()
+        failed = db.query(MusicTrack).filter(
+            MusicTrack.created_at >= yesterday,
+            MusicTrack.status == 'failed'
+        ).count()
+        generating = db.query(MusicTrack).filter(
+            MusicTrack.created_at >= yesterday,
+            MusicTrack.status == 'generating'
+        ).count()
+        
+        success_rate = (successful / total_attempts * 100) if total_attempts > 0 else 0
+        
+        # Get latest successful track
+        latest_success = db.query(MusicTrack).filter(
+            MusicTrack.status == 'done'
+        ).order_by(MusicTrack.created_at.desc()).first()
+        
+        db.close()
+        return {
+            "last_24_hours": {
+                "total_attempts": total_attempts,
+                "successful": successful,
+                "failed": failed,
+                "generating": generating,
+                "success_rate": f"{success_rate:.1f}%"
+            },
+            "latest_successful_track": {
+                "title": latest_success.title if latest_success else None,
+                "artist": latest_success.artist if latest_success else None,
+                "created_at": str(latest_success.created_at) if latest_success else None,
+                "youtube_id": latest_success.youtube_id if latest_success else None
+            } if latest_success else None
+        }
+    except Exception as e:
+        log.error("debug:music_stats_failed", error=str(e))
+        return {
+            "error": str(e)
+        }

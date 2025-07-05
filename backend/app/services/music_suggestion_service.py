@@ -76,3 +76,56 @@ class MusicSuggestionService:
         except Exception as e:
             self.log.error("music_suggestion_error", error=str(e))
             return None
+
+    async def suggest_diverse_songs(
+        self, keyword: str, count: int = 3, avoid_titles: List[str] = None
+    ) -> List[SongSuggestion]:
+        """
+        Generate multiple diverse song suggestions based on keyword/mood.
+        Used for better variety in music generation flow.
+        """
+        avoid_titles = avoid_titles or []
+        avoid_str = f" Hindari lagu: {', '.join(avoid_titles)}." if avoid_titles else ""
+        
+        prompt = dedent(
+            f"""
+            Berdasarkan kata kunci atau mood: "{keyword}", sarankan {count} lagu yang berbeda dengan genre yang beragam.
+            Prioritaskan lagu-lagu populer yang mudah ditemukan di YouTube.{avoid_str}
+            
+            Berikan variasi genre seperti: pop, rock, indie, acoustic, electronic, R&B, dll.
+            Sertakan campuran lagu Indonesia dan internasional.
+            
+            Format JSON array: [
+                {{"title": "judul lagu 1", "artist": "artist 1"}},
+                {{"title": "judul lagu 2", "artist": "artist 2"}},
+                {{"title": "judul lagu 3", "artist": "artist 3"}}
+            ]
+            """
+        ).strip()
+        
+        messages = [{"role": "system", "content": prompt}]
+        
+        try:
+            data = await self._call_openrouter(
+                model=self.settings.GENERATOR_MODEL_NAME, messages=messages
+            )
+            content = data["choices"][0]["message"]["content"].strip()
+            
+            # Clean up JSON formatting
+            if content.startswith("```json"):
+                content = content[len("```json") :].strip()
+            if content.endswith("```"):
+                content = content[:-3].strip()
+            
+            songs_data = json.loads(content)
+            suggestions = [SongSuggestion(**song) for song in songs_data]
+            
+            self.log.info("diverse_music_suggestions", 
+                         count=len(suggestions), 
+                         keyword=keyword,
+                         titles=[s.title for s in suggestions])
+            return suggestions
+            
+        except Exception as e:
+            self.log.error("diverse_music_suggestion_error", error=str(e), keyword=keyword)
+            return []
