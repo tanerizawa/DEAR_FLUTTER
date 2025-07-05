@@ -48,6 +48,11 @@ async def lifespan(app: FastAPI):
 # --- Inisialisasi FastAPI App ---
 app = FastAPI(title="Dear Diary API", lifespan=lifespan)
 
+# Add response handling middleware to prevent Content-Length mismatch
+from app.core.response_handler import ResponseHandlerMiddleware
+
+app.add_middleware(ResponseHandlerMiddleware)
+
 # --- Setup CORS ---
 allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
 allowed_origins = allowed_origins_str.split(",") if allowed_origins_str else []

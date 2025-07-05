@@ -5,6 +5,8 @@ import 'package:dear_flutter/domain/entities/journal.dart';
 import 'package:dear_flutter/domain/repositories/home_repository.dart';
 import 'package:dear_flutter/domain/repositories/journal_repository.dart';
 import 'package:dear_flutter/services/audio_url_cache_service.dart';
+import 'package:dear_flutter/services/rate_limiting_service.dart';
+import 'package:dear_flutter/core/error/app_error_handler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter/foundation.dart';
@@ -18,6 +20,7 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
   final HomeRepository _homeRepository;
   final JournalRepository _journalRepository;
   final AudioUrlCacheService _cacheService;
+  final RateLimitingService _rateLimitingService = RateLimitingService();
   final YoutubeExplode _yt = YoutubeExplode();
 
   HomeFeedCubit(this._homeRepository, this._journalRepository, this._cacheService)
@@ -25,6 +28,18 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
 
   Future<void> fetchHomeFeed() async {
     if (state.status == HomeFeedStatus.loading) return;
+
+    // Check rate limits before making request
+    if (!await _rateLimitingService.canMakeRequest('music_fetch')) {
+      final waitTime = _rateLimitingService.getRemainingCooldown('music_fetch');
+      debugPrint("[HomeFeedCubit] Rate limited, wait ${waitTime.inSeconds}s");
+      
+      emit(state.copyWith(
+        status: HomeFeedStatus.failure,
+        errorMessage: 'Tunggu ${waitTime.inSeconds} detik sebelum mencoba lagi.'
+      ));
+      return;
+    }
 
     emit(state.copyWith(status: HomeFeedStatus.loading));
     debugPrint("[HomeFeedCubit] Mulai mengambil data home feed dan jurnal...");
@@ -71,9 +86,25 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
     } catch (e, stackTrace) {
       debugPrint("[HomeFeedCubit] GAGAL MENGAMBIL DATA: $e");
       debugPrint(stackTrace.toString());
+      
+      String errorMessage = 'Gagal memuat data. Silakan coba lagi.';
+      
+      // Handle specific error types for better user experience
+      if (e.toString().contains('TimeoutException') || 
+          e.toString().contains('Connection timeout') ||
+          e.toString().contains('429') ||
+          e.toString().contains('Too Many Requests')) {
+        errorMessage = 'Server sedang sibuk. Silakan tunggu beberapa saat dan coba lagi.';
+      } else if (e.toString().contains('Connection refused') ||
+                 e.toString().contains('No route to host')) {
+        errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+      } else if (e.toString().contains('SocketException')) {
+        errorMessage = 'Masalah jaringan. Periksa koneksi internet Anda.';
+      }
+      
       emit(state.copyWith(
         status: HomeFeedStatus.failure,
-        errorMessage: 'Gagal memuat data. Silakan coba lagi.',
+        errorMessage: errorMessage,
       ));
     }
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
+import 'package:dear_flutter/presentation/home/cubit/improved_home_feed_cubit.dart';
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/presentation/journal/screens/journal_editor_screen.dart';
 
@@ -16,8 +16,8 @@ class MainScreen extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider<HomeFeedCubit>(
-          create: (_) => getIt<HomeFeedCubit>()..fetchHomeFeed(),
+        BlocProvider<ImprovedHomeFeedCubit>(
+          create: (_) => getIt<ImprovedHomeFeedCubit>()..fetchHomeFeed(),
         ),
         // Tambahkan cubit lain jika perlu
       ],

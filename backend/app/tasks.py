@@ -12,18 +12,19 @@ from app.schemas.audio import AudioTrackCreate
 from youtubesearchpython import VideosSearch
 import asyncio
 import structlog
+from typing import Optional
 from app.core.config import settings
 
 log = structlog.get_logger(__name__)
 
-async def run_music_generation_flow():
+async def run_music_generation_flow(user_id: Optional[int] = None):
     """
     Menjalankan alur untuk menghasilkan rekomendasi musik
-    dengan improved success rate dan fallback strategies.
+    dengan improved success rate dan psychological context.
     """
     db = SessionLocal()
     try:
-        log.info("music_generation_flow:start")
+        log.info("music_generation_flow:start", user_id=user_id)
         
         # Clean up old failed tracks (keep only last 5 failed tracks)
         failed_tracks = (
@@ -39,19 +40,30 @@ async def run_music_generation_flow():
             db.commit()
             log.info("music_generation_flow:cleaned_old_failed_tracks", count=len(failed_tracks))
 
-        journals = (
-            db.query(models.Journal)
-            .order_by(models.Journal.created_at.desc())
-            .limit(5)
-            .all()
-        )
+        # Get journals with optional user filter
+        journal_query = db.query(models.Journal).order_by(models.Journal.created_at.desc())
+        if user_id:
+            journal_query = journal_query.filter(models.Journal.owner_id == user_id)
+        
+        journals = journal_query.limit(5).all()
 
         if not journals:
-            log.warn("music_generation_flow:no_journals_found")
+            log.warn("music_generation_flow:no_journals_found", user_id=user_id)
             return "No journals found."
 
+        # Get user profile for psychological context
+        user_profile = None
+        if user_id:
+            user_profile = db.query(models.UserProfile).filter(
+                models.UserProfile.user_id == user_id
+            ).first()
+            log.info("music_generation_flow:profile_loaded", 
+                    user_id=user_id, 
+                    has_profile=user_profile is not None,
+                    themes=getattr(user_profile, "emerging_themes", {}) if user_profile else None)
+
         keyword_service = MusicKeywordService(settings=settings)
-        keyword = await keyword_service.generate_keyword(journals)
+        keyword = await keyword_service.generate_keyword(journals, user_profile)
         log.info("music_generation_flow:keyword_generated", keyword=keyword)
 
         if not keyword:
@@ -80,22 +92,33 @@ async def run_music_generation_flow():
             log.info("music_generation_flow:attempt", attempt=suggestion_attempt + 1, max_attempts=max_suggestion_attempts)
             
             try:
+                # Get diverse suggestions using enhanced AI response
                 suggestion_service = MusicSuggestionService(settings=settings)
                 
-                # Get multiple diverse suggestions for better variety and success rate
-                previous_titles = []
-                if prev_track and prev_track.title:
-                    previous_titles.append(prev_track.title)
-                
-                # Get diverse suggestions (fallback to single suggestion if that fails)
-                suggestions = await suggestion_service.suggest_diverse_songs(
-                    keyword, count=3, avoid_titles=previous_titles
+                # Use enhanced keyword service to get AI recommendations
+                ai_recommendations = await keyword_service.generate_diverse_recommendations(
+                    journals, user_profile, count=5
                 )
                 
+                # Parse AI recommendations into structured suggestions
+                suggestions = await suggestion_service.parse_music_keywords_to_suggestions(
+                    '\n'.join(ai_recommendations)
+                )
+                
+                # Fallback to traditional suggestion if AI parsing fails
                 if not suggestions:
-                    # Fallback to single suggestion
-                    single_suggestion = await suggestion_service.suggest_song(keyword)
-                    suggestions = [single_suggestion] if single_suggestion else []
+                    previous_titles = []
+                    if prev_track and prev_track.title:
+                        previous_titles.append(prev_track.title)
+                    
+                    suggestions = await suggestion_service.suggest_diverse_songs(
+                        keyword, count=3, avoid_titles=previous_titles
+                    )
+                    
+                    if not suggestions:
+                        # Final fallback to single suggestion
+                        single_suggestion = await suggestion_service.suggest_song(keyword)
+                        suggestions = [single_suggestion] if single_suggestion else []
                 
                 if not suggestions:
                     log.warn("music_generation_flow:no_suggestions", attempt=suggestion_attempt + 1)
@@ -165,9 +188,26 @@ async def run_music_generation_flow():
 
                     # Try to extract audio with improved service
                     log.info("music_generation_flow:extracting_audio", youtube_id=youtube_id)
-                    from app.services.youtube_audio_extractor import extract_audio_url
+                    from app.services.improved_youtube_extractor import youtube_extractor
+                    from app.core.rate_limiter import rate_limiter
+                    
                     youtube_url = f"https://www.youtube.com/watch?v={youtube_id}"
-                    audio_info = extract_audio_url(youtube_url)
+                    
+                    try:
+                        # Check rate limit before extracting
+                        if not await rate_limiter.can_make_request("youtube"):
+                            log.warn("music_generation_flow:rate_limited_skipping", youtube_id=youtube_id)
+                            continue  # Try next suggestion
+                        
+                        await rate_limiter.record_request("youtube")
+                        audio_info = await youtube_extractor.extract_audio_url(youtube_url)
+                        await rate_limiter.complete_request("youtube")
+                        
+                    except Exception as e:
+                        await rate_limiter.complete_request("youtube")
+                        log.error("music_generation_flow:extraction_error", 
+                                youtube_id=youtube_id, error=str(e))
+                        continue  # Try next suggestion
                     
                     if audio_info and audio_info.get("audio_url"):
                         # Success! We have a valid track

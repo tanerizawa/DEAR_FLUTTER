@@ -5,7 +5,7 @@ import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/entities/radio_station.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
-import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
+import 'package:dear_flutter/presentation/home/cubit/improved_home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
 import 'package:dear_flutter/presentation/home/cubit/enhanced_radio_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/enhanced_radio_state.dart';
@@ -89,6 +89,8 @@ class _UnifiedMediaSectionState extends State<UnifiedMediaSection>
         _stopPositionTimer();
         _coverRotationController.stop();
       }
+      
+      // Auto-fetch removed to prevent YouTube rate limiting
     });
   }
 
@@ -286,7 +288,7 @@ class _UnifiedMediaSectionState extends State<UnifiedMediaSection>
   }
 
   Widget _buildMusicContent() {
-    return BlocBuilder<HomeFeedCubit, HomeFeedState>(
+    return BlocBuilder<ImprovedHomeFeedCubit, HomeFeedState>(
       key: const ValueKey('music_content'),
       buildWhen: (prev, curr) =>
         prev.music != curr.music ||
@@ -294,7 +296,7 @@ class _UnifiedMediaSectionState extends State<UnifiedMediaSection>
         prev.playlist != curr.playlist,
       builder: (context, state) {
         final track = state.music;
-        final playlist = state.playlist;
+        final playlist = track != null ? [track] : <AudioTrack>[]; // Create playlist from single track
         final musicStatus = state.feed?.musicStatus ?? "done";
         final isLoading = state.status == HomeFeedStatus.loading || musicStatus == "generating";
 
@@ -302,10 +304,10 @@ class _UnifiedMediaSectionState extends State<UnifiedMediaSection>
           return _buildEmptyMusicState(isLoading, musicStatus);
         }
 
-        // Sync current index with playlist
-        final idx = playlist.indexWhere((t) => t.id == track.id);
-        if (idx != -1 && idx != _currentIndex) {
-          _currentIndex = idx;
+        // Set current track if not already set
+        if (_currentTrack?.id != track.id) {
+          _currentTrack = track;
+          _currentIndex = 0;
         }
 
         final bool isActivePlayer = _currentTrack?.id == track.id;
@@ -385,28 +387,11 @@ class _UnifiedMediaSectionState extends State<UnifiedMediaSection>
           ),
           const SizedBox(height: 8),
           Text(
-            'Tekan tombol refresh atau tulis jurnal untuk mendapatkan rekomendasi musik',
+            'Tulis jurnal untuk mendapatkan rekomendasi musik',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.white54,
             ),
             textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Muat Musik'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF1DB954),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () async {
-              _hapticFeedback();
-              await context.read<HomeFeedCubit>().fetchHomeFeed();
-            },
           ),
         ],
       ],
@@ -668,21 +653,6 @@ class _UnifiedMediaSectionState extends State<UnifiedMediaSection>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Refresh button
-            IconButton(
-              onPressed: isLoading ? null : () {
-                _hapticFeedback();
-                context.read<EnhancedRadioCubit>().refreshCurrentStation();
-              },
-              icon: Icon(
-                Icons.refresh,
-                color: Colors.white70,
-                size: 20,
-              ),
-            ),
-            
-            const SizedBox(width: 20),
-            
             // Main play/pause button
             Container(
               decoration: BoxDecoration(

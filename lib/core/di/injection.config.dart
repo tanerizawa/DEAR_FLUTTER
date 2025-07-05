@@ -95,6 +95,8 @@ import 'package:dear_flutter/presentation/home/cubit/enhanced_radio_cubit.dart'
 import 'package:dear_flutter/presentation/home/cubit/home_cubit.dart' as _i941;
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart'
     as _i737;
+import 'package:dear_flutter/presentation/home/cubit/improved_home_feed_cubit.dart'
+    as _i990;
 import 'package:dear_flutter/presentation/home/cubit/latest_music_cubit.dart'
     as _i119;
 import 'package:dear_flutter/presentation/home/cubit/latest_quote_cubit.dart'
@@ -299,6 +301,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i654.EnhancedHomeFeedCubit>(
       () => _i654.EnhancedHomeFeedCubit(
+        gh<_i34.HomeRepository>(),
+        gh<_i614.JournalRepository>(),
+        gh<_i441.AudioUrlCacheService>(),
+      ),
+    );
+    gh.factory<_i990.ImprovedHomeFeedCubit>(
+      () => _i990.ImprovedHomeFeedCubit(
         gh<_i34.HomeRepository>(),
         gh<_i614.JournalRepository>(),
         gh<_i441.AudioUrlCacheService>(),

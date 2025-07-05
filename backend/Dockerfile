@@ -30,7 +30,9 @@ COPY . .
 # Gunicorn akan berjalan di port 8000
 EXPOSE 8000
 
-# 8. Jalankan aplikasi saat kontainer dimulai
-# Perintah ini sama dengan yang kita bahas di Langkah 1, tapi untuk dijalankan di dalam kontainer
-# Mengikat ke 0.0.0.0 agar dapat diakses dari luar kontainer
-CMD ["gunicorn", "--preload", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "app.main:app"]
+# 8. Copy gunicorn configuration
+COPY gunicorn.conf.py .
+
+# 9. Jalankan aplikasi saat kontainer dimulai
+# Use gunicorn configuration file for better worker management
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "app.main:app"]

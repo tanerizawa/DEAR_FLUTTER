@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
 from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.dependencies import get_db, get_current_user
-from app.tasks import analyze_profile_task
+from app.tasks import analyze_profile_task, run_music_generation_flow
 import structlog
 
 router = APIRouter()
@@ -26,12 +26,18 @@ def create_journal(
         db=db, obj_in=journal_in, owner_id=current_user.id
     )
 
+    # Trigger profile analysis
     background_tasks.add_task(analyze_profile_task, current_user.id)
+    
+    # AUTO-TRIGGER: Generate personalized music after journal save
+    background_tasks.add_task(run_music_generation_flow, user_id=current_user.id)
 
     log.info(
-        "Jurnal dibuat",
+        "journal_created_with_music_trigger",
         user_id=current_user.id,
         journal_id=journal.id,
+        content_length=len(journal_in.content),
+        mood=getattr(journal_in, 'mood', 'not_specified')
     )
 
     return journal

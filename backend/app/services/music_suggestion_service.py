@@ -129,3 +129,60 @@ class MusicSuggestionService:
         except Exception as e:
             self.log.error("diverse_music_suggestion_error", error=str(e), keyword=keyword)
             return []
+    
+    async def parse_music_keywords_to_suggestions(self, keyword_response: str) -> List[SongSuggestion]:
+        """Parse AI-generated music keywords into structured song suggestions"""
+        suggestions = []
+        lines = keyword_response.split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if not line or not any(line.startswith(str(i)) for i in range(1, 10)):
+                continue
+                
+            try:
+                # Parse format: "1. \"Song Title\" - Artist (reason)"
+                # Remove number prefix
+                content = line.split('.', 1)[1].strip() if '.' in line else line
+                
+                # Extract title and artist
+                if '"' in content and '-' in content:
+                    # Format: "Title" - Artist (reason)
+                    title_part = content.split('"')[1] if '"' in content else ""
+                    remaining = content.split('"', 2)[-1].strip()
+                    if remaining.startswith(' - '):
+                        artist_part = remaining[3:].split('(')[0].strip()
+                    else:
+                        artist_part = remaining.split('(')[0].strip()
+                elif '-' in content:
+                    # Format: Title - Artist (reason)
+                    parts = content.split(' - ', 1)
+                    title_part = parts[0].strip()
+                    artist_part = parts[1].split('(')[0].strip() if len(parts) > 1 else ""
+                else:
+                    # Fallback: assume whole line is title
+                    title_part = content.split('(')[0].strip()
+                    artist_part = ""
+                
+                if title_part:
+                    suggestion = SongSuggestion(
+                        title=title_part,
+                        artist=artist_part if artist_part else "Unknown Artist",
+                        genre="",  # Genre detection could be added later
+                        reason=""  # Reason could be extracted from parentheses
+                    )
+                    suggestions.append(suggestion)
+                    
+            except Exception as e:
+                self.log.warning("parse_suggestion_error", line=line, error=str(e))
+                continue
+        
+        # Fallback if no suggestions parsed
+        if not suggestions:
+            suggestions = [
+                SongSuggestion(title="Happy", artist="Pharrell Williams", genre="Pop", reason="Mood booster"),
+                SongSuggestion(title="Weightless", artist="Marconi Union", genre="Ambient", reason="Relaxation"),
+                SongSuggestion(title="Perfect", artist="Ed Sheeran", genre="Pop", reason="Feel-good music")
+            ]
+        
+        return suggestions[:5]  # Return max 5 suggestions

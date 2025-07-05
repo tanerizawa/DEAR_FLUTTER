@@ -49,6 +49,32 @@ class Settings(BaseSettings):
     SENTRY_DSN: str | None = None
     LOG_LEVEL: str = "INFO"
 
+    # --- Konfigurasi Pembatasan Laju dan Performa ---
+
+    # Konfigurasi Pembatasan Laju
+    RATE_LIMIT_ENABLED: bool = True
+    YOUTUBE_REQUESTS_PER_MINUTE: int = 5
+    YOUTUBE_REQUESTS_PER_HOUR: int = 30
+    MUSIC_GENERATION_REQUESTS_PER_HOUR: int = 10
+
+    # Konfigurasi YouTube
+    YOUTUBE_MAX_RETRIES: int = 2
+    YOUTUBE_TIMEOUT_SECONDS: int = 45
+    YOUTUBE_CONCURRENT_REQUESTS: int = 2
+    YOUTUBE_MIN_INTERVAL_SECONDS: int = 3
+
+    # Konfigurasi Respons
+    MAX_RESPONSE_SIZE_MB: float = 10.0
+    ENABLE_COMPRESSION: bool = True
+
+    # Konfigurasi Server
+    WORKER_TIMEOUT: int = 300  # 5 menit
+    MAX_REQUEST_SIZE: int = 50 * 1024 * 1024  # 50MB
+
+    # Konfigurasi Cache
+    CACHE_TTL_SECONDS: int = 3600  # 1 jam
+    MAX_CACHE_ENTRIES: int = 1000
+
 
 # Buat satu instance settings untuk digunakan di seluruh aplikasi
 settings = Settings()
