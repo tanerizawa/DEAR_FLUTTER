@@ -50,6 +50,7 @@ async def run_music_generation_flow():
         max_attempts = 3
         attempt = 0
         found_new = False
+        stream_url = None
         while attempt < max_attempts and not found_new:
             suggestion_service = MusicSuggestionService(settings=settings)
             suggestion = await suggestion_service.suggest_song(keyword)
@@ -58,7 +59,7 @@ async def run_music_generation_flow():
             if not suggestion:
                 log.warn("music_generation_flow:no_suggestion_from_service")
                 return "No suggestion returned."
-            
+
             youtube_id = ""
             try:
                 search = VideosSearch(f"{suggestion.title} {suggestion.artist}", limit=1)
@@ -69,9 +70,19 @@ async def run_music_generation_flow():
                 log.info("music_generation_flow:youtube_search_result", youtube_id=youtube_id)
             except Exception as e:
                 log.error("music_generation_flow:Youtube_failed", error=str(e))
-            
+
             if youtube_id and youtube_id != prev_youtube_id:
-                found_new = True
+                # Ekstrak audio_url yang playable di Indonesia
+                from app.services.youtube_audio_extractor import extract_audio_url
+                youtube_url = f"https://www.youtube.com/watch?v={youtube_id}"
+                audio_info = extract_audio_url(youtube_url)
+                stream_url = audio_info["audio_url"] if audio_info else None
+                if stream_url:
+                    found_new = True
+                else:
+                    log.warn("music_generation_flow:yt_dlp_failed", youtube_id=youtube_id)
+                    attempt += 1
+                    continue
             else:
                 attempt += 1
                 log.info("music_generation_flow:retry_generate", attempt=attempt)
@@ -84,12 +95,7 @@ async def run_music_generation_flow():
         db.refresh(temp_track)
         temp_id = temp_track.id
 
-        if youtube_id:
-            # Ekstrak audio_url yang playable di Indonesia
-            from app.services.youtube_audio_extractor import extract_audio_url
-            youtube_url = f"https://www.youtube.com/watch?v={youtube_id}"
-            audio_info = extract_audio_url(youtube_url)
-            stream_url = audio_info["audio_url"] if audio_info else None
+        if youtube_id and stream_url:
             # Update entry yang tadi dibuat
             temp_track.title = suggestion.title
             temp_track.youtube_id = youtube_id
@@ -103,7 +109,7 @@ async def run_music_generation_flow():
             temp_track.status = "failed"
             db.commit()
             log.warn("music_generation_flow:no_youtube_result")
-            return "Could not find a YouTube video."
+            return "Could not find a YouTube video with valid audio."
 
     finally:
         db.close()
