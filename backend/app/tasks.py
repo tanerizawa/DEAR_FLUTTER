@@ -89,7 +89,7 @@ async def run_music_generation_flow():
 
         # Buat entry baru dengan status 'generating' sebelum proses
         from app.models.music_track import MusicTrack
-        temp_track = MusicTrack(title="Generating...", youtube_id="", artist="", status="generating")
+        temp_track = MusicTrack(title="Generating...", youtube_id=youtube_id, artist="", status="generating")
         db.add(temp_track)
         db.commit()
         db.refresh(temp_track)
