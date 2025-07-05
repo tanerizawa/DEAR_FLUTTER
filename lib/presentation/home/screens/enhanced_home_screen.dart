@@ -1,4 +1,4 @@
-// lib/presentation/home/screens/home_screen.dart
+// lib/presentation/home/screens/enhanced_home_screen.dart
 
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/widgets/enhanced_quote_section.dart';
@@ -8,14 +8,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class EnhancedHomeScreen extends StatefulWidget {
+  const EnhancedHomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<EnhancedHomeScreen> createState() => _EnhancedHomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> 
+class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> 
     with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   bool _isRefreshing = false;
@@ -85,17 +85,23 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) {
-      return 'Selamat Pagi';
-    } else if (hour < 17) {
-      return 'Selamat Siang';
-    } else if (hour < 20) {
-      return 'Selamat Sore';
-    } else {
-      return 'Selamat Malam';
-    }
+  void _showSuccessSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.check_circle_outline, color: Colors.white),
+            SizedBox(width: 8),
+            Text(message),
+          ],
+        ),
+        backgroundColor: Color(0xFF1DB954),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: EdgeInsets.all(16),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -206,6 +212,19 @@ class _HomeScreenState extends State<HomeScreen>
         ),
       ),
     );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Selamat Pagi';
+    } else if (hour < 17) {
+      return 'Selamat Siang';
+    } else if (hour < 20) {
+      return 'Selamat Sore';
+    } else {
+      return 'Selamat Malam';
+    }
   }
 
   Widget _buildSection({
