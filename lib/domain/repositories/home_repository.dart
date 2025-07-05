@@ -10,7 +10,7 @@ import 'package:dear_flutter/domain/entities/song_suggestion.dart';
 /// fungsi-fungsi ini.
 abstract class HomeRepository {
   /// Mengambil data utama untuk halaman home.
-  Future<HomeFeed> getHomeFeed();
+  Future<HomeFeed?> getHomeFeed();
 
   /// Mengambil kutipan motivasi terbaru.
   Future<MotivationalQuote> getLatestQuote();

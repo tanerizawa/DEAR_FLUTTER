@@ -11,6 +11,7 @@ import 'package:dear_flutter/presentation/psy/screens/psy_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/article_detail_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/audio_player_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/quote_detail_screen.dart';
+import 'package:dear_flutter/presentation/debug/debug_screen.dart';
 import 'package:dear_flutter/domain/entities/article.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
@@ -98,6 +99,19 @@ final GoRouter router = GoRouter(
       path: '/quote',
       builder: (context, state) =>
           QuoteDetailScreen(quote: state.extra as MotivationalQuote),
+    ),
+    GoRoute(
+      path: '/quote-detail',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) =>
+          QuoteDetailScreen(quote: state.extra as MotivationalQuote),
+    ),
+
+    // Debug screen (only available in debug mode)
+    GoRoute(
+      path: '/debug',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const DebugScreen(),
     ),
 
     // Route luar shell (autentikasi)

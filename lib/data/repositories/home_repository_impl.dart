@@ -17,7 +17,7 @@ class HomeRepositoryImpl implements HomeRepository {
   HomeRepositoryImpl(this._apiService);
 
   @override
-  Future<HomeFeed> getHomeFeed() {
+  Future<HomeFeed?> getHomeFeed() {
     // Cukup teruskan panggilan langsung ke service.
     // Error handling akan ditangani di lapisan atas (misal: Cubit).
     return _apiService.getHomeFeed();

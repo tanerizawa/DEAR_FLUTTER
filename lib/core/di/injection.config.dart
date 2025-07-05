@@ -22,6 +22,8 @@ import 'package:dear_flutter/data/datasources/remote/auth_api_service.dart'
     as _i281;
 import 'package:dear_flutter/data/datasources/remote/chat_api_service.dart'
     as _i1065;
+import 'package:dear_flutter/data/datasources/remote/debug_api_service.dart'
+    as _i601;
 import 'package:dear_flutter/data/datasources/remote/home_api_service.dart'
     as _i104;
 import 'package:dear_flutter/data/datasources/remote/journal_api_service.dart'
@@ -122,6 +124,7 @@ extension GetItInjectableX on _i174.GetIt {
   }) async {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final registerModule = _$RegisterModule();
+    gh.factory<_i601.DebugApiService>(() => _i601.DebugApiService());
     gh.singleton<_i402.AppDatabase>(() => registerModule.database);
     await gh.lazySingletonAsync<_i460.SharedPreferences>(
       () => registerModule.prefs,

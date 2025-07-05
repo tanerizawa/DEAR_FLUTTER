@@ -108,23 +108,33 @@ class _MusicSectionState extends State<MusicSection> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.music_off, size: 64, color: Colors.blueGrey.shade200), // Monochrome for empty state icon
-                  const SizedBox(height: 16),
-                  Text(
-                    'Belum ada lagu hari ini. Coba tekan tombol refresh atau cek koneksi internet Anda.',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.blueGrey.shade700),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Coba Lagi'),
-                    onPressed: musicStatus == "generating"
-                        ? null
-                        : () async {
-                            await context.read<HomeFeedCubit>().fetchHomeFeed();
-                          },
-                  ),
+                  if (isLoading) ...[
+                    const CircularProgressIndicator(color: Color(0xFF1DB954)),
+                    const SizedBox(height: 16),
+                    Text(
+                      musicStatus == "generating" 
+                          ? 'Sedang menghasilkan lagu berdasarkan jurnal Anda...'
+                          : 'Memuat musik...',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.blueGrey.shade700),
+                      textAlign: TextAlign.center,
+                    ),
+                  ] else ...[
+                    Icon(Icons.music_off, size: 64, color: Colors.blueGrey.shade200), // Monochrome for empty state icon
+                    const SizedBox(height: 16),
+                    Text(
+                      'Belum ada lagu hari ini. Coba tekan tombol refresh atau cek koneksi internet Anda.',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.blueGrey.shade700),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Coba Lagi'),
+                      onPressed: () async {
+                        await context.read<HomeFeedCubit>().fetchHomeFeed();
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),

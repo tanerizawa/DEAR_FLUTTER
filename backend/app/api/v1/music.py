@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Depends, Query, BackgroundTasks, HTTPException, Body
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 import structlog
 import asyncio # -> Import asyncio
 from app.services.playlist_cache_service import PlaylistCacheService
@@ -36,9 +37,18 @@ def get_latest_music(
     db: Session = Depends(dependencies.get_db),
 ):
     """Return the most recently generated music recommendation."""
-    track = crud.music_track.get_latest(db)
-    # Filter: hanya return jika status bukan 'failed' dan field wajib valid
-    if not track or track.status == 'failed' or not (track.id and track.title and track.youtube_id and track.stream_url):
+    # Ambil track terbaru dengan status 'done' dan field valid
+    track = (
+        db.query(models.MusicTrack)
+        .filter(models.MusicTrack.status == 'done')
+        .filter(models.MusicTrack.title.isnot(None))
+        .filter(models.MusicTrack.youtube_id.isnot(None))
+        .filter(models.MusicTrack.stream_url.isnot(None))
+        .order_by(desc(models.MusicTrack.created_at))
+        .first()
+    )
+    
+    if not track:
         # Kembalikan 204 No Content agar frontend tahu tidak ada lagu valid
         return JSONResponse(status_code=204, content=None)
     return track

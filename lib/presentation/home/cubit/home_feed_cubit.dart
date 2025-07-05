@@ -37,6 +37,29 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
       final music = results[0] as AudioTrack?;
       final journals = results[1] as List<Journal>;
       final lastMood = journals.isNotEmpty ? journals.first.mood : null;
+      
+      // Auto-trigger music generation jika tidak ada musik
+      if (music == null) {
+        debugPrint("[HomeFeedCubit] Tidak ada musik, trigger generasi musik...");
+        try {
+          await _homeRepository.triggerMusicGeneration();
+          // Tunggu sebentar lalu coba ambil lagi
+          await Future.delayed(const Duration(seconds: 3));
+          final newMusic = await _homeRepository.getLatestMusic();
+          if (newMusic != null) {
+            _prefetchAudioUrl(newMusic.youtubeId);
+            emit(state.copyWith(
+              status: HomeFeedStatus.success,
+              music: newMusic,
+              lastMood: lastMood,
+            ));
+            return;
+          }
+        } catch (e) {
+          debugPrint("[HomeFeedCubit] Gagal trigger generasi musik: $e");
+        }
+      }
+      
       if (music != null) {
         _prefetchAudioUrl(music.youtubeId);
       }
@@ -110,6 +133,11 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
       await Future.delayed(const Duration(seconds: 1));
       try {
         final newFeed = await _homeRepository.getHomeFeed();
+        // Handle null response (204 No Content)
+        if (newFeed == null) {
+          debugPrint('[HomeFeedCubit] Polling: No content available (204)');
+          continue;
+        }
         final newMusicId = newFeed.music?.id;
         if (oldFeed == null || newMusicId != oldMusicId) {
           emit(state.copyWith(feed: newFeed, status: HomeFeedStatus.success));

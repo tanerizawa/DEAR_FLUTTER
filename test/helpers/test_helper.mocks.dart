@@ -3,16 +3,16 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i8;
+import 'dart:async' as _i7;
 
 import 'package:audio_service/audio_service.dart' as _i16;
 import 'package:dear_flutter/data/models/requests.dart' as _i13;
 import 'package:dear_flutter/domain/entities/audio_track.dart' as _i9;
-import 'package:dear_flutter/domain/entities/home_feed.dart' as _i2;
+import 'package:dear_flutter/domain/entities/home_feed.dart' as _i8;
 import 'package:dear_flutter/domain/entities/journal.dart' as _i12;
-import 'package:dear_flutter/domain/entities/motivational_quote.dart' as _i3;
+import 'package:dear_flutter/domain/entities/motivational_quote.dart' as _i2;
 import 'package:dear_flutter/domain/entities/song_suggestion.dart' as _i10;
-import 'package:dear_flutter/domain/repositories/home_repository.dart' as _i7;
+import 'package:dear_flutter/domain/repositories/home_repository.dart' as _i6;
 import 'package:dear_flutter/domain/repositories/journal_repository.dart'
     as _i11;
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart'
@@ -20,12 +20,12 @@ import 'package:dear_flutter/domain/repositories/song_history_repository.dart'
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart'
     as _i17;
 import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart'
-    as _i6;
+    as _i5;
 import 'package:dear_flutter/services/audio_player_handler.dart' as _i15;
 import 'package:flutter_bloc/flutter_bloc.dart' as _i18;
-import 'package:just_audio/just_audio.dart' as _i4;
+import 'package:just_audio/just_audio.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:rxdart/rxdart.dart' as _i5;
+import 'package:rxdart/rxdart.dart' as _i4;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -41,121 +41,114 @@ import 'package:rxdart/rxdart.dart' as _i5;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeHomeFeed_0 extends _i1.SmartFake implements _i2.HomeFeed {
-  _FakeHomeFeed_0(Object parent, Invocation parentInvocation)
+class _FakeMotivationalQuote_0 extends _i1.SmartFake
+    implements _i2.MotivationalQuote {
+  _FakeMotivationalQuote_0(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeMotivationalQuote_1 extends _i1.SmartFake
-    implements _i3.MotivationalQuote {
-  _FakeMotivationalQuote_1(Object parent, Invocation parentInvocation)
+class _FakeAudioPlayer_1 extends _i1.SmartFake implements _i3.AudioPlayer {
+  _FakeAudioPlayer_1(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeAudioPlayer_2 extends _i1.SmartFake implements _i4.AudioPlayer {
-  _FakeAudioPlayer_2(Object parent, Invocation parentInvocation)
+class _FakeBehaviorSubject_2<T> extends _i1.SmartFake
+    implements _i4.BehaviorSubject<T> {
+  _FakeBehaviorSubject_2(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeBehaviorSubject_3<T> extends _i1.SmartFake
-    implements _i5.BehaviorSubject<T> {
-  _FakeBehaviorSubject_3(Object parent, Invocation parentInvocation)
+class _FakePublishSubject_3<T> extends _i1.SmartFake
+    implements _i4.PublishSubject<T> {
+  _FakePublishSubject_3(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakePublishSubject_4<T> extends _i1.SmartFake
-    implements _i5.PublishSubject<T> {
-  _FakePublishSubject_4(Object parent, Invocation parentInvocation)
+class _FakeValueStream_4<T> extends _i1.SmartFake
+    implements _i4.ValueStream<T> {
+  _FakeValueStream_4(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeValueStream_5<T> extends _i1.SmartFake
-    implements _i5.ValueStream<T> {
-  _FakeValueStream_5(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakeHomeFeedState_6 extends _i1.SmartFake implements _i6.HomeFeedState {
-  _FakeHomeFeedState_6(Object parent, Invocation parentInvocation)
+class _FakeHomeFeedState_5 extends _i1.SmartFake implements _i5.HomeFeedState {
+  _FakeHomeFeedState_5(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
 /// A class which mocks [HomeRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockHomeRepository extends _i1.Mock implements _i7.HomeRepository {
+class MockHomeRepository extends _i1.Mock implements _i6.HomeRepository {
   MockHomeRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i8.Future<_i2.HomeFeed> getHomeFeed() =>
+  _i7.Future<_i8.HomeFeed?> getHomeFeed() =>
       (super.noSuchMethod(
             Invocation.method(#getHomeFeed, []),
-            returnValue: _i8.Future<_i2.HomeFeed>.value(
-              _FakeHomeFeed_0(this, Invocation.method(#getHomeFeed, [])),
-            ),
+            returnValue: _i7.Future<_i8.HomeFeed?>.value(),
           )
-          as _i8.Future<_i2.HomeFeed>);
+          as _i7.Future<_i8.HomeFeed?>);
 
   @override
-  _i8.Future<_i3.MotivationalQuote> getLatestQuote() =>
+  _i7.Future<_i2.MotivationalQuote> getLatestQuote() =>
       (super.noSuchMethod(
             Invocation.method(#getLatestQuote, []),
-            returnValue: _i8.Future<_i3.MotivationalQuote>.value(
-              _FakeMotivationalQuote_1(
+            returnValue: _i7.Future<_i2.MotivationalQuote>.value(
+              _FakeMotivationalQuote_0(
                 this,
                 Invocation.method(#getLatestQuote, []),
               ),
             ),
           )
-          as _i8.Future<_i3.MotivationalQuote>);
+          as _i7.Future<_i2.MotivationalQuote>);
 
   @override
-  _i8.Future<_i9.AudioTrack?> getLatestMusic() =>
+  _i7.Future<_i9.AudioTrack?> getLatestMusic() =>
       (super.noSuchMethod(
             Invocation.method(#getLatestMusic, []),
-            returnValue: _i8.Future<_i9.AudioTrack?>.value(),
+            returnValue: _i7.Future<_i9.AudioTrack?>.value(),
           )
-          as _i8.Future<_i9.AudioTrack?>);
+          as _i7.Future<_i9.AudioTrack?>);
 
   @override
-  _i8.Future<List<_i10.SongSuggestion>> getMusicSuggestions(String? mood) =>
+  _i7.Future<List<_i10.SongSuggestion>> getMusicSuggestions(String? mood) =>
       (super.noSuchMethod(
             Invocation.method(#getMusicSuggestions, [mood]),
-            returnValue: _i8.Future<List<_i10.SongSuggestion>>.value(
+            returnValue: _i7.Future<List<_i10.SongSuggestion>>.value(
               <_i10.SongSuggestion>[],
             ),
           )
-          as _i8.Future<List<_i10.SongSuggestion>>);
+          as _i7.Future<List<_i10.SongSuggestion>>);
 
   @override
-  _i8.Future<List<_i9.AudioTrack>> getRadioStation(String? category) =>
+  _i7.Future<List<_i9.AudioTrack>> getRadioStation(String? category) =>
       (super.noSuchMethod(
             Invocation.method(#getRadioStation, [category]),
-            returnValue: _i8.Future<List<_i9.AudioTrack>>.value(
+            returnValue: _i7.Future<List<_i9.AudioTrack>>.value(
               <_i9.AudioTrack>[],
             ),
           )
-          as _i8.Future<List<_i9.AudioTrack>>);
+          as _i7.Future<List<_i9.AudioTrack>>);
 
   @override
-  _i8.Future<void> triggerMusicGeneration() =>
+  _i7.Future<void> triggerMusicGeneration() =>
       (super.noSuchMethod(
             Invocation.method(#triggerMusicGeneration, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> triggerQuoteGeneration() =>
+  _i7.Future<void> triggerQuoteGeneration() =>
       (super.noSuchMethod(
             Invocation.method(#triggerQuoteGeneration, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 }
 
 /// A class which mocks [JournalRepository].
@@ -167,30 +160,30 @@ class MockJournalRepository extends _i1.Mock implements _i11.JournalRepository {
   }
 
   @override
-  _i8.Stream<List<_i12.Journal>> getJournals() =>
+  _i7.Stream<List<_i12.Journal>> getJournals() =>
       (super.noSuchMethod(
             Invocation.method(#getJournals, []),
-            returnValue: _i8.Stream<List<_i12.Journal>>.empty(),
+            returnValue: _i7.Stream<List<_i12.Journal>>.empty(),
           )
-          as _i8.Stream<List<_i12.Journal>>);
+          as _i7.Stream<List<_i12.Journal>>);
 
   @override
-  _i8.Future<void> createJournal(_i13.CreateJournalRequest? request) =>
+  _i7.Future<void> createJournal(_i13.CreateJournalRequest? request) =>
       (super.noSuchMethod(
             Invocation.method(#createJournal, [request]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> syncJournals() =>
+  _i7.Future<void> syncJournals() =>
       (super.noSuchMethod(
             Invocation.method(#syncJournals, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 }
 
 /// A class which mocks [SongHistoryRepository].
@@ -203,13 +196,13 @@ class MockSongHistoryRepository extends _i1.Mock
   }
 
   @override
-  _i8.Future<void> addTrack(_i9.AudioTrack? track) =>
+  _i7.Future<void> addTrack(_i9.AudioTrack? track) =>
       (super.noSuchMethod(
             Invocation.method(#addTrack, [track]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
   List<_i9.AudioTrack> getHistory() =>
@@ -238,103 +231,103 @@ class MockAudioPlayerHandler extends _i1.Mock
   }
 
   @override
-  _i4.AudioPlayer get player =>
+  _i3.AudioPlayer get player =>
       (super.noSuchMethod(
             Invocation.getter(#player),
-            returnValue: _FakeAudioPlayer_2(this, Invocation.getter(#player)),
+            returnValue: _FakeAudioPlayer_1(this, Invocation.getter(#player)),
           )
-          as _i4.AudioPlayer);
+          as _i3.AudioPlayer);
 
   @override
-  _i5.BehaviorSubject<_i16.PlaybackState> get playbackState =>
+  _i4.BehaviorSubject<_i16.PlaybackState> get playbackState =>
       (super.noSuchMethod(
             Invocation.getter(#playbackState),
-            returnValue: _FakeBehaviorSubject_3<_i16.PlaybackState>(
+            returnValue: _FakeBehaviorSubject_2<_i16.PlaybackState>(
               this,
               Invocation.getter(#playbackState),
             ),
           )
-          as _i5.BehaviorSubject<_i16.PlaybackState>);
+          as _i4.BehaviorSubject<_i16.PlaybackState>);
 
   @override
-  _i5.BehaviorSubject<List<_i16.MediaItem>> get queue =>
+  _i4.BehaviorSubject<List<_i16.MediaItem>> get queue =>
       (super.noSuchMethod(
             Invocation.getter(#queue),
-            returnValue: _FakeBehaviorSubject_3<List<_i16.MediaItem>>(
+            returnValue: _FakeBehaviorSubject_2<List<_i16.MediaItem>>(
               this,
               Invocation.getter(#queue),
             ),
           )
-          as _i5.BehaviorSubject<List<_i16.MediaItem>>);
+          as _i4.BehaviorSubject<List<_i16.MediaItem>>);
 
   @override
-  _i5.BehaviorSubject<String> get queueTitle =>
+  _i4.BehaviorSubject<String> get queueTitle =>
       (super.noSuchMethod(
             Invocation.getter(#queueTitle),
-            returnValue: _FakeBehaviorSubject_3<String>(
+            returnValue: _FakeBehaviorSubject_2<String>(
               this,
               Invocation.getter(#queueTitle),
             ),
           )
-          as _i5.BehaviorSubject<String>);
+          as _i4.BehaviorSubject<String>);
 
   @override
-  _i5.BehaviorSubject<_i16.MediaItem?> get mediaItem =>
+  _i4.BehaviorSubject<_i16.MediaItem?> get mediaItem =>
       (super.noSuchMethod(
             Invocation.getter(#mediaItem),
-            returnValue: _FakeBehaviorSubject_3<_i16.MediaItem?>(
+            returnValue: _FakeBehaviorSubject_2<_i16.MediaItem?>(
               this,
               Invocation.getter(#mediaItem),
             ),
           )
-          as _i5.BehaviorSubject<_i16.MediaItem?>);
+          as _i4.BehaviorSubject<_i16.MediaItem?>);
 
   @override
-  _i5.BehaviorSubject<_i16.AndroidPlaybackInfo> get androidPlaybackInfo =>
+  _i4.BehaviorSubject<_i16.AndroidPlaybackInfo> get androidPlaybackInfo =>
       (super.noSuchMethod(
             Invocation.getter(#androidPlaybackInfo),
-            returnValue: _FakeBehaviorSubject_3<_i16.AndroidPlaybackInfo>(
+            returnValue: _FakeBehaviorSubject_2<_i16.AndroidPlaybackInfo>(
               this,
               Invocation.getter(#androidPlaybackInfo),
             ),
           )
-          as _i5.BehaviorSubject<_i16.AndroidPlaybackInfo>);
+          as _i4.BehaviorSubject<_i16.AndroidPlaybackInfo>);
 
   @override
-  _i5.BehaviorSubject<_i16.RatingStyle> get ratingStyle =>
+  _i4.BehaviorSubject<_i16.RatingStyle> get ratingStyle =>
       (super.noSuchMethod(
             Invocation.getter(#ratingStyle),
-            returnValue: _FakeBehaviorSubject_3<_i16.RatingStyle>(
+            returnValue: _FakeBehaviorSubject_2<_i16.RatingStyle>(
               this,
               Invocation.getter(#ratingStyle),
             ),
           )
-          as _i5.BehaviorSubject<_i16.RatingStyle>);
+          as _i4.BehaviorSubject<_i16.RatingStyle>);
 
   @override
-  _i5.PublishSubject<dynamic> get customEvent =>
+  _i4.PublishSubject<dynamic> get customEvent =>
       (super.noSuchMethod(
             Invocation.getter(#customEvent),
-            returnValue: _FakePublishSubject_4<dynamic>(
+            returnValue: _FakePublishSubject_3<dynamic>(
               this,
               Invocation.getter(#customEvent),
             ),
           )
-          as _i5.PublishSubject<dynamic>);
+          as _i4.PublishSubject<dynamic>);
 
   @override
-  _i5.BehaviorSubject<dynamic> get customState =>
+  _i4.BehaviorSubject<dynamic> get customState =>
       (super.noSuchMethod(
             Invocation.getter(#customState),
-            returnValue: _FakeBehaviorSubject_3<dynamic>(
+            returnValue: _FakeBehaviorSubject_2<dynamic>(
               this,
               Invocation.getter(#customState),
             ),
           )
-          as _i5.BehaviorSubject<dynamic>);
+          as _i4.BehaviorSubject<dynamic>);
 
   @override
-  _i8.Future<void> playPlaylist(
+  _i7.Future<void> playPlaylist(
     List<_i9.AudioTrack>? tracks, {
     int? startIndex = 0,
   }) =>
@@ -344,421 +337,421 @@ class MockAudioPlayerHandler extends _i1.Mock
               [tracks],
               {#startIndex: startIndex},
             ),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> playFromYoutubeId(
+  _i7.Future<void> playFromYoutubeId(
     String? youtubeId,
     _i9.AudioTrack? track,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#playFromYoutubeId, [youtubeId, track]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> play() =>
+  _i7.Future<void> play() =>
       (super.noSuchMethod(
             Invocation.method(#play, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> pause() =>
+  _i7.Future<void> pause() =>
       (super.noSuchMethod(
             Invocation.method(#pause, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> seek(Duration? position) =>
+  _i7.Future<void> seek(Duration? position) =>
       (super.noSuchMethod(
             Invocation.method(#seek, [position]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> stop() =>
+  _i7.Future<void> stop() =>
       (super.noSuchMethod(
             Invocation.method(#stop, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> prepare() =>
+  _i7.Future<void> prepare() =>
       (super.noSuchMethod(
             Invocation.method(#prepare, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> prepareFromMediaId(
+  _i7.Future<void> prepareFromMediaId(
     String? mediaId, [
     Map<String, dynamic>? extras,
   ]) =>
       (super.noSuchMethod(
             Invocation.method(#prepareFromMediaId, [mediaId, extras]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> prepareFromSearch(
+  _i7.Future<void> prepareFromSearch(
     String? query, [
     Map<String, dynamic>? extras,
   ]) =>
       (super.noSuchMethod(
             Invocation.method(#prepareFromSearch, [query, extras]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> prepareFromUri(Uri? uri, [Map<String, dynamic>? extras]) =>
+  _i7.Future<void> prepareFromUri(Uri? uri, [Map<String, dynamic>? extras]) =>
       (super.noSuchMethod(
             Invocation.method(#prepareFromUri, [uri, extras]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> playFromMediaId(
+  _i7.Future<void> playFromMediaId(
     String? mediaId, [
     Map<String, dynamic>? extras,
   ]) =>
       (super.noSuchMethod(
             Invocation.method(#playFromMediaId, [mediaId, extras]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> playFromSearch(
+  _i7.Future<void> playFromSearch(
     String? query, [
     Map<String, dynamic>? extras,
   ]) =>
       (super.noSuchMethod(
             Invocation.method(#playFromSearch, [query, extras]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> playFromUri(Uri? uri, [Map<String, dynamic>? extras]) =>
+  _i7.Future<void> playFromUri(Uri? uri, [Map<String, dynamic>? extras]) =>
       (super.noSuchMethod(
             Invocation.method(#playFromUri, [uri, extras]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> playMediaItem(_i16.MediaItem? mediaItem) =>
+  _i7.Future<void> playMediaItem(_i16.MediaItem? mediaItem) =>
       (super.noSuchMethod(
             Invocation.method(#playMediaItem, [mediaItem]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> click([_i16.MediaButton? button = _i16.MediaButton.media]) =>
+  _i7.Future<void> click([_i16.MediaButton? button = _i16.MediaButton.media]) =>
       (super.noSuchMethod(
             Invocation.method(#click, [button]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> addQueueItem(_i16.MediaItem? mediaItem) =>
+  _i7.Future<void> addQueueItem(_i16.MediaItem? mediaItem) =>
       (super.noSuchMethod(
             Invocation.method(#addQueueItem, [mediaItem]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> addQueueItems(List<_i16.MediaItem>? mediaItems) =>
+  _i7.Future<void> addQueueItems(List<_i16.MediaItem>? mediaItems) =>
       (super.noSuchMethod(
             Invocation.method(#addQueueItems, [mediaItems]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> insertQueueItem(int? index, _i16.MediaItem? mediaItem) =>
+  _i7.Future<void> insertQueueItem(int? index, _i16.MediaItem? mediaItem) =>
       (super.noSuchMethod(
             Invocation.method(#insertQueueItem, [index, mediaItem]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> updateQueue(List<_i16.MediaItem>? queue) =>
+  _i7.Future<void> updateQueue(List<_i16.MediaItem>? queue) =>
       (super.noSuchMethod(
             Invocation.method(#updateQueue, [queue]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> updateMediaItem(_i16.MediaItem? mediaItem) =>
+  _i7.Future<void> updateMediaItem(_i16.MediaItem? mediaItem) =>
       (super.noSuchMethod(
             Invocation.method(#updateMediaItem, [mediaItem]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> removeQueueItem(_i16.MediaItem? mediaItem) =>
+  _i7.Future<void> removeQueueItem(_i16.MediaItem? mediaItem) =>
       (super.noSuchMethod(
             Invocation.method(#removeQueueItem, [mediaItem]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> removeQueueItemAt(int? index) =>
+  _i7.Future<void> removeQueueItemAt(int? index) =>
       (super.noSuchMethod(
             Invocation.method(#removeQueueItemAt, [index]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> skipToNext() =>
+  _i7.Future<void> skipToNext() =>
       (super.noSuchMethod(
             Invocation.method(#skipToNext, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> skipToPrevious() =>
+  _i7.Future<void> skipToPrevious() =>
       (super.noSuchMethod(
             Invocation.method(#skipToPrevious, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> fastForward() =>
+  _i7.Future<void> fastForward() =>
       (super.noSuchMethod(
             Invocation.method(#fastForward, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> rewind() =>
+  _i7.Future<void> rewind() =>
       (super.noSuchMethod(
             Invocation.method(#rewind, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> skipToQueueItem(int? index) =>
+  _i7.Future<void> skipToQueueItem(int? index) =>
       (super.noSuchMethod(
             Invocation.method(#skipToQueueItem, [index]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> setRating(
+  _i7.Future<void> setRating(
     _i16.Rating? rating, [
     Map<String, dynamic>? extras,
   ]) =>
       (super.noSuchMethod(
             Invocation.method(#setRating, [rating, extras]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> setCaptioningEnabled(bool? enabled) =>
+  _i7.Future<void> setCaptioningEnabled(bool? enabled) =>
       (super.noSuchMethod(
             Invocation.method(#setCaptioningEnabled, [enabled]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> setRepeatMode(_i16.AudioServiceRepeatMode? repeatMode) =>
+  _i7.Future<void> setRepeatMode(_i16.AudioServiceRepeatMode? repeatMode) =>
       (super.noSuchMethod(
             Invocation.method(#setRepeatMode, [repeatMode]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> setShuffleMode(_i16.AudioServiceShuffleMode? shuffleMode) =>
+  _i7.Future<void> setShuffleMode(_i16.AudioServiceShuffleMode? shuffleMode) =>
       (super.noSuchMethod(
             Invocation.method(#setShuffleMode, [shuffleMode]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> seekBackward(bool? begin) =>
+  _i7.Future<void> seekBackward(bool? begin) =>
       (super.noSuchMethod(
             Invocation.method(#seekBackward, [begin]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> seekForward(bool? begin) =>
+  _i7.Future<void> seekForward(bool? begin) =>
       (super.noSuchMethod(
             Invocation.method(#seekForward, [begin]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> setSpeed(double? speed) =>
+  _i7.Future<void> setSpeed(double? speed) =>
       (super.noSuchMethod(
             Invocation.method(#setSpeed, [speed]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<dynamic> customAction(
+  _i7.Future<dynamic> customAction(
     String? name, [
     Map<String, dynamic>? extras,
   ]) =>
       (super.noSuchMethod(
             Invocation.method(#customAction, [name, extras]),
-            returnValue: _i8.Future<dynamic>.value(),
+            returnValue: _i7.Future<dynamic>.value(),
           )
-          as _i8.Future<dynamic>);
+          as _i7.Future<dynamic>);
 
   @override
-  _i8.Future<void> onTaskRemoved() =>
+  _i7.Future<void> onTaskRemoved() =>
       (super.noSuchMethod(
             Invocation.method(#onTaskRemoved, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> onNotificationDeleted() =>
+  _i7.Future<void> onNotificationDeleted() =>
       (super.noSuchMethod(
             Invocation.method(#onNotificationDeleted, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<List<_i16.MediaItem>> getChildren(
+  _i7.Future<List<_i16.MediaItem>> getChildren(
     String? parentMediaId, [
     Map<String, dynamic>? options,
   ]) =>
       (super.noSuchMethod(
             Invocation.method(#getChildren, [parentMediaId, options]),
-            returnValue: _i8.Future<List<_i16.MediaItem>>.value(
+            returnValue: _i7.Future<List<_i16.MediaItem>>.value(
               <_i16.MediaItem>[],
             ),
           )
-          as _i8.Future<List<_i16.MediaItem>>);
+          as _i7.Future<List<_i16.MediaItem>>);
 
   @override
-  _i5.ValueStream<Map<String, dynamic>> subscribeToChildren(
+  _i4.ValueStream<Map<String, dynamic>> subscribeToChildren(
     String? parentMediaId,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#subscribeToChildren, [parentMediaId]),
-            returnValue: _FakeValueStream_5<Map<String, dynamic>>(
+            returnValue: _FakeValueStream_4<Map<String, dynamic>>(
               this,
               Invocation.method(#subscribeToChildren, [parentMediaId]),
             ),
           )
-          as _i5.ValueStream<Map<String, dynamic>>);
+          as _i4.ValueStream<Map<String, dynamic>>);
 
   @override
-  _i8.Future<_i16.MediaItem?> getMediaItem(String? mediaId) =>
+  _i7.Future<_i16.MediaItem?> getMediaItem(String? mediaId) =>
       (super.noSuchMethod(
             Invocation.method(#getMediaItem, [mediaId]),
-            returnValue: _i8.Future<_i16.MediaItem?>.value(),
+            returnValue: _i7.Future<_i16.MediaItem?>.value(),
           )
-          as _i8.Future<_i16.MediaItem?>);
+          as _i7.Future<_i16.MediaItem?>);
 
   @override
-  _i8.Future<List<_i16.MediaItem>> search(
+  _i7.Future<List<_i16.MediaItem>> search(
     String? query, [
     Map<String, dynamic>? extras,
   ]) =>
       (super.noSuchMethod(
             Invocation.method(#search, [query, extras]),
-            returnValue: _i8.Future<List<_i16.MediaItem>>.value(
+            returnValue: _i7.Future<List<_i16.MediaItem>>.value(
               <_i16.MediaItem>[],
             ),
           )
-          as _i8.Future<List<_i16.MediaItem>>);
+          as _i7.Future<List<_i16.MediaItem>>);
 
   @override
-  _i8.Future<void> androidAdjustRemoteVolume(
+  _i7.Future<void> androidAdjustRemoteVolume(
     _i16.AndroidVolumeDirection? direction,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#androidAdjustRemoteVolume, [direction]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> androidSetRemoteVolume(int? volumeIndex) =>
+  _i7.Future<void> androidSetRemoteVolume(int? volumeIndex) =>
       (super.noSuchMethod(
             Invocation.method(#androidSetRemoteVolume, [volumeIndex]),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 }
 
 /// A class which mocks [HomeFeedCubit].
@@ -770,20 +763,20 @@ class MockHomeFeedCubit extends _i1.Mock implements _i17.HomeFeedCubit {
   }
 
   @override
-  _i6.HomeFeedState get state =>
+  _i5.HomeFeedState get state =>
       (super.noSuchMethod(
             Invocation.getter(#state),
-            returnValue: _FakeHomeFeedState_6(this, Invocation.getter(#state)),
+            returnValue: _FakeHomeFeedState_5(this, Invocation.getter(#state)),
           )
-          as _i6.HomeFeedState);
+          as _i5.HomeFeedState);
 
   @override
-  _i8.Stream<_i6.HomeFeedState> get stream =>
+  _i7.Stream<_i5.HomeFeedState> get stream =>
       (super.noSuchMethod(
             Invocation.getter(#stream),
-            returnValue: _i8.Stream<_i6.HomeFeedState>.empty(),
+            returnValue: _i7.Stream<_i5.HomeFeedState>.empty(),
           )
-          as _i8.Stream<_i6.HomeFeedState>);
+          as _i7.Stream<_i5.HomeFeedState>);
 
   @override
   bool get isClosed =>
@@ -791,31 +784,31 @@ class MockHomeFeedCubit extends _i1.Mock implements _i17.HomeFeedCubit {
           as bool);
 
   @override
-  _i8.Future<void> fetchHomeFeed() =>
+  _i7.Future<void> fetchHomeFeed() =>
       (super.noSuchMethod(
             Invocation.method(#fetchHomeFeed, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i8.Future<void> refreshHomeFeed() =>
+  _i7.Future<void> refreshHomeFeed() =>
       (super.noSuchMethod(
             Invocation.method(#refreshHomeFeed, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  void emit(_i6.HomeFeedState? state) => super.noSuchMethod(
+  void emit(_i5.HomeFeedState? state) => super.noSuchMethod(
     Invocation.method(#emit, [state]),
     returnValueForMissingStub: null,
   );
 
   @override
-  void onChange(_i18.Change<_i6.HomeFeedState>? change) => super.noSuchMethod(
+  void onChange(_i18.Change<_i5.HomeFeedState>? change) => super.noSuchMethod(
     Invocation.method(#onChange, [change]),
     returnValueForMissingStub: null,
   );
@@ -833,11 +826,11 @@ class MockHomeFeedCubit extends _i1.Mock implements _i17.HomeFeedCubit {
   );
 
   @override
-  _i8.Future<void> close() =>
+  _i7.Future<void> close() =>
       (super.noSuchMethod(
             Invocation.method(#close, []),
-            returnValue: _i8.Future<void>.value(),
-            returnValueForMissingStub: _i8.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i8.Future<void>);
+          as _i7.Future<void>);
 }

@@ -15,8 +15,12 @@ class HomeApiService {
   HomeApiService(this._dio);
 
   /// Fetches the entire home feed in a single call.
-  Future<HomeFeed> getHomeFeed() async {
+  Future<HomeFeed?> getHomeFeed() async {
     final response = await _dio.get('home-feed');
+    // Handle 204 No Content
+    if (response.statusCode == 204 || response.data == null) {
+      return null;
+    }
     return HomeFeed.fromJson(response.data as Map<String, dynamic>);
   }
 

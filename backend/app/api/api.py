@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.api.v1 import auth, journal, chat, user, article, quote, home
 from app.api.v1.music import router as music_router
+from app.api.v1 import debug
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -11,3 +12,4 @@ api_router.include_router(article.router, prefix="/articles", tags=["articles"])
 api_router.include_router(quote.router, prefix="/quotes", tags=["quotes"])
 api_router.include_router(home.router, tags=["home"])
 api_router.include_router(music_router, prefix="/music", tags=["music"])
+api_router.include_router(debug.router, prefix="/debug", tags=["debug"])

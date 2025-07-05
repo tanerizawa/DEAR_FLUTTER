@@ -1,6 +1,7 @@
 import 'package:dear_flutter/core/di/injection.dart';
 import 'package:dear_flutter/presentation/profile/cubit/profile_cubit.dart';
 import 'package:dear_flutter/presentation/profile/cubit/profile_state.dart';
+import 'package:dear_flutter/core/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -42,6 +43,22 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(user.email, style: Theme.of(context).textTheme.bodyLarge),
                     const Spacer(),
+                    
+                    // Debug button (only in debug mode)
+                    if (AppConfig.enableDebugEndpoints) ...[
+                      ElevatedButton.icon(
+                        onPressed: () => context.push('/debug'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange.shade100,
+                          foregroundColor: Colors.orange.shade900,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        icon: const Icon(Icons.bug_report),
+                        label: const Text('Debug Panel'),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    
                     ElevatedButton(
                       onPressed: () async {
                         await context.read<ProfileCubit>().deleteAccount();

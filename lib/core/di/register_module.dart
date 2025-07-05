@@ -2,6 +2,7 @@
 
 import 'package:dear_flutter/core/api/auth_interceptor.dart';
 import 'package:dear_flutter/core/api/logging_interceptor.dart';
+import 'package:dear_flutter/core/config/app_config.dart';
 import 'package:dear_flutter/data/datasources/local/app_database.dart';
 import 'package:dear_flutter/data/datasources/local/chat_message_dao.dart';
 import 'package:dear_flutter/data/datasources/local/journal_dao.dart';
@@ -20,16 +21,11 @@ abstract class RegisterModule {
     AuthInterceptor authInterceptor,
     LoggingInterceptor loggingInterceptor,
   ) {
-    const baseUrl = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: 'https://server-qp6y.onrender.com/api/v1/',
-    );
-
     final dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 60),
+        baseUrl: AppConfig.baseUrl,
+        connectTimeout: AppConfig.connectTimeout,
+        receiveTimeout: AppConfig.receiveTimeout,
       ),
     );
 
