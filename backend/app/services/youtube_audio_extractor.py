@@ -8,8 +8,8 @@ YT_DLP_BIN = "yt-dlp"
 def extract_audio_url(youtube_url: str) -> Optional[dict]:
     cmd = [
         YT_DLP_BIN,
-        "--geo-bypass",
-        "--geo-bypass-country", "ID",
+        # "--geo-bypass",  # removed strict geo-bypass for Indonesia
+        # "--geo-bypass-country", "ID",  # removed strict geo-bypass for Indonesia
         "-f", "bestaudio[ext=m4a]/bestaudio/best",
         "--no-playlist",
         "--skip-download",
