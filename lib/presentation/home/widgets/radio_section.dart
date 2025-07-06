@@ -1,6 +1,7 @@
 // lib/presentation/home/widgets/radio_section.dart
 
 import 'package:dear_flutter/core/di/injection.dart';
+import 'package:dear_flutter/core/theme/mood_color_system.dart';
 import 'package:dear_flutter/presentation/home/cubit/radio_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/radio_state.dart';
 import 'package:flutter/material.dart';
@@ -17,153 +18,172 @@ class RadioSection extends StatelessWidget {
         builder: (context, state) {
           final bool isPlaying = state.status == RadioStatus.playing;
           final bool isLoading = state.status == RadioStatus.loading;
+          
+          // Get calm mood theme for radio
+          final moodTheme = MoodColorSystem.getMoodTheme('tenang');
+          final primaryColor = moodTheme['primary'] as Color;
+          final gradientColors = moodTheme['gradient'] as List<Color>;
 
-          return Center(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(32),
-                gradient: LinearGradient(
-                  colors: [Color(0xFF232526), Color(0xFF1DB954).withOpacity(0.15)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.18),
-                    blurRadius: 32,
-                    offset: Offset(0, 16),
-                  ),
+          return Container(
+            // Golden ratio height: 89dp (cardHeightSecondary)
+            height: MoodColorSystem.cardHeightSecondary,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(MoodColorSystem.space_md),
+              gradient: LinearGradient(
+                colors: [
+                  MoodColorSystem.surfaceContainer,
+                  primaryColor.withOpacity(0.1),
                 ],
-                border: Border.all(color: Color(0x1A1A1A).withOpacity(0.15), width: 1.5),
-                backgroundBlendMode: BlendMode.overlay,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                child: Row(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.08),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.18),
-                            blurRadius: 16,
-                            offset: Offset(0, 8),
-                          ),
-                        ],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: MoodColorSystem.space_md,
+                  offset: const Offset(0, MoodColorSystem.space_sm),
+                ),
+                BoxShadow(
+                  color: primaryColor.withOpacity(0.2),
+                  blurRadius: MoodColorSystem.space_sm,
+                  offset: const Offset(0, MoodColorSystem.space_xs),
+                ),
+              ],
+              border: Border.all(
+                color: primaryColor.withOpacity(0.3), 
+                width: 1.0,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(MoodColorSystem.space_md),
+              child: Row(
+                children: [
+                  // Radio icon with golden ratio sizing
+                  Container(
+                    width: MoodColorSystem.space_2xl, // 55dp
+                    height: MoodColorSystem.space_2xl, // 55dp
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: gradientColors,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      child: Icon(
-                        isPlaying ? Icons.radio_button_checked_rounded : Icons.radio_rounded,
-                        size: 48,
-                        color: Color(0xFFB0B0B0), // Monochrome light grey for radio icon
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.25),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primaryColor.withOpacity(0.4),
+                          blurRadius: MoodColorSystem.space_sm,
+                          offset: const Offset(0, MoodColorSystem.space_xs),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min, // Prevents unbounded height error
-                        children: [
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 350),
-                            transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
-                            child: Text(
-                              isPlaying ? "Menemani harimu..." : "Putar playlist untuk aktivitasmu",
-                              key: ValueKey<bool>(isPlaying),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    fontFamily: 'Montserrat',
-                                    color: Colors.white.withOpacity(0.85),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    shadows: [
-                                      Shadow(blurRadius: 6, color: Colors.black38),
-                                    ],
-                                  ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          // Additional row for artist and subtitle
-                          Flexible(
-                            child: Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    'Artist Name', // Replace with dynamic artist name
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          fontFamily: 'Montserrat',
-                                          color: Color(0xFFD1D1D1),
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  width: 4,
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Color(0xFFD1D1D1),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    'Subtitle or Info', // Replace with dynamic subtitle or info
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          fontFamily: 'Montserrat',
-                                          color: Color(0xFFD1D1D1),
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: Icon(
+                      isPlaying ? Icons.radio_button_checked_rounded : Icons.radio_rounded,
+                      size: MoodColorSystem.space_lg, // 34dp
+                      color: MoodColorSystem.onSurface,
                     ),
-                    const SizedBox(width: 8),
-                    isLoading
-                        ? const SizedBox(
-                            width: 36,
-                            height: 36,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 4,
-                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1DB954)),
+                  ),
+                  
+                  const SizedBox(width: MoodColorSystem.space_sm),
+                  
+                  // Radio info with proper typography
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 350),
+                          transitionBuilder: (child, animation) => 
+                              FadeTransition(opacity: animation, child: child),
+                          child: Text(
+                            isPlaying ? "Menemani harimu..." : "Putar playlist untuk aktivitasmu",
+                            key: ValueKey<bool>(isPlaying),
+                            style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              color: MoodColorSystem.onSurface,
+                              fontSize: MoodColorSystem.text_lg, // 20sp
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.3,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: MoodColorSystem.space_xs),
+                        
+                        // Subtitle with mood color
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'Radio Santai',
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  color: primaryColor,
+                                  fontSize: MoodColorSystem.text_base, // 16sp
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Container(
+                              width: 4,
+                              height: 4,
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: MoodColorSystem.space_xs,
+                              ),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: primaryColor,
+                              ),
+                            ),
+                            Flexible(
+                              child: Text(
+                                'Musik untuk relaksasi',
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  color: MoodColorSystem.onSurfaceSecondary,
+                                  fontSize: MoodColorSystem.text_base, // 16sp
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(width: MoodColorSystem.space_sm),
+                  
+                  // Play/Stop button with golden ratio sizing
+                  SizedBox(
+                    width: MoodColorSystem.space_2xl, // 55dp
+                    height: MoodColorSystem.space_2xl, // 55dp
+                    child: isLoading
+                        ? CircularProgressIndicator(
+                            strokeWidth: 3.0,
+                            valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                           )
                         : IconButton(
-                            iconSize: 48,
+                            iconSize: MoodColorSystem.space_lg, // 34dp
                             icon: AnimatedSwitcher(
                               duration: const Duration(milliseconds: 250),
                               transitionBuilder: (child, animation) {
                                 return ScaleTransition(scale: animation, child: child);
                               },
                               child: Icon(
-                                isPlaying ? Icons.stop_circle_outlined : Icons.play_circle_filled_rounded,
+                                isPlaying 
+                                    ? Icons.pause_circle_filled_rounded 
+                                    : Icons.play_circle_filled_rounded,
                                 key: ValueKey<bool>(isPlaying),
-                                color: Color(0xFFB0B0B0), // Monochrome light grey for play/stop icon
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withOpacity(0.25),
-                                    blurRadius: 12,
-                                  ),
-                                ],
+                                color: primaryColor,
                               ),
                             ),
-                            tooltip: isPlaying ? 'Stop' : 'Play',
+                            tooltip: isPlaying ? 'Pause' : 'Play',
                             onPressed: () {
                               final cubit = context.read<RadioCubit>();
                               if (isPlaying) {
@@ -173,8 +193,8 @@ class RadioSection extends StatelessWidget {
                               }
                             },
                           ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           );

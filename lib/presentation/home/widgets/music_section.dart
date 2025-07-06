@@ -2,14 +2,15 @@
 
 import 'dart:async';
 import 'package:dear_flutter/core/di/injection.dart';
+import 'package:dear_flutter/core/theme/mood_color_system.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
 import 'package:dear_flutter/services/audio_player_handler.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:audio_service/audio_service.dart';
 
 class MusicSection extends StatefulWidget {
@@ -158,38 +159,44 @@ class _MusicSectionState extends State<MusicSection> {
         // UI utama
         return Center(
           child: Container(
+            height: MoodColorSystem.cardHeightSecondary, // Golden ratio secondary height
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(32),
+              borderRadius: BorderRadius.circular(MoodColorSystem.space_lg),
               gradient: LinearGradient(
-                colors: [const Color(0xFF232526), const Color(0xFF1DB954).withOpacity(0.15)],
+                colors: [
+                  MoodColorSystem.surfaceContainer, 
+                  const Color(0xFF26A69A).withOpacity(0.15)
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.18),
-                  blurRadius: 32,
-                  offset: const Offset(0, 16),
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: MoodColorSystem.space_lg,
+                  offset: Offset(0, MoodColorSystem.space_sm),
                 ),
               ],
-              border: Border.all(color: const Color(0x1A1A1A).withOpacity(0.15), width: 1.5),
-              backgroundBlendMode: BlendMode.overlay,
+              border: Border.all(
+                color: const Color(0xFF26A69A).withOpacity(0.2), 
+                width: 1.5
+              ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              padding: EdgeInsets.all(MoodColorSystem.space_md),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Playlist horizontal list (lebih kecil)
                   if (playlist.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
+                      padding: EdgeInsets.only(bottom: MoodColorSystem.space_sm),
                       child: SizedBox(
-                        height: 40,
+                        height: MoodColorSystem.space_xl, // Golden ratio based height
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
                           itemCount: playlist.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 6),
+                          separatorBuilder: (_, __) => SizedBox(width: MoodColorSystem.space_xs),
                           itemBuilder: (context, i) {
                             final t = playlist[i];
                             final isActive = i == _currentIndex;
@@ -197,24 +204,28 @@ class _MusicSectionState extends State<MusicSection> {
                               onTap: () => _playTrackAtIndex(playlist, i),
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: MoodColorSystem.space_sm, 
+                                  vertical: MoodColorSystem.space_xs,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: isActive ? Colors.white.withOpacity(0.08) : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: isActive ? Border.all(color: Colors.white, width: 1.2) : null,
+                                  color: isActive ? MoodColorSystem.onSurface.withOpacity(0.1) : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(MoodColorSystem.space_sm),
+                                  border: isActive ? Border.all(color: MoodColorSystem.onSurface, width: 1.2) : null,
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.music_note, color: isActive ? Colors.white : Colors.white54, size: 16),
-                                    const SizedBox(width: 3),
+                                    Icon(Icons.music_note, 
+                                         color: isActive ? MoodColorSystem.onSurface : MoodColorSystem.onSurfaceSecondary, 
+                                         size: MoodColorSystem.space_md),
+                                    SizedBox(width: MoodColorSystem.space_xs),
                                     Text(
                                       t.title,
-                                      style: TextStyle(
-                                        color: isActive ? Colors.white : Colors.white70,
+                                      style: MoodColorSystem.getTextStyle(
+                                        fontSize: MoodColorSystem.text_xs,
                                         fontWeight: FontWeight.bold,
-                                        fontFamily: 'Montserrat',
-                                        fontSize: 11,
+                                        color: isActive ? MoodColorSystem.onSurface : MoodColorSystem.onSurfaceVariant,
                                         letterSpacing: 0.5,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -230,16 +241,16 @@ class _MusicSectionState extends State<MusicSection> {
                     ),
                   // Cover Art lingkaran
                   Container(
-                    width: 72,
-                    height: 72,
+                    width: MoodColorSystem.cardHeightCompact,
+                    height: MoodColorSystem.cardHeightCompact,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.08),
+                      color: MoodColorSystem.surfaceContainer,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.18),
-                          blurRadius: 16,
-                          offset: const Offset(0, 8),
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: MoodColorSystem.space_md,
+                          offset: Offset(0, MoodColorSystem.space_xs),
                         ),
                       ],
                     ),
@@ -247,12 +258,16 @@ class _MusicSectionState extends State<MusicSection> {
                       child: track.coverUrl != null
                           ? Image.network(track.coverUrl!, fit: BoxFit.cover)
                           : Container(
-                              color: Colors.black,
-                              child: Icon(Icons.music_note, size: 36, color: Colors.white),
+                              color: MoodColorSystem.surfaceVariant,
+                              child: Icon(
+                                Icons.music_note, 
+                                size: MoodColorSystem.space_lg, 
+                                color: MoodColorSystem.onSurfaceVariant,
+                              ),
                             ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: MoodColorSystem.space_sm),
                   // Judul Lagu
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 350),
@@ -408,6 +423,7 @@ class _MusicSectionState extends State<MusicSection> {
       final currentMediaItem = _handler.mediaItem.value;
       final isPlayingThisTrack = _currentTrack?.id.toString() == currentMediaItem?.id;
       Duration? mediaDuration = currentMediaItem?.duration;
+      
       if (mediaDuration == null) {
         try {
           mediaDuration = _handler.currentDuration;
@@ -415,16 +431,20 @@ class _MusicSectionState extends State<MusicSection> {
           mediaDuration = Duration.zero;
         }
       }
+      
       setState(() {
         _isPlaying = state.playing && isPlayingThisTrack;
         _position = isPlayingThisTrack ? state.updatePosition : Duration.zero;
         _duration = isPlayingThisTrack ? (mediaDuration ?? Duration.zero) : Duration.zero;
       });
+      
+      // Control timer based on playback state
       if (_isPlaying) {
         _startPositionTimer();
       } else {
         _stopPositionTimer();
       }
+      
       // Trigger fetch jika sudah di akhir playlist dan playback completed
       if (state.processingState == AudioProcessingState.completed) {
         final cubit = context.read<HomeFeedCubit>();
@@ -442,27 +462,64 @@ class _MusicSectionState extends State<MusicSection> {
     final isTrackChanged = _currentTrack?.id != track.id;
 
     if (isCurrentlyPlaying) {
-      await _handler.pause();
-      setState(() {
-        _isPlaying = false;
-      });
-    } else {
-      setState(() {
-        _currentTrack = track;
-        _isPlaying = false; // Reset agar UI langsung update
-      });
-      await getIt<SongHistoryRepository>().addTrack(track);
       try {
-        await _handler.playFromYoutubeId(track.youtubeId, track);
-        setState(() {
-          _isPlaying = true;
-        });
+        await _handler.pause();
+        if (mounted) {
+          setState(() {
+            _isPlaying = false;
+          });
+        }
       } catch (e) {
+        debugPrint('Error pausing audio: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Gagal memutar lagu: ${track.title} ("${e.toString()}")'),
+              content: Text('Gagal menghentikan audio: ${e.toString()}'),
               backgroundColor: Colors.red.shade400,
+              action: SnackBarAction(
+                label: 'Coba Lagi',
+                textColor: Colors.white,
+                onPressed: () => _handlePlayPause(track),
+              ),
+            ),
+          );
+        }
+      }
+    } else {
+      // Reset state when changing tracks
+      if (isTrackChanged && mounted) {
+        setState(() {
+          _currentTrack = track;
+          _isPlaying = false;
+          _position = Duration.zero;
+          _duration = Duration.zero;
+        });
+      }
+      
+      await getIt<SongHistoryRepository>().addTrack(track);
+      
+      try {
+        await _handler.playFromYoutubeId(track.youtubeId, track);
+        if (mounted) {
+          setState(() {
+            _isPlaying = true;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error playing audio: $e');
+        if (mounted) {
+          setState(() {
+            _isPlaying = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal memutar lagu: ${track.title}'),
+              backgroundColor: Colors.red.shade400,
+              action: SnackBarAction(
+                label: 'Coba Lagi',
+                textColor: Colors.white,
+                onPressed: () => _handlePlayPause(track),
+              ),
             ),
           );
         }
@@ -472,23 +529,5 @@ class _MusicSectionState extends State<MusicSection> {
 
   Future<void> _seek(double value) async {
     await _handler.seek(Duration(milliseconds: value.round()));
-  }
-}
-
-class _ShimmerMusicCard extends StatelessWidget {
-  const _ShimmerMusicCard();
-  @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
-      child: Card(
-        child: ListTile(
-          leading: Icon(Icons.music_note, color: Colors.grey[400]), // Monochrome for shimmer icon
-          title: Container(height: 20.0, color: Colors.grey[400]),
-          subtitle: Container(height: 15.0, color: Colors.grey[300]),
-        ),
-      ),
-    );
   }
 }

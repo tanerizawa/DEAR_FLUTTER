@@ -123,7 +123,9 @@ class AudioPlayerHandler extends BaseAudioHandler with SeekHandler {
         this.mediaItem.add(mediaItem);
         try {
           await _player.setAudioSource(AudioSource.uri(Uri.parse(audioUrl), tag: mediaItem));
+          debugPrint('[AudioPlayerHandler] Audio source set successfully');
           await play();
+          debugPrint('[AudioPlayerHandler] Playback started successfully');
         } catch (audioError) {
           debugPrint('[AudioPlayerHandler] Error saat setAudioSource/play: $audioError');
           // Jika error saat play dari cache, hapus cache dan retry
@@ -148,10 +150,26 @@ class AudioPlayerHandler extends BaseAudioHandler with SeekHandler {
   }
   
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() async {
+    try {
+      await _player.play();
+      debugPrint('[AudioPlayerHandler] Play command executed successfully');
+    } catch (e) {
+      debugPrint('[AudioPlayerHandler] Error in play(): $e');
+      rethrow;
+    }
+  }
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() async {
+    try {
+      await _player.pause();
+      debugPrint('[AudioPlayerHandler] Pause command executed successfully');
+    } catch (e) {
+      debugPrint('[AudioPlayerHandler] Error in pause(): $e');
+      rethrow;
+    }
+  }
 
   @override
   Future<void> seek(Duration position) => _player.seek(position);

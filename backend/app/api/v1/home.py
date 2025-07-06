@@ -15,12 +15,17 @@ def get_home_feed(db: Session = Depends(get_db)):
     if music_obj is not None:
         if not (music_obj.id and music_obj.title and music_obj.youtube_id and music_obj.stream_url) or music_obj.status == 'failed':
             music_obj = None
-    if music_obj is None:
-        # Kembalikan 204 No Content jika tidak ada lagu valid
-        return JSONResponse(status_code=204, content=None)
+    
+    # Always return response with quote, music can be null
     music_status = music_obj.status if music_obj else "done"
+    quote_obj = crud.motivational_quote.get_latest(db)
+    
+    # Return 204 only if both quote and music are null
+    if quote_obj is None and music_obj is None:
+        return JSONResponse(status_code=204, content=None)
+    
     return schemas.HomeFeed(
-        quote=crud.motivational_quote.get_latest(db),
+        quote=quote_obj,
         music=music_obj,
         music_status=music_status,
     )

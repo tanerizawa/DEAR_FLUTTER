@@ -1,6 +1,7 @@
 // lib/presentation/home/screens/home_screen.dart
 
-import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
+import 'package:dear_flutter/core/theme/mood_color_system.dart';
+import 'package:dear_flutter/presentation/home/cubit/improved_home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/widgets/enhanced_quote_section.dart';
 import 'package:dear_flutter/presentation/home/widgets/unified_media_section.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     try {
       HapticFeedback.lightImpact();
-      await context.read<HomeFeedCubit>().refreshHomeFeed();
+      await context.read<ImprovedHomeFeedCubit>().fetchHomeFeed(forceRefresh: true);
       
       // Success haptic feedback
       HapticFeedback.selectionClick();
@@ -102,10 +103,10 @@ class _HomeScreenState extends State<HomeScreen>
     super.build(context);
     
     return Scaffold(
-      backgroundColor: const Color(0xFF1a1a1a), // Slightly darker background
+      backgroundColor: MoodColorSystem.surface, // New improved background
       body: RefreshIndicator(
-        color: const Color(0xFF1DB954),
-        backgroundColor: const Color(0xFF2a2a2a),
+        color: const Color(0xFF26A69A), // Updated accent color
+        backgroundColor: MoodColorSystem.surfaceVariant,
         onRefresh: () => _onRefresh(context),
         child: CustomScrollView(
           controller: _scrollController,
@@ -113,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen>
           slivers: [
             // App Bar with greeting
             SliverAppBar(
-              expandedHeight: 120,
+              expandedHeight: 90, // Further reduced from 100 to prevent any overflow
               floating: true,
               pinned: false,
               backgroundColor: Colors.transparent,
@@ -125,37 +126,61 @@ class _HomeScreenState extends State<HomeScreen>
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        const Color(0xFF1a1a1a),
-                        const Color(0xFF1a1a1a).withOpacity(0.8),
+                        MoodColorSystem.surface,
+                        MoodColorSystem.surface.withOpacity(0.8),
                         Colors.transparent,
                       ],
                     ),
                   ),
                   child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            _getGreeting(),
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Montserrat',
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Calculate available height accounting for padding
+                        final availableHeight = constraints.maxHeight;
+                        final horizontalPadding = MoodColorSystem.space_md;
+                        final verticalPadding = MoodColorSystem.space_xs; // Further reduced padding
+                        
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: horizontalPadding,
+                            vertical: verticalPadding,
+                          ),
+                          child: Container(
+                            height: availableHeight - (verticalPadding * 2), // Explicit height constraint
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    _getGreeting(),
+                                    style: MoodColorSystem.getTextStyle(
+                                      fontSize: MoodColorSystem.text_lg, // Further reduced font size
+                                      fontWeight: FontWeight.bold,
+                                      color: MoodColorSystem.onSurface,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                SizedBox(height: MoodColorSystem.space_xs), // Minimal spacing
+                                Flexible(
+                                  child: Text(
+                                    'Bagaimana perasaan Anda hari ini?',
+                                    style: MoodColorSystem.getTextStyle(
+                                      fontSize: MoodColorSystem.text_sm, // Further reduced font size
+                                      color: MoodColorSystem.onSurfaceVariant,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Bagaimana perasaan Anda hari ini?',
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Colors.white70,
-                              fontFamily: 'Montserrat',
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -164,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen>
 
             // Content sections
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: MoodColorSystem.space_md),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   // Quote Section
@@ -174,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen>
                     child: const EnhancedQuoteSection(),
                   ),
                   
-                  const SizedBox(height: 32),
+                  SizedBox(height: MoodColorSystem.space_2xl),
                   
                   // Unified Media Section (Music + Radio)
                   _buildSection(
@@ -185,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen>
                     onRefresh: () => _onRefresh(context),
                   ),
                   
-                  const SizedBox(height: 40),
+                  SizedBox(height: MoodColorSystem.space_xl),
                   
                   // Footer
                   _buildFooter(),
@@ -212,25 +237,29 @@ class _HomeScreenState extends State<HomeScreen>
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(MoodColorSystem.space_sm),
               decoration: BoxDecoration(
-                color: const Color(0xFF1DB954).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFF26A69A).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(MoodColorSystem.space_md),
+                border: Border.all(
+                  color: const Color(0xFF26A69A).withOpacity(0.3),
+                  width: 1.0,
+                ),
               ),
               child: Icon(
                 icon,
-                color: const Color(0xFF1DB954),
-                size: 20,
+                color: const Color(0xFF26A69A),
+                size: MoodColorSystem.space_md,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: MoodColorSystem.space_md),
             Expanded(
               child: Text(
                 title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.white,
+                style: MoodColorSystem.getTextStyle(
+                  fontSize: MoodColorSystem.text_xl,
                   fontWeight: FontWeight.bold,
-                  fontFamily: 'Montserrat',
+                  color: MoodColorSystem.onSurface,
                 ),
               ),
             ),
@@ -241,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen>
                   duration: const Duration(milliseconds: 500),
                   child: Icon(
                     Icons.refresh_rounded,
-                    color: Colors.white70,
+                    color: MoodColorSystem.onSurfaceVariant,
                   ),
                 ),
                 onPressed: _isRefreshing ? null : onRefresh,
@@ -250,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen>
           ],
         ),
         
-        const SizedBox(height: 16),
+        SizedBox(height: MoodColorSystem.space_md),
         
         // Section Content
         child,
@@ -260,25 +289,25 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildFooter() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(MoodColorSystem.space_md),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        color: MoodColorSystem.surfaceContainer,
+        borderRadius: BorderRadius.circular(MoodColorSystem.space_md),
+        border: Border.all(color: MoodColorSystem.outline),
       ),
       child: Column(
         children: [
           Icon(
             Icons.favorite,
-            color: Color(0xFF1DB954),
-            size: 24,
+            color: Color(0xFF26A69A),
+            size: MoodColorSystem.space_lg,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: MoodColorSystem.space_sm),
           Text(
             'Dibuat dengan ❤️ untuk keseharian yang lebih bermakna',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.white54,
-              fontStyle: FontStyle.italic,
+            style: MoodColorSystem.getTextStyle(
+              fontSize: MoodColorSystem.text_sm,
+              color: MoodColorSystem.onSurfaceSecondary,
             ),
             textAlign: TextAlign.center,
           ),

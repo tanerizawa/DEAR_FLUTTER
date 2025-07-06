@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:dear_flutter/domain/entities/journal.dart';
+import 'package:dear_flutter/domain/entities/home_feed.dart';
 import 'package:dear_flutter/domain/repositories/home_repository.dart';
 import 'package:dear_flutter/domain/repositories/journal_repository.dart';
 import 'package:dear_flutter/services/audio_url_cache_service.dart';
@@ -13,7 +14,6 @@ import 'package:flutter/foundation.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 import 'home_feed_state.dart';
-import 'package:dear_flutter/domain/entities/audio_track.dart';
 
 @injectable
 class ImprovedHomeFeedCubit extends Cubit<HomeFeedState> {
@@ -60,16 +60,33 @@ class ImprovedHomeFeedCubit extends Cubit<HomeFeedState> {
       _rateLimitingService.recordRequest('music_fetch');
 
       final results = await Future.wait([
-        _homeRepository.getLatestMusic(),
+        _homeRepository.getHomeFeed(),
         _journalRepository.getJournals().first,
       ]).timeout(
         const Duration(seconds: 30),
         onTimeout: () => throw TimeoutException('Request timeout', const Duration(seconds: 30)),
       );
 
-      final music = results[0] as AudioTrack?;
+      HomeFeed? homeFeed = results[0] as HomeFeed?;
       final journals = results[1] as List<Journal>;
       final lastMood = journals.isNotEmpty ? journals.first.mood : null;
+      
+      // If home feed is null (backend returned 204), try to fetch quote separately
+      if (homeFeed == null) {
+        debugPrint("[ImprovedHomeFeedCubit] Home feed is null, fetching quote separately...");
+        try {
+          final quote = await _homeRepository.getLatestQuote();
+          // Create a HomeFeed with just the quote, no music
+          homeFeed = HomeFeed(quote: quote, music: null);
+          debugPrint("[ImprovedHomeFeedCubit] Successfully fetched quote: ${quote.text}");
+        } catch (e) {
+          debugPrint("[ImprovedHomeFeedCubit] Failed to fetch quote: $e");
+          // Continue with null homeFeed
+        }
+      }
+      
+      // Extract music from home feed
+      final music = homeFeed?.music;
       
       // Auto-trigger music generation if no music and not rate limited
       if (music == null && !forceRefresh) {
@@ -82,7 +99,8 @@ class ImprovedHomeFeedCubit extends Cubit<HomeFeedState> {
             
             // Wait and retry once
             await Future.delayed(const Duration(seconds: 3));
-            final newMusic = await _homeRepository.getLatestMusic();
+            final newHomeFeed = await _homeRepository.getHomeFeed();
+            final newMusic = newHomeFeed?.music;
             
             if (newMusic != null) {
               _safePrefetchAudioUrl(newMusic.youtubeId);
@@ -90,6 +108,7 @@ class ImprovedHomeFeedCubit extends Cubit<HomeFeedState> {
             
             emit(state.copyWith(
               status: HomeFeedStatus.success,
+              feed: newHomeFeed,
               music: newMusic,
               lastMood: lastMood,
             ));
@@ -108,6 +127,7 @@ class ImprovedHomeFeedCubit extends Cubit<HomeFeedState> {
       
       emit(state.copyWith(
         status: HomeFeedStatus.success,
+        feed: homeFeed,
         music: music,
         lastMood: lastMood,
       ));
