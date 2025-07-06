@@ -28,14 +28,30 @@ class _JournalListScreenState extends State<JournalListScreen> {
   }
 
   Future<void> _loadJournals() async {
+    print('[DEBUG] Loading journals...');
     setState(() => _loading = true);
-    final list = await JournalRepository().getAll();
-    list.sort((a, b) => b.date.compareTo(a.date));
-    setState(() {
-      _allJournals = list;
-      _filteredJournals = list; // Initially show all journals
-      _loading = false;
-    });
+    try {
+      final list = await JournalRepository().getAll();
+      print('[DEBUG] Loaded ${list.length} journals from repository');
+      
+      // Debug: Print each journal
+      for (int i = 0; i < list.length; i++) {
+        final journal = list[i];
+        print('[DEBUG] Journal $i: ${journal.mood} - ${journal.content.substring(0, journal.content.length > 50 ? 50 : journal.content.length)}...');
+      }
+      
+      list.sort((a, b) => b.date.compareTo(a.date));
+      setState(() {
+        _allJournals = list;
+        _filteredJournals = list; // Initially show all journals
+        _loading = false;
+      });
+      print('[DEBUG] Journals loaded successfully. _allJournals: ${_allJournals.length}, _filteredJournals: ${_filteredJournals.length}');
+    } catch (e, stackTrace) {
+      print('[ERROR] Failed to load journals: $e');
+      print('[ERROR] Stack trace: $stackTrace');
+      setState(() => _loading = false);
+    }
   }
 
   void _onFiltersChanged(List<JournalEntry> filteredJournals, JournalSearchFilters filters) {
