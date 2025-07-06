@@ -128,6 +128,7 @@ class EnhancedRadioCubit extends Cubit<EnhancedRadioState> {
     emit(state.copyWith(
       status: EnhancedRadioStatus.loading,
       currentStation: station,
+      errorMessage: null, // Clear previous error
     ));
 
     debugPrint("[EnhancedRadioCubit] Starting radio station: ${station.name}");
@@ -137,10 +138,10 @@ class EnhancedRadioCubit extends Cubit<EnhancedRadioState> {
       List<AudioTrack> playlist = await _playlistCache.getPlaylist(station.category);
       
       if (playlist.isEmpty) {
-        // 2. Fetch from API if cache is empty
-        playlist = await _homeRepository.getRadioStation(station.category);
+        // 2. Fetch from API with retry logic
+        playlist = await _fetchPlaylistWithRetry(station.category, maxRetries: 3);
         if (playlist.isEmpty) {
-          throw Exception('Empty playlist received for ${station.name}');
+          throw Exception('Unable to load ${station.name} playlist. Please check your internet connection.');
         }
         // Save to cache
         await _playlistCache.savePlaylist(station.category, playlist);
@@ -165,12 +166,45 @@ class EnhancedRadioCubit extends Cubit<EnhancedRadioState> {
       _startBackgroundTimers();
 
     } catch (e) {
+      String errorMessage;
+      if (e.toString().contains('404') || e.toString().contains('Not Found')) {
+        errorMessage = 'Radio station ${station.name} is temporarily unavailable. Try another station.';
+      } else if (e.toString().contains('network') || e.toString().contains('timeout')) {
+        errorMessage = 'Network error. Please check your internet connection and try again.';
+      } else {
+        errorMessage = 'Failed to start ${station.name}. Please try again.';
+      }
+      
       debugPrint("[EnhancedRadioCubit] Failed to play radio station: $e");
       emit(state.copyWith(
         status: EnhancedRadioStatus.error,
-        errorMessage: 'Failed to start ${station.name}. Please try again.',
+        errorMessage: errorMessage,
       ));
     }
+  }
+
+  // Fetch playlist with retry logic
+  Future<List<AudioTrack>> _fetchPlaylistWithRetry(String category, {int maxRetries = 3}) async {
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        debugPrint("[EnhancedRadioCubit] Fetching playlist for $category (attempt $attempt/$maxRetries)");
+        final playlist = await _homeRepository.getRadioStation(category);
+        if (playlist.isNotEmpty) {
+          return playlist;
+        }
+        if (attempt == maxRetries) {
+          throw Exception('No tracks found for category $category');
+        }
+      } catch (e) {
+        debugPrint("[EnhancedRadioCubit] Attempt $attempt failed: $e");
+        if (attempt == maxRetries) {
+          rethrow;
+        }
+        // Wait before retry with exponential backoff
+        await Future.delayed(Duration(seconds: attempt * 2));
+      }
+    }
+    return [];
   }
 
   // Stop current radio
@@ -351,5 +385,24 @@ class EnhancedRadioCubit extends Cubit<EnhancedRadioState> {
     ));
     
     debugPrint("[EnhancedRadioCubit] Showing station list.");
+  }
+
+  // Retry playing current station (for error recovery)
+  Future<void> retryCurrentStation() async {
+    final currentStation = state.currentStation;
+    if (currentStation != null) {
+      debugPrint("[EnhancedRadioCubit] Retrying current station: ${currentStation.name}");
+      await playRadioStation(currentStation);
+    }
+  }
+
+  // Clear error state
+  void clearError() {
+    if (state.status == EnhancedRadioStatus.error) {
+      emit(state.copyWith(
+        status: EnhancedRadioStatus.stopped,
+        errorMessage: null,
+      ));
+    }
   }
 }
