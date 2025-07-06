@@ -13,7 +13,7 @@ from app import crud, models, schemas, dependencies
 from app.services.music_suggestion_service import MusicSuggestionService
 from app.tasks import run_music_generation_flow
 from youtubesearchpython import VideosSearch
-from app.services.improved_youtube_extractor import youtube_extractor
+from app.services.stealth_youtube_extractor import stealth_youtube_extractor
 from app.core.rate_limiter import rate_limiter
 from app.core.response_handler import SafeResponseHandler
 
@@ -82,8 +82,12 @@ async def trigger_global_music_generation(
 async def extract_audio(
     data: dict = Body(...)
 ):
-    """Ekstrak audio YouTube yang playable di Indonesia (ID), hanya audio stream."""
+    """Enhanced YouTube audio extraction with intelligent stealth strategies"""
     youtube_url = data.get("youtube_url")
+    stealth_mode = data.get("stealth_mode", True)
+    use_proxy = data.get("use_proxy", False)
+    intelligent_mode = data.get("intelligent_mode", True)
+    
     if not youtube_url:
         raise HTTPException(status_code=400, detail="youtube_url is required")
     
@@ -96,29 +100,235 @@ async def extract_audio(
                 detail=f"Rate limit exceeded. Please wait {wait_time:.0f} seconds"
             )
         
-        # Record the request
-        await rate_limiter.record_request("youtube")
+        log.info("audio_extraction_started", 
+                url=youtube_url, 
+                stealth=stealth_mode, 
+                proxy=use_proxy,
+                intelligent=intelligent_mode)
         
-        # Extract using improved extractor
-        result = await youtube_extractor.extract_audio_url(youtube_url)
-        
-        # Complete the request
-        await rate_limiter.complete_request("youtube")
+        # Use intelligent extraction by default for better results
+        if stealth_mode and intelligent_mode:
+            result = await stealth_youtube_extractor.adaptive_extraction_with_intelligence(
+                youtube_url, use_proxy=use_proxy
+            )
+        elif stealth_mode:
+            result = await stealth_youtube_extractor.extract_audio_url(
+                youtube_url, 
+                stealth_mode=True,
+                use_proxy=use_proxy,
+                use_cache=True
+            )
+        else:
+            # Fallback to basic extraction
+            result = await stealth_youtube_extractor._extract_audio_url_basic(youtube_url)
         
         if not result or not result.get("audio_url"):
             raise HTTPException(
                 status_code=422, 
-                detail="Gagal ekstrak audio dari YouTube (region/geo-block atau format tidak tersedia)"
+                detail="Failed to extract audio from YouTube (geo-blocked, format unavailable, or bot detection)"
             )
         
-        # Use response handler for proper content-length
+        # Add extraction metadata
+        result["extraction_mode"] = "intelligent_stealth" if (stealth_mode and intelligent_mode) else ("stealth" if stealth_mode else "basic")
+        result["proxy_used"] = use_proxy
+        result["extraction_timestamp"] = datetime.datetime.utcnow().isoformat()
+        
         return SafeResponseHandler.create_json_response(result)
         
     except HTTPException:
-        # Re-raise HTTP exceptions as-is
-        await rate_limiter.complete_request("youtube")
         raise
     except Exception as e:
-        await rate_limiter.complete_request("youtube")
         log.error("extract_audio_error", error=str(e), url=youtube_url)
         raise HTTPException(status_code=500, detail="Internal server error during audio extraction")
+
+
+@router.get("/stealth-status")
+async def get_stealth_status(
+    current_user: models.User = Depends(dependencies.get_current_user),
+):
+    """Get comprehensive status of stealth YouTube extractor for monitoring"""
+    try:
+        # Get detailed session status
+        status = stealth_youtube_extractor.get_session_status()
+        
+        # Add additional runtime information
+        status.update({
+            "stealth_mode_active": True,
+            "available_strategies": len(stealth_youtube_extractor._get_stealth_strategies()),
+            "user_agents_count": len(stealth_youtube_extractor.user_agents),
+            "session_rotation_interval": 3600,  # 1 hour
+            "cache_ttl": getattr(stealth_youtube_extractor, 'cache_ttl', 3600)
+        })
+        
+        return SafeResponseHandler.create_json_response(status)
+        
+    except Exception as e:
+        log.error("stealth_status_error", error=str(e))
+        raise HTTPException(status_code=500, detail="Failed to get stealth status")
+
+
+@router.post("/rotate-stealth-session")
+async def rotate_stealth_session(
+    current_user: models.User = Depends(dependencies.get_current_user),
+):
+    """Manually rotate stealth session parameters"""
+    try:
+        stealth_youtube_extractor._rotate_session()
+        
+        return SafeResponseHandler.create_json_response({
+            "message": "Stealth session rotated successfully",
+            "new_session_start": stealth_youtube_extractor.session_start_time,
+            "bot_detection_count_reset": stealth_youtube_extractor.bot_detection_count,
+            "adaptive_delay_reset": stealth_youtube_extractor.adaptive_delay_multiplier
+        })
+        
+    except Exception as e:
+        log.error("rotate_session_error", error=str(e))
+        raise HTTPException(status_code=500, detail="Failed to rotate session")
+
+
+@router.get("/performance-metrics")
+async def get_performance_metrics(
+    current_user: models.User = Depends(dependencies.get_current_user),
+):
+    """Get detailed performance metrics for stealth extractor monitoring"""
+    try:
+        metrics = stealth_youtube_extractor.get_performance_metrics()
+        return SafeResponseHandler.create_json_response(metrics)
+        
+    except Exception as e:
+        log.error("performance_metrics_error", error=str(e))
+        raise HTTPException(status_code=500, detail="Failed to get performance metrics")
+
+
+@router.post("/clear-failed-strategies")
+async def clear_failed_strategies(
+    current_user: models.User = Depends(dependencies.get_current_user),
+):
+    """Clear failed strategies to allow retry"""
+    try:
+        old_count = len(stealth_youtube_extractor.failed_strategies)
+        stealth_youtube_extractor.clear_failed_strategies()
+        
+        return SafeResponseHandler.create_json_response({
+            "message": "Failed strategies cleared successfully",
+            "cleared_count": old_count,
+            "remaining_strategies": len(stealth_youtube_extractor._get_stealth_strategies())
+        })
+        
+    except Exception as e:
+        log.error("clear_strategies_error", error=str(e))
+        raise HTTPException(status_code=500, detail="Failed to clear failed strategies")
+
+
+@router.get("/session-health")
+async def get_session_health(
+    current_user: models.User = Depends(dependencies.get_current_user),
+):
+    """Get detailed session health information"""
+    try:
+        status = stealth_youtube_extractor.get_session_status()
+        return SafeResponseHandler.create_json_response(status)
+        
+    except Exception as e:
+        log.error("session_health_error", error=str(e))
+        raise HTTPException(status_code=500, detail="Failed to get session health")
+
+
+@router.post("/extract-audio-enhanced")
+async def extract_audio_enhanced(
+    data: dict = Body(...)
+):
+    """Enhanced audio extraction with intelligent strategy selection"""
+    youtube_url = data.get("youtube_url")
+    use_proxy = data.get("use_proxy", False)
+    force_intelligent = data.get("intelligent_mode", True)
+    
+    if not youtube_url:
+        raise HTTPException(status_code=400, detail="youtube_url is required")
+    
+    try:
+        # Check rate limit
+        if not await rate_limiter.can_make_request("youtube"):
+            wait_time = rate_limiter.get_wait_time("youtube")
+            raise HTTPException(
+                status_code=429, 
+                detail=f"Rate limit exceeded. Please wait {wait_time:.0f} seconds"
+            )
+        
+        log.info("enhanced_extraction_started", 
+                url=youtube_url, 
+                proxy=use_proxy, 
+                intelligent=force_intelligent)
+        
+        # Use intelligent extraction if requested
+        if force_intelligent:
+            result = await stealth_youtube_extractor.adaptive_extraction_with_intelligence(
+                youtube_url, use_proxy=use_proxy
+            )
+        else:
+            result = await stealth_youtube_extractor.extract_audio_url(
+                youtube_url, 
+                stealth_mode=True,
+                use_proxy=use_proxy,
+                use_cache=True
+            )
+        
+        if not result or not result.get("audio_url"):
+            raise HTTPException(
+                status_code=422, 
+                detail="Failed to extract audio with enhanced methods"
+            )
+        
+        # Add extraction metadata
+        result["extraction_method"] = "intelligent" if force_intelligent else "standard"
+        result["proxy_used"] = use_proxy
+        result["extraction_timestamp"] = datetime.datetime.utcnow().isoformat()
+        
+        return SafeResponseHandler.create_json_response(result)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error("enhanced_extraction_error", error=str(e), url=youtube_url)
+        raise HTTPException(status_code=500, detail="Enhanced extraction failed")
+
+
+@router.post("/force-session-rotation")
+async def force_session_rotation(
+    current_user: models.User = Depends(dependencies.get_current_user),
+):
+    """Force complete session rotation with new fingerprint"""
+    try:
+        old_session_id = stealth_youtube_extractor.session_id
+        stealth_youtube_extractor.rotate_session_parameters()
+        
+        return SafeResponseHandler.create_json_response({
+            "message": "Complete session rotation performed",
+            "old_session_id": old_session_id,
+            "new_session_id": stealth_youtube_extractor.session_id,
+            "new_fingerprint": {
+                "platform": stealth_youtube_extractor.browser_fingerprint["platform"],
+                "screen_resolution": stealth_youtube_extractor.browser_fingerprint["screen_resolution"],
+                "canvas_hash": stealth_youtube_extractor.browser_fingerprint["canvas_hash"][:8] + "..."
+            }
+        })
+        
+    except Exception as e:
+        log.error("force_rotation_error", error=str(e))
+        raise HTTPException(status_code=500, detail="Failed to force session rotation")
+
+
+@router.get("/proxy-stats")
+async def get_proxy_stats(
+    current_user: models.User = Depends(dependencies.get_current_user),
+):
+    """Get proxy rotation service statistics"""
+    try:
+        from app.services.proxy_rotation_service import proxy_rotation_service
+        stats = proxy_rotation_service.get_proxy_stats()
+        return SafeResponseHandler.create_json_response(stats)
+        
+    except Exception as e:
+        log.error("proxy_stats_error", error=str(e))
+        raise HTTPException(status_code=500, detail="Failed to get proxy statistics")

@@ -13,6 +13,7 @@ from youtubesearchpython import VideosSearch
 import asyncio
 import structlog
 from typing import Optional
+import random
 from app.core.config import settings
 
 log = structlog.get_logger(__name__)
@@ -186,9 +187,9 @@ async def run_music_generation_flow(user_id: Optional[int] = None):
                                 suggestion_idx=suggestion_idx + 1)
                         continue  # Try next suggestion
 
-                    # Try to extract audio with improved service
-                    log.info("music_generation_flow:extracting_audio", youtube_id=youtube_id)
-                    from app.services.improved_youtube_extractor import youtube_extractor
+                    # Try to extract audio with enhanced stealth extractor
+                    log.info("music_generation_flow:extracting_audio_intelligent", youtube_id=youtube_id)
+                    from app.services.stealth_youtube_extractor import stealth_youtube_extractor
                     from app.core.rate_limiter import rate_limiter
                     
                     youtube_url = f"https://www.youtube.com/watch?v={youtube_id}"
@@ -199,15 +200,65 @@ async def run_music_generation_flow(user_id: Optional[int] = None):
                             log.warn("music_generation_flow:rate_limited_skipping", youtube_id=youtube_id)
                             continue  # Try next suggestion
                         
-                        await rate_limiter.record_request("youtube")
-                        audio_info = await youtube_extractor.extract_audio_url(youtube_url)
-                        await rate_limiter.complete_request("youtube")
+                        # Use intelligent extraction for better success rates
+                        log.info("music_generation_flow:using_intelligent_extraction", youtube_id=youtube_id)
+                        audio_info = await stealth_youtube_extractor.adaptive_extraction_with_intelligence(
+                            youtube_url,
+                            use_proxy=False  # Start without proxy, will escalate if needed
+                        )
                         
                     except Exception as e:
-                        await rate_limiter.complete_request("youtube")
-                        log.error("music_generation_flow:extraction_error", 
-                                youtube_id=youtube_id, error=str(e))
-                        continue  # Try next suggestion
+                        error_str = str(e).lower()
+                        
+                        # Enhanced bot detection and adaptive response
+                        if any(keyword in error_str for keyword in ['bot', 'captcha', '403', 'blocked', 'suspicious']):
+                            log.warning("music_generation_flow:bot_detected_trying_proxy", 
+                                       youtube_id=youtube_id, error_snippet=str(e)[:200])
+                            
+                            # Try intelligent extraction with proxy as fallback
+                            try:
+                                log.info("music_generation_flow:retry_with_proxy_intelligence", youtube_id=youtube_id)
+                                await asyncio.sleep(random.uniform(8, 15))  # Longer delay for bot recovery
+                                
+                                # Force session rotation on bot detection
+                                stealth_youtube_extractor.rotate_session_parameters()
+                                
+                                audio_info = await stealth_youtube_extractor.adaptive_extraction_with_intelligence(
+                                    youtube_url,
+                                    use_proxy=True    # Use proxy with intelligent strategies
+                                )
+                                
+                                log.info("music_generation_flow:intelligent_proxy_retry_success", youtube_id=youtube_id)
+                                
+                            except Exception as retry_error:
+                                log.error("music_generation_flow:intelligent_retry_failed", 
+                                         youtube_id=youtube_id, 
+                                         retry_error=str(retry_error)[:200])
+                                # Clear failed strategies and try basic fallback
+                                stealth_youtube_extractor.clear_failed_strategies()
+                                continue
+                        elif 'rate limit' in error_str or '429' in error_str:
+                            log.warning("music_generation_flow:rate_limit_detected_backing_off", youtube_id=youtube_id)
+                            # Adaptive backoff based on rate limiting
+                            stealth_youtube_extractor._adapt_to_detection(False)  # Not bot detection, but still problematic
+                            await asyncio.sleep(random.uniform(20, 40))
+                            continue
+                        else:
+                            log.error("music_generation_flow:extraction_error_trying_fallback", 
+                                    youtube_id=youtube_id, error=str(e)[:300])
+                            
+                            # Try one more time with basic stealth as final fallback
+                            try:
+                                await asyncio.sleep(random.uniform(3, 7))
+                                audio_info = await stealth_youtube_extractor.extract_audio_url(
+                                    youtube_url,
+                                    stealth_mode=True,
+                                    use_cache=False,
+                                    use_proxy=False
+                                )
+                                log.info("music_generation_flow:basic_fallback_success", youtube_id=youtube_id)
+                            except Exception:
+                                continue  # Give up on this suggestion, try next
                     
                     if audio_info and audio_info.get("audio_url"):
                         # Success! We have a valid track
