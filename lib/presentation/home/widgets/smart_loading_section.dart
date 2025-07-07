@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:dear_flutter/core/theme/mood_color_system.dart';
 
 class SmartLoadingSection extends StatefulWidget {
   final String loadingText;
@@ -160,13 +161,13 @@ class SmartSkeletonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade800,
-      highlightColor: Colors.grey.shade600,
+      baseColor: MoodColorSystem.surfaceContainer,
+      highlightColor: MoodColorSystem.surfaceVariant,
       child: Container(
         width: width,
         height: height ?? 80,
         decoration: BoxDecoration(
-          color: Colors.grey.shade800,
+          color: MoodColorSystem.surfaceContainer,
           borderRadius: borderRadius ?? BorderRadius.circular(12),
         ),
       ),

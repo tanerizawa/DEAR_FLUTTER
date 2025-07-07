@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dear_flutter/presentation/home/cubit/improved_home_feed_cubit.dart';
 import 'package:dear_flutter/core/di/injection.dart';
-import 'package:dear_flutter/presentation/journal/screens/journal_editor_screen.dart';
+import 'package:dear_flutter/presentation/journal/screens/sticky_note_journal_editor.dart';
 
 class MainScreen extends StatelessWidget {
   final StatefulNavigationShell child;
@@ -23,6 +23,18 @@ class MainScreen extends StatelessWidget {
       ],
       child: Scaffold(
         extendBody: true,
+        appBar: selectedIndex == 2 ? AppBar(
+          title: const Text('Journal'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.bug_report),
+              tooltip: 'Journal Debug',
+              onPressed: () => context.push('/journal-debug'),
+            ),
+          ],
+        ) : null,
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -60,8 +72,8 @@ class MainScreen extends StatelessWidget {
             child: BottomNavigationBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              selectedItemColor: Colors.blueAccent,
-              unselectedItemColor: Colors.grey.shade500,
+              selectedItemColor: const Color(0xFF4DB6AC), // High contrast teal
+              unselectedItemColor: const Color(0xFFB8B8B8), // WCAG AA compliant
               selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
               currentIndex: selectedIndex,
@@ -124,10 +136,14 @@ class MainScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () async {
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const JournalEditorScreen()),
+                    final result = await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const StickyNoteJournalEditor()),
                     );
-                    // Refresh journal list if needed
+                    // If a journal was saved, trigger a refresh via navigation
+                    if (result == true || result == 'refresh') {
+                      // Go to journal tab again to trigger a refresh
+                      context.go('/journal');
+                    }
                   },
                 ),
               )

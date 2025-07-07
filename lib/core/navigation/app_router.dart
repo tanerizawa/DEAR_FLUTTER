@@ -12,6 +12,7 @@ import 'package:dear_flutter/presentation/home/screens/article_detail_screen.dar
 import 'package:dear_flutter/presentation/home/screens/audio_player_screen.dart';
 import 'package:dear_flutter/presentation/home/screens/quote_detail_screen.dart';
 import 'package:dear_flutter/presentation/debug/debug_screen.dart';
+import 'package:dear_flutter/presentation/debug/journal_debug_screen.dart';
 import 'package:dear_flutter/domain/entities/article.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
@@ -112,6 +113,13 @@ final GoRouter router = GoRouter(
       path: '/debug',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const DebugScreen(),
+    ),
+    
+    // Journal debug screen
+    GoRoute(
+      path: '/journal-debug',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const JournalDebugScreen(),
     ),
 
     // Route luar shell (autentikasi)

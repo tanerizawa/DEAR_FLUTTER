@@ -1,4 +1,5 @@
 import 'package:dear_flutter/domain/entities/audio_track.dart';
+import 'package:dear_flutter/core/theme/mood_color_system.dart';
 import 'package:flutter/material.dart';
 
 /// Player bar widget for controlling playback.
@@ -60,7 +61,15 @@ class PlayerBar extends StatelessWidget {
                     ),
                   )
                 else
-                  Container(height: 40, width: 40, color: Colors.grey),
+                  Container(
+                    height: 40, 
+                    width: 40, 
+                    color: MoodColorSystem.surfaceContainer,
+                    child: Icon(
+                      Icons.music_note, 
+                      color: MoodColorSystem.onSurfaceVariant,
+                    ),
+                  ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

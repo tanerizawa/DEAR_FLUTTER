@@ -107,10 +107,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                 height: 250,
                 width: 250,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: Theme.of(context).colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.music_note, size: 100, color: Colors.white),
+                child: Icon(Icons.music_note, size: 100, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             const SizedBox(height: 16),
             Text(widget.track.title,

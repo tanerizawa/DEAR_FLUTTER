@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:dear_flutter/core/di/injection.dart';
+import 'package:dear_flutter/core/theme/mood_color_system.dart';
 import 'package:dear_flutter/domain/entities/audio_track.dart';
 import 'package:dear_flutter/domain/entities/radio_station.dart';
 import 'package:dear_flutter/domain/repositories/song_history_repository.dart';
@@ -620,7 +621,7 @@ class _UnifiedMediaSectionState extends State<UnifiedMediaSection>
               height: 8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: station.isLive ? Colors.red : Colors.grey,
+                color: station.isLive ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: 8),
@@ -628,7 +629,7 @@ class _UnifiedMediaSectionState extends State<UnifiedMediaSection>
               station.isLive ? 'LIVE' : 'OFFLINE',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: station.isLive ? Colors.red : Colors.grey,
+                color: station.isLive ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: 16),
@@ -808,10 +809,10 @@ class _UnifiedMediaSectionState extends State<UnifiedMediaSection>
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return Container(
-                          color: Colors.grey.shade800,
+                          color: MoodColorSystem.surfaceContainer,
                           child: Center(
                             child: CircularProgressIndicator(
-                              color: Color(0xFF1DB954),
+                              color: MoodColorSystem.getMoodTheme(null)['primary'],
                               strokeWidth: 2,
                             ),
                           ),
@@ -819,14 +820,14 @@ class _UnifiedMediaSectionState extends State<UnifiedMediaSection>
                       },
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          color: Colors.grey.shade800,
-                          child: Icon(Icons.music_note, size: 60, color: Colors.white),
+                          color: MoodColorSystem.surfaceContainer,
+                          child: Icon(Icons.music_note, size: 60, color: MoodColorSystem.onSurface),
                         );
                       },
                     )
                   : Container(
-                      color: Colors.grey.shade800,
-                      child: Icon(Icons.music_note, size: 60, color: Colors.white),
+                      color: MoodColorSystem.surfaceContainer,
+                      child: Icon(Icons.music_note, size: 60, color: MoodColorSystem.onSurface),
                     ),
             ),
           ),

@@ -213,13 +213,13 @@ class _EnhancedRadioContent extends StatelessWidget {
                     Icon(
                       Icons.people,
                       size: 12,
-                      color: Colors.white60,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '${station.listeners}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white60,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -420,7 +420,7 @@ class _EnhancedRadioContent extends StatelessWidget {
           height: 8,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: station.isLive ? Colors.red : Colors.grey,
+            color: station.isLive ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(width: 8),
@@ -428,7 +428,7 @@ class _EnhancedRadioContent extends StatelessWidget {
           station.isLive ? 'LIVE' : 'OFFLINE',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             fontWeight: FontWeight.bold,
-            color: station.isLive ? Colors.red : Colors.grey,
+            color: station.isLive ? Colors.red : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(width: 16),

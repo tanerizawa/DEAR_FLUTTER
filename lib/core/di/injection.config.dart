@@ -299,15 +299,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i441.AudioUrlCacheService>(),
       ),
     );
-    gh.factory<_i654.EnhancedHomeFeedCubit>(
-      () => _i654.EnhancedHomeFeedCubit(
+    gh.factory<_i990.ImprovedHomeFeedCubit>(
+      () => _i990.ImprovedHomeFeedCubit(
         gh<_i34.HomeRepository>(),
         gh<_i614.JournalRepository>(),
         gh<_i441.AudioUrlCacheService>(),
       ),
     );
-    gh.factory<_i990.ImprovedHomeFeedCubit>(
-      () => _i990.ImprovedHomeFeedCubit(
+    gh.factory<_i654.EnhancedHomeFeedCubit>(
+      () => _i654.EnhancedHomeFeedCubit(
         gh<_i34.HomeRepository>(),
         gh<_i614.JournalRepository>(),
         gh<_i441.AudioUrlCacheService>(),

@@ -1,12 +1,18 @@
 // lib/presentation/home/widgets/enhanced_quote_section.dart
 
-import 'package:dear_flutter/core/theme/mood_color_system.dart';
-import 'package:dear_flutter/core/theme/golden_design_system.dart';
+import 'package:dear_flutter/core/theme/home_layout_system.dart';
+import 'package:dear_flutter/core/theme/home_typography_system.dart';
+import 'package:dear_flutter/core/theme/mood_color_system_v2.dart';
+import 'package:dear_flutter/core/theme/home_animation_system.dart';
+import 'package:dear_flutter/core/theme/micro_interactions_system.dart';
+import 'package:dear_flutter/core/theme/skeleton_loading_system.dart';
+import 'package:dear_flutter/core/theme/advanced_error_system.dart';
+import 'package:dear_flutter/core/theme/content_personalization_system.dart';
+import 'package:dear_flutter/core/theme/advanced_gesture_system.dart';
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:dear_flutter/presentation/home/cubit/improved_home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
-import 'package:dear_flutter/presentation/home/widgets/smart_loading_section.dart';
-import 'package:dear_flutter/presentation/home/widgets/golden_ratio_card.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -28,6 +34,9 @@ class _EnhancedQuoteSectionState extends State<EnhancedQuoteSection>
   @override
   void initState() {
     super.initState();
+    // Initialize Phase 4 personalization system
+    ContentPersonalizationSystem.initialize();
+    
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -65,53 +74,159 @@ class _EnhancedQuoteSectionState extends State<EnhancedQuoteSection>
     super.dispose();
   }
 
-  // Get mood-based color scheme using MoodColorSystem
-  Map<String, dynamic> _getMoodTheme(String? mood) {
-    return MoodColorSystem.getMoodTheme(mood);
-  }
-
-  void _copyQuote(String text, String author) {
+  // MARK: - Enhanced Phase 2 Methods
+  
+  /// Enhanced quote copying with haptic feedback and improved UX
+  void _copyQuoteWithFeedback(String text, String author) {
     Clipboard.setData(ClipboardData(text: '"$text" - $author'));
-    HapticFeedback.lightImpact();
+    MicroInteractionsSystem.successHaptic();
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              Icons.check_circle_outline, 
-              color: GoldenDesignSystem.onSurfaceDark,
-            ),
-            SizedBox(width: GoldenDesignSystem.space_3),
-            Text(
-              'Kutipan disalin ke clipboard',
-              style: GoldenDesignSystem.createOptimalTextStyle(
-                fontSize: GoldenDesignSystem.text_body2,
-                color: GoldenDesignSystem.onSurfaceDark,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: GoldenDesignSystem.surfaceContainer,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(GoldenDesignSystem.radius_medium),
-        ),
-        margin: EdgeInsets.all(GoldenDesignSystem.space_4),
-        duration: Duration(seconds: 2),
-      ),
+    // Track interaction for personalization
+    ContentPersonalizationSystem.recordInteraction(
+      contentId: text.hashCode.toString(),
+      type: InteractionType.copy,
+      category: ContentCategory.motivation,
+      metadata: {'author': author, 'action': 'copy'},
+    );
+    
+    if (mounted) {
+      MicroInteractionsSystem.showSuccessSnackBar(
+        context: context,
+        message: 'Quote copied to clipboard',
+      );
+    }
+  }
+  
+  /// Share quote functionality
+  void _shareQuote(String text, String author) {
+    MicroInteractionsSystem.mediumHaptic();
+    
+    // Track interaction for personalization
+    ContentPersonalizationSystem.recordInteraction(
+      contentId: text.hashCode.toString(),
+      type: InteractionType.share,
+      category: ContentCategory.motivation,
+      metadata: {'author': author, 'action': 'share'},
+    );
+    
+    // TODO: Implement share functionality
+    if (mounted) {
+      MicroInteractionsSystem.showEnhancedSnackBar(
+        context: context,
+        message: 'Share feature coming soon!',
+        icon: Icons.share,
+      );
+    }
+  }
+  
+  /// Favorite quote functionality
+  void _favoriteQuote(MotivationalQuote quote) {
+    MicroInteractionsSystem.heavyHaptic();
+    
+    // Track interaction for personalization
+    ContentPersonalizationSystem.recordInteraction(
+      contentId: quote.text.hashCode.toString(),
+      type: InteractionType.favorite,
+      category: ContentCategory.motivation,
+      metadata: {'author': quote.author, 'action': 'favorite'},
+    );
+    
+    // TODO: Implement favorite functionality
+    if (mounted) {
+      MicroInteractionsSystem.showEnhancedSnackBar(
+        context: context,
+        message: 'Added to favorites!',
+        icon: Icons.favorite,
+        backgroundColor: Colors.pink.shade600,
+      );
+    }
+  }
+  
+  /// Enhanced quote icon with animations
+  Widget _buildEnhancedQuoteIcon(String mood) {
+    final moodColors = MoodColorSystemV2.getAnalogousColors(mood);
+    
+    return MicroInteractionsSystem.pulseIconButton(
+      icon: Icons.format_quote_rounded,
+      onPressed: () => MicroInteractionsSystem.lightHaptic(),
+      color: moodColors.first,
+      size: 32.0,
+      tooltip: 'Quote icon',
     );
   }
-
-  void _shareQuote(String text, String author) {
-    // Implement share functionality
-    HapticFeedback.selectionClick();
-    // Share.share('"$text" - $author');
+  
+  /// Enhanced quote footer with author styling
+  Widget _buildEnhancedQuoteFooter(String author) {
+    return Row(
+      children: [
+        Icon(
+          Icons.person_outline,
+          size: 16,
+          color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            '— $author',
+            style: HomeTypographySystem.bodyText().copyWith(
+              fontStyle: FontStyle.italic,
+              color: Theme.of(context).textTheme.bodySmall?.color,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  /// Enhanced action row with micro-interactions
+  Widget _buildEnhancedActionRow(MotivationalQuote quote) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        // Copy button
+        MicroInteractionsSystem.pulseIconButton(
+          icon: Icons.copy_outlined,
+          onPressed: () => _copyQuoteWithFeedback(quote.text, quote.author),
+          tooltip: 'Copy quote',
+          size: 20,
+        ),
+        
+        // Share button  
+        MicroInteractionsSystem.pulseIconButton(
+          icon: Icons.share_outlined,
+          onPressed: () => _shareQuote(quote.text, quote.author),
+          tooltip: 'Share quote',
+          size: 20,
+        ),
+        
+        // Favorite button
+        MicroInteractionsSystem.pulseIconButton(
+          icon: Icons.favorite_outline,
+          onPressed: () => _favoriteQuote(quote),
+          tooltip: 'Add to favorites',
+          size: 20,
+        ),
+        
+        // Refresh button
+        MicroInteractionsSystem.pulseIconButton(
+          icon: Icons.refresh_outlined,
+          onPressed: () {
+            context.read<ImprovedHomeFeedCubit>().fetchHomeFeed(forceRefresh: true);
+            MicroInteractionsSystem.mediumHaptic();
+          },
+          tooltip: 'Get new quote',
+          size: 20,
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final staticQuote = MotivationalQuote(
+    const staticQuote = MotivationalQuote(
       id: 0, 
       text: 'Setiap hari adalah kesempatan baru untuk menjadi versi terbaik dari diri Anda.', 
       author: 'Dear Diary'
@@ -120,14 +235,16 @@ class _EnhancedQuoteSectionState extends State<EnhancedQuoteSection>
     return BlocBuilder<ImprovedHomeFeedCubit, HomeFeedState>(
       builder: (context, state) {
         if (state.status == HomeFeedStatus.loading) {
-          return SmartLoadingSection(
-            loadingText: 'Menyiapkan kutipan inspiratif...',
-            icon: Icons.format_quote_rounded,
+          return SkeletonLoadingSystem.smartLoadingState(
+            contentType: 'quote',
+            loadingMessage: 'Menyiapkan kutipan inspiratif...',
+            isSlowConnection: false,
+            isDarkMode: Theme.of(context).brightness == Brightness.dark,
           );
         }
 
         if (state.status == HomeFeedStatus.failure) {
-          return _buildErrorState(state.errorMessage);
+          return _buildEnhancedErrorState(state.errorMessage);
         }
 
         final quote = state.feed?.quote ?? staticQuote;
@@ -137,323 +254,293 @@ class _EnhancedQuoteSectionState extends State<EnhancedQuoteSection>
           opacity: _fadeAnimation,
           child: SlideTransition(
             position: _slideAnimation,
-            child: GoldenQuoteCard(
-              quote: quote.text,
-              author: quote.author,
-              mood: mood,
-              onCopy: () => _copyQuote(quote.text, quote.author),
-              onShare: () => _shareQuote(quote.text, quote.author),
-            ),
+            child: _buildOptimizedQuoteCard(quote, mood),
           ),
         );
       },
     );
   }
 
-  Widget _buildErrorState(String? errorMessage) {
-    return Container(
-      padding: const EdgeInsets.all(MoodColorSystem.space_md),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(MoodColorSystem.space_md),
-        color: MoodColorSystem.surfaceContainer,
-        border: Border.all(
-          color: Colors.red.withOpacity(0.3),
-          width: 1.0,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.error_outline, 
-            color: Colors.red, 
-            size: MoodColorSystem.space_lg,
+  /// Optimized quote card using new design system with Phase 4 enhancements
+  Widget _buildOptimizedQuoteCard(MotivationalQuote quote, String mood) {
+    // Track view interaction for personalization
+    ContentPersonalizationSystem.recordInteraction(
+      contentId: quote.text.hashCode.toString(),
+      type: InteractionType.view,
+      category: ContentCategory.motivation,
+      metadata: {'author': quote.author, 'mood': mood},
+    );
+    
+    return AdvancedGestureSystem.interactiveQuoteCard(
+      onTap: () {
+        _copyQuoteWithFeedback(quote.text, quote.author);
+        ContentPersonalizationSystem.recordInteraction(
+          contentId: quote.text.hashCode.toString(),
+          type: InteractionType.longView,
+          category: ContentCategory.motivation,
+          metadata: {'action': 'tap_copy'},
+        );
+      },
+      onLongPress: () {
+        _showQuoteContextMenu(quote);
+      },
+      onDoubleTap: () {
+        _favoriteQuote(quote);
+      },
+      onSwipeLeft: (_) {
+        // Skip to next quote
+        ContentPersonalizationSystem.recordInteraction(
+          contentId: quote.text.hashCode.toString(),
+          type: InteractionType.skip,
+          category: ContentCategory.motivation,
+          metadata: {'action': 'swipe_skip'},
+        );
+        context.read<ImprovedHomeFeedCubit>().fetchHomeFeed(forceRefresh: true);
+        MicroInteractionsSystem.mediumHaptic();
+      },
+      onSwipeRight: (_) {
+        // Share quote
+        _shareQuote(quote.text, quote.author);
+      },
+      enableHaptics: true,
+      enableAnimations: true,
+      child: Container(
+        height: HomeLayoutSystem.quoteHeight,
+        constraints: HomeLayoutSystem.getCardConstraints(context),
+        decoration: BoxDecoration(
+          gradient: MoodColorSystemV2.getCurrentMoodGradient(mood: mood),
+          borderRadius: BorderRadius.circular(FibonacciSpacing.lg),
+          boxShadow: MoodColorSystemV2.getDepthShadows(
+            depth: 3,
+            isDarkMode: Theme.of(context).brightness == Brightness.dark,
           ),
-          const SizedBox(width: MoodColorSystem.space_sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Gagal memuat kutipan',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: MoodColorSystem.text_lg,
-                    fontWeight: FontWeight.w600,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.2),
+            width: 1.5,
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Background glassmorphism effect
+            Container(
+              decoration: MoodColorSystemV2.createGlassMorphism(
+                blur: 15.0,
+                opacity: 0.1,
+              ),
+            ),
+            
+            // Content with enhanced animations
+            Padding(
+              padding: const EdgeInsets.all(FibonacciSpacing.md), // Reduced from lg
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Enhanced quote icon with mood coloring
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildEnhancedQuoteIcon(mood),
+                      // Gesture hint for new users - wrapped in Flexible to prevent overflow
+                      if (_shouldShowGestureHints())
+                        Flexible(
+                          child: AdvancedGestureSystem.gestureHint(
+                            message: 'Swipe for actions',
+                            icon: Icons.swipe,
+                            displayDuration: const Duration(seconds: 2),
+                          ),
+                        ),
+                    ],
                   ),
-                ),
-                if (errorMessage != null) ...[
-                  const SizedBox(height: MoodColorSystem.space_xs),
-                  Text(
-                    errorMessage,
-                    style: TextStyle(
-                      color: Colors.red.shade300,
-                      fontSize: MoodColorSystem.text_base,
+                  
+                  const SizedBox(height: FibonacciSpacing.sm), // Reduced from md
+                  
+                  // Quote text with reveal animation
+                  Expanded(
+                    child: HomeAnimationSystem.animatedQuoteReveal(
+                      text: '"${quote.text}"',
+                      controller: _fadeController,
+                      textStyle: HomeTypographySystem.quoteText()
+                        .copyWith(
+                          color: MoodColorSystemV2.getAccessibleColor(
+                            background: Theme.of(context).cardColor,
+                            foreground: Theme.of(context).textTheme.bodyLarge!.color!,
+                          ),
+                        ),
+                      delay: const Duration(milliseconds: 200),
                     ),
                   ),
+                  
+                  const SizedBox(height: FibonacciSpacing.xs), // Reduced from sm
+                  
+                  // Author with enhanced styling
+                  _buildEnhancedQuoteFooter(quote.author),
+                  
+                  const SizedBox(height: FibonacciSpacing.xs), // Reduced from sm
+                  
+                  // Enhanced action buttons
+                  _buildEnhancedActionRow(quote),
                 ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuoteCard(MotivationalQuote quote, Map<String, dynamic> moodTheme, String? mood) {
-    final List<Color> gradientColors = moodTheme['gradient'];
-    final Color primaryColor = moodTheme['primary'];
-    final IconData iconData = moodTheme['icon'];
-
-    return GestureDetector(
-      onLongPress: () => _copyQuote(quote.text, quote.author),
-      child: Container(
-        // Golden ratio height: 144dp (cardHeightPrimary)
-        height: MoodColorSystem.cardHeightPrimary,
-        decoration: BoxDecoration(
-          // Fibonacci border radius: 21dp
-          borderRadius: BorderRadius.circular(MoodColorSystem.space_md),
-          gradient: LinearGradient(
-            colors: [
-              MoodColorSystem.surfaceContainer,
-              primaryColor.withOpacity(0.1),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: MoodColorSystem.space_md,
-              offset: const Offset(0, MoodColorSystem.space_sm),
-            ),
-            BoxShadow(
-              color: primaryColor.withOpacity(0.2),
-              blurRadius: MoodColorSystem.space_sm,
-              offset: const Offset(0, MoodColorSystem.space_xs),
+              ),
             ),
           ],
-          border: Border.all(
-            color: primaryColor.withOpacity(0.3), 
-            width: 1.0
-          ),
         ),
-        child: Padding(
-          // Golden ratio padding: 21dp
-          padding: const EdgeInsets.all(MoodColorSystem.space_md),
+      ),
+    );
+  }
+
+  /// Enhanced error state using advanced error system
+  Widget _buildEnhancedErrorState(String? errorMessage) {
+    return AdvancedErrorSystem.errorWidget(
+      errorType: ErrorType.network,
+      message: errorMessage ?? 'Failed to load inspirational quote. Please check your connection and try again.',
+      severity: ErrorSeverity.medium,
+      onRetry: () {
+        context.read<ImprovedHomeFeedCubit>().fetchHomeFeed(forceRefresh: true);
+        MicroInteractionsSystem.mediumHaptic();
+      },
+      retryText: 'Try Again',
+      isDarkMode: Theme.of(context).brightness == Brightness.dark,
+      showDetails: false,
+    );
+  }
+
+  
+  /// Phase 4: Show quote context menu with advanced actions
+  void _showQuoteContextMenu(MotivationalQuote quote) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Header with mood indicator
-              if (mood != null) _buildMoodHeader(mood, primaryColor, iconData),
-              
-              // Quote content with golden ratio spacing
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Quote icon with Fibonacci sizing
-                    Container(
-                      width: MoodColorSystem.space_2xl, // 55dp
-                      height: MoodColorSystem.space_2xl, // 55dp
-                      padding: const EdgeInsets.all(MoodColorSystem.space_sm),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: gradientColors,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: primaryColor.withOpacity(0.4),
-                            blurRadius: MoodColorSystem.space_sm,
-                            offset: const Offset(0, MoodColorSystem.space_xs),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.format_quote_rounded,
-                        size: MoodColorSystem.space_md, // 21dp
-                        color: MoodColorSystem.onSurface,
-                      ),
-                    ),
-                    
-                    const SizedBox(width: MoodColorSystem.space_sm),
-                    
-                    // Quote text with proper typography scale
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 400),
-                            child: Text(
-                              '"${quote.text}"',
-                              key: ValueKey<String>(quote.text),
-                              style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w600,
-                                fontSize: MoodColorSystem.text_lg, // 20sp
-                                color: MoodColorSystem.onSurface,
-                                letterSpacing: -0.3,
-                                height: 1.4,
-                              ),
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          
-                          const SizedBox(height: MoodColorSystem.space_sm),
-                          
-                          // Author with mood-based color
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 400),
-                            child: Text(
-                              '— ${quote.author}',
-                              key: ValueKey<String>(quote.author),
-                              style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                color: primaryColor,
-                                fontSize: MoodColorSystem.text_base, // 16sp
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12, bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
               
-              // Action buttons with golden ratio spacing
-              const SizedBox(height: MoodColorSystem.space_sm),
-              _buildActionButtons(quote, primaryColor),
+              // Quote preview
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  '"${quote.text}"',
+                  style: HomeTypographySystem.bodyText().copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Action options
+              _buildContextMenuAction(
+                icon: Icons.copy_outlined,
+                title: 'Copy Quote',
+                subtitle: 'Copy to clipboard',
+                onTap: () {
+                  Navigator.pop(context);
+                  _copyQuoteWithFeedback(quote.text, quote.author);
+                },
+              ),
+              _buildContextMenuAction(
+                icon: Icons.share_outlined,
+                title: 'Share Quote',
+                subtitle: 'Share with others',
+                onTap: () {
+                  Navigator.pop(context);
+                  _shareQuote(quote.text, quote.author);
+                },
+              ),
+              _buildContextMenuAction(
+                icon: Icons.favorite_outline,
+                title: 'Add to Favorites',
+                subtitle: 'Save for later',
+                onTap: () {
+                  Navigator.pop(context);
+                  _favoriteQuote(quote);
+                },
+              ),
+              _buildContextMenuAction(
+                icon: Icons.refresh_outlined,
+                title: 'Get New Quote',
+                subtitle: 'Load different quote',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<ImprovedHomeFeedCubit>().fetchHomeFeed(forceRefresh: true);
+                  MicroInteractionsSystem.mediumHaptic();
+                },
+              ),
+              
+              const SizedBox(height: 32),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
-
-  Widget _buildMoodHeader(String mood, Color primaryColor, IconData iconData) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: MoodColorSystem.space_sm),
-      padding: const EdgeInsets.symmetric(
-        horizontal: MoodColorSystem.space_sm, 
-        vertical: MoodColorSystem.space_xs,
-      ),
-      decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(MoodColorSystem.space_sm),
-        border: Border.all(
-          color: primaryColor.withOpacity(0.4),
-          width: 1.0,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            iconData, 
-            size: MoodColorSystem.text_base, // 16dp
-            color: primaryColor,
-          ),
-          const SizedBox(width: MoodColorSystem.space_xs),
-          Text(
-            'Mood: ${mood.toUpperCase()}',
-            style: TextStyle(
-              color: primaryColor,
-              fontSize: MoodColorSystem.text_sm, // 12sp
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(MotivationalQuote quote, Color primaryColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildActionButton(
-          icon: Icons.copy_outlined,
-          tooltip: 'Salin kutipan',
-          onPressed: () => _copyQuote(quote.text, quote.author),
-          primaryColor: primaryColor,
-        ),
-        const SizedBox(width: MoodColorSystem.space_sm),
-        _buildActionButton(
-          icon: Icons.share_outlined,
-          tooltip: 'Bagikan',
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            // TODO: Implement share functionality
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Fitur berbagi akan segera hadir!'),
-                backgroundColor: primaryColor,
-              ),
-            );
-          },
-          primaryColor: primaryColor,
-        ),
-        const SizedBox(width: MoodColorSystem.space_sm),
-        _buildActionButton(
-          icon: Icons.favorite_border_outlined,
-          tooltip: 'Simpan ke favorit',
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            // TODO: Implement save to favorites
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Kutipan disimpan ke favorit!'),
-                backgroundColor: primaryColor,
-              ),
-            );
-          },
-          primaryColor: primaryColor,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton({
+  
+  /// Build context menu action item
+  Widget _buildContextMenuAction({
     required IconData icon,
-    required String tooltip,
-    required VoidCallback onPressed,
-    required Color primaryColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
   }) {
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(MoodColorSystem.space_sm),
-        child: Container(
-          width: MoodColorSystem.space_lg, // 34dp
-          height: MoodColorSystem.space_lg, // 34dp
-          decoration: BoxDecoration(
-            color: MoodColorSystem.surfaceVariant,
-            borderRadius: BorderRadius.circular(MoodColorSystem.space_sm),
-            border: Border.all(
-              color: primaryColor.withOpacity(0.3),
-              width: 1.0,
-            ),
-          ),
-          child: Icon(
-            icon,
-            size: MoodColorSystem.text_lg, // 20dp
-            color: primaryColor,
-          ),
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Icon(
+          icon,
+          color: Theme.of(context).primaryColor,
+          size: 20,
         ),
       ),
+      title: Text(
+        title,
+        style: HomeTypographySystem.bodyText().copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: HomeTypographySystem.bodyText().copyWith(
+          fontSize: 14,
+          color: Theme.of(context).textTheme.bodySmall?.color,
+        ),
+      ),
+      onTap: onTap,
     );
+  }
+  
+  /// Phase 4: Check if gesture hints should be shown to new users
+  bool _shouldShowGestureHints() {
+    // Show hints for first 3 app launches or if user hasn't used gestures
+    return ContentPersonalizationSystem.shouldShowGestureHints();
   }
 }

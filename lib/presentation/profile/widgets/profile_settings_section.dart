@@ -435,11 +435,6 @@ class ProfileSettingsSection extends StatelessWidget {
               'Dear Flutter adalah aplikasi jurnal digital yang membantu Anda mencatat perjalanan emosi dan refleksi harian.',
               style: TextStyle(color: Colors.white70, fontFamily: 'Montserrat'),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Dibuat dengan ❤️ untuk keseharian yang lebih bermakna.',
-              style: TextStyle(color: Colors.white60, fontFamily: 'Montserrat', fontStyle: FontStyle.italic),
-            ),
           ],
         ),
         actions: [

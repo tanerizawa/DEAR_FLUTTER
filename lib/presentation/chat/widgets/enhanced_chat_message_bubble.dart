@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:dear_flutter/domain/entities/chat_message.dart';
 import 'package:dear_flutter/presentation/chat/cubit/chat_cubit.dart';
+import 'package:dear_flutter/core/theme/mood_color_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -102,7 +103,7 @@ class _EnhancedChatMessageBubbleState extends State<EnhancedChatMessageBubble>
                     constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.68),
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                     decoration: BoxDecoration(
-                      color: widget.message.isDeleted ? Colors.grey.shade600 : color,
+                      color: widget.message.isDeleted ? Theme.of(context).colorScheme.surfaceContainer : color,
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(isUser ? (widget.isGroupTop ? 18 : 6) : 6),
                         topRight: Radius.circular(isUser ? 6 : (widget.isGroupTop ? 18 : 6)),
@@ -235,18 +236,18 @@ class _EnhancedChatMessageBubbleState extends State<EnhancedChatMessageBubble>
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.2),
+        color: Theme.of(context).colorScheme.surfaceContainer.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.reply, size: 16, color: Colors.grey),
+          Icon(Icons.reply, size: 16, color: MoodColorSystem.onSurfaceVariant),
           const SizedBox(width: 4),
           Text(
             'Reply to message',
             style: TextStyle(
-              color: Colors.grey,
+              color: MoodColorSystem.onSurfaceVariant,
               fontSize: 12,
               fontStyle: FontStyle.italic,
             ),
@@ -267,7 +268,7 @@ class _EnhancedChatMessageBubbleState extends State<EnhancedChatMessageBubble>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.2),
+                color: MoodColorSystem.surfaceContainer.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -287,7 +288,7 @@ class _EnhancedChatMessageBubbleState extends State<EnhancedChatMessageBubble>
       child: Text(
         _formatTime(widget.message.timestamp),
         style: const TextStyle(
-          color: Color(0xFF888888),
+          color: Color(0xFFB8B8B8), // High contrast secondary text
           fontSize: 11,
           fontFamily: 'Montserrat',
         ),
@@ -314,7 +315,7 @@ class _EnhancedChatMessageBubbleState extends State<EnhancedChatMessageBubble>
               height: 4,
               margin: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.grey,
+                color: MoodColorSystem.onSurfaceVariant,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

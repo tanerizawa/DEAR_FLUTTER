@@ -522,7 +522,7 @@ class _EnhancedMusicSectionState extends State<EnhancedMusicSection>
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return Container(
-                          color: Colors.grey.shade800,
+                          color: Theme.of(context).colorScheme.surfaceContainer,
                           child: Center(
                             child: CircularProgressIndicator(
                               color: Color(0xFF1DB954),
@@ -533,14 +533,14 @@ class _EnhancedMusicSectionState extends State<EnhancedMusicSection>
                       },
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          color: Colors.grey.shade800,
-                          child: Icon(Icons.music_note, size: 60, color: Colors.white),
+                          color: Theme.of(context).colorScheme.surfaceContainer,
+                          child: Icon(Icons.music_note, size: 60, color: Theme.of(context).colorScheme.onSurfaceVariant),
                         );
                       },
                     )
                   : Container(
-                      color: Colors.grey.shade800,
-                      child: Icon(Icons.music_note, size: 60, color: Colors.white),
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                      child: Icon(Icons.music_note, size: 60, color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
             ),
           ),

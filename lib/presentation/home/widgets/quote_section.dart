@@ -1,9 +1,9 @@
 import 'package:dear_flutter/domain/entities/motivational_quote.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_cubit.dart';
 import 'package:dear_flutter/presentation/home/cubit/home_feed_state.dart';
+import 'package:dear_flutter/core/theme/mood_color_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
 
 /// Displays the latest motivational quote.
@@ -37,13 +37,13 @@ class _ShimmerQuoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: MoodColorSystem.surfaceContainer,
+      highlightColor: MoodColorSystem.surfaceVariant,
       child: Card(
         child: ListTile(
-          leading: Icon(Icons.format_quote, color: Colors.grey[400]),
-          title: Container(height: 20.0, color: Colors.grey[400]),
-          subtitle: Container(height: 15.0, color: Colors.grey[300]),
+          leading: Icon(Icons.format_quote, color: MoodColorSystem.onSurfaceVariant),
+          title: Container(height: 20.0, color: MoodColorSystem.surfaceContainer),
+          subtitle: Container(height: 15.0, color: MoodColorSystem.surfaceVariant),
         ),
       ),
     );

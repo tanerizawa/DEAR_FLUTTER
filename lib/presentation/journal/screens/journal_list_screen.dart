@@ -1,13 +1,26 @@
+import 'dart:async';
 import 'package:dear_flutter/data/repositories/journal_repository.dart';
 import 'package:dear_flutter/domain/entities/journal_entry.dart';
-import 'package:dear_flutter/presentation/journal/widgets/enhanced_journal_search.dart';
-import 'package:dear_flutter/presentation/journal/widgets/journal_analytics_screen.dart';
-import 'journal_editor_screen.dart';
-import 'journal_detail_screen.dart';
+import 'package:dear_flutter/presentation/journal/widgets/timeline/sticky_note_timeline.dart';
+import 'package:dear_flutter/presentation/journal/widgets/timeline/timeline_empty_state.dart' as sticky_timeline;
+import 'package:dear_flutter/presentation/journal/theme/enhanced_journal_theme.dart';
+import 'package:dear_flutter/presentation/journal/animations/journal_micro_interactions.dart';
+import 'package:dear_flutter/presentation/journal/screens/sticky_note_journal_editor.dart';
+import 'package:dear_flutter/presentation/journal/screens/journal_detail_screen.dart';
+import 'package:dear_flutter/presentation/journal/screens/journal_analytics_dashboard.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter/services.dart';
 
+/// Journal loading states
+enum JournalLoadingState {
+  initial,
+  loading,
+  loaded,
+  error,
+  refreshing,
+}
+
+/// Clean Journal List Screen - hanya dengan Sticky Notes Timeline
 class JournalListScreen extends StatefulWidget {
   const JournalListScreen({super.key});
 
@@ -17,9 +30,12 @@ class JournalListScreen extends StatefulWidget {
 
 class _JournalListScreenState extends State<JournalListScreen> {
   List<JournalEntry> _allJournals = [];
-  List<JournalEntry> _filteredJournals = [];
-  bool _loading = true;
-  JournalSearchFilters _currentFilters = const JournalSearchFilters();
+  JournalLoadingState _loadingState = JournalLoadingState.initial;
+  String? _errorMessage;
+  Timer? _debounceTimer;
+  
+  // Performance: Cache for expensive operations
+  final Map<String, Widget> _widgetCache = {};
 
   @override
   void initState() {
@@ -27,525 +43,423 @@ class _JournalListScreenState extends State<JournalListScreen> {
     _loadJournals();
   }
 
-  Future<void> _loadJournals() async {
-    print('[DEBUG] Loading journals...');
-    setState(() => _loading = true);
-    try {
-      final list = await JournalRepository().getAll();
-      print('[DEBUG] Loaded ${list.length} journals from repository');
-      
-      // Debug: Print each journal
-      for (int i = 0; i < list.length; i++) {
-        final journal = list[i];
-        print('[DEBUG] Journal $i: ${journal.mood} - ${journal.content.substring(0, journal.content.length > 50 ? 50 : journal.content.length)}...');
-      }
-      
-      list.sort((a, b) => b.date.compareTo(a.date));
-      setState(() {
-        _allJournals = list;
-        _filteredJournals = list; // Initially show all journals
-        _loading = false;
-      });
-      print('[DEBUG] Journals loaded successfully. _allJournals: ${_allJournals.length}, _filteredJournals: ${_filteredJournals.length}');
-    } catch (e, stackTrace) {
-      print('[ERROR] Failed to load journals: $e');
-      print('[ERROR] Stack trace: $stackTrace');
-      setState(() => _loading = false);
-    }
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 
-  void _onFiltersChanged(List<JournalEntry> filteredJournals, JournalSearchFilters filters) {
-    setState(() {
-      _filteredJournals = filteredJournals;
-      _currentFilters = filters;
+  /// Load journals with enhanced error handling and debouncing
+  Future<void> _loadJournals({bool isRefresh = false}) async {
+    // Debounce rapid calls
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _performLoadJournals(isRefresh: isRefresh);
     });
   }
 
-  Color _moodColor(String mood) {
-    if (mood.contains('Senang')) return const Color(0xFFFFD600);
-    if (mood.contains('Sedih')) return const Color(0xFF64B5F6);
-    if (mood.contains('Marah')) return const Color(0xFFE57373);
-    if (mood.contains('Cemas')) return const Color(0xFFFFB300);
-    if (mood.contains('Netral')) return const Color(0xFFB4B8C5);
-    if (mood.contains('Bersyukur')) return const Color(0xFF81C784);
-    if (mood.contains('Bangga')) return const Color(0xFFBA68C8);
-    if (mood.contains('Takut')) return const Color(0xFF90A4AE);
-    if (mood.contains('Kecewa')) return const Color(0xFF8D6E63);
-    return const Color(0xFFB4B8C5);
-  }
+  Future<void> _performLoadJournals({bool isRefresh = false}) async {
+    if (!mounted) return;
+    
+    setState(() {
+      _loadingState = isRefresh 
+          ? JournalLoadingState.refreshing 
+          : JournalLoadingState.loading;
+      _errorMessage = null;
+    });
 
-  Widget _buildEmptyState(Color accentColor, Color secondaryText) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _currentFilters.hasActiveFilters ? Icons.search_off : Icons.book_outlined,
-              size: 80,
-              color: accentColor.withOpacity(0.5),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              _currentFilters.hasActiveFilters
-                  ? 'Tidak ada jurnal yang sesuai'
-                  : 'Belum ada jurnal',
-              style: TextStyle(
-                fontSize: 20,
-                color: secondaryText,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _currentFilters.hasActiveFilters
-                  ? 'Coba ubah filter atau kriteria pencarian'
-                  : 'Mulai menulis jurnal harianmu!',
-              style: TextStyle(
-                fontSize: 14,
-                color: secondaryText.withOpacity(0.8),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (!_currentFilters.hasActiveFilters) ...[
-              const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(24),
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      accentColor.withOpacity(0.15),
-                      accentColor.withOpacity(0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: accentColor.withOpacity(0.3)),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: accentColor.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.auto_stories,
-                        color: accentColor,
-                        size: 32,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Mulai Perjalanan Jurnal Anda',
-                      style: TextStyle(
-                        color: accentColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Dokumentasikan momen berharga, refleksikan pengalaman,\ndan pantau perkembangan emosi Anda',
-                      style: TextStyle(
-                        color: secondaryText.withOpacity(0.9),
-                        fontSize: 13,
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildTipItem(Icons.schedule, 'Rutin Harian', secondaryText),
-                        _buildTipItem(Icons.favorite, 'Emosi Sehat', secondaryText),
-                        _buildTipItem(Icons.trending_up, 'Berkembang', secondaryText),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildJournalCard(
-    BuildContext context,
-    JournalEntry journal,
-    int index,
-    Animation<double> animation,
-    bool isFirst,
-    bool isLast,
-    Color accentColor,
-    Color cardColor,
-    Color textColor,
-    Color secondaryText,
-  ) {
-    final moodColor = _moodColor(journal.mood);
-    final words = journal.content.trim().split(' ');
-    final title = words.length >= 7 
-        ? words.take(7).join(' ') 
-        : (journal.content.trim().isEmpty ? 'Jurnal tanpa judul' : journal.content.trim());
-    final snippet = words.length > 7 ? words.skip(7).join(' ') : '';
-    final now = DateTime.now();
-    final isToday = journal.date.year == now.year && 
-                    journal.date.month == now.month && 
-                    journal.date.day == now.day;
-    final timeStr = isToday 
-        ? '${journal.date.hour.toString().padLeft(2, '0')}:${journal.date.minute.toString().padLeft(2, '0')}' 
-        : null;
-
-    return SizeTransition(
-      sizeFactor: animation,
-      child: Stack(
-        children: [
-          // Timeline line
-          Positioned(
-            left: 36,
-            top: isFirst ? 48 : 0,
-            bottom: isLast ? 48 : 0,
-            child: Container(
-              width: 2,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [moodColor.withOpacity(0.5), accentColor.withOpacity(0.18)],
-                ),
-              ),
-            ),
-          ),
-          // Card & node
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Mood node
-                Column(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: moodColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                        boxShadow: [
-                          BoxShadow(
-                            color: moodColor.withOpacity(0.18),
-                            blurRadius: 8,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          journal.mood.split(' ').last,
-                          style: const TextStyle(fontSize: 22),
-                        ),
-                      ),
-                    ),
-                    if (!isLast)
-                      Container(
-                        width: 2,
-                        height: 32,
-                        color: Colors.transparent,
-                      ),
-                  ],
-                ),
-                const SizedBox(width: 18),
-                // Card content
-                Expanded(
-                  child: Slidable(
-                    key: ValueKey(journal.date.toIso8601String()),
-                    endActionPane: ActionPane(
-                      motion: const DrawerMotion(),
-                      extentRatio: 0.5,
-                      children: [
-                        SlidableAction(
-                          onPressed: (_) async {
-                            final removed = journal;
-                            await JournalRepository().delete(journal.id);
-                            setState(() {
-                              _allJournals.removeWhere((j) => j.id == journal.id);
-                              _filteredJournals.removeAt(index);
-                            });
-                            
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text('Jurnal dihapus'),
-                                  action: SnackBarAction(
-                                    label: 'Undo',
-                                    onPressed: () async {
-                                      await JournalRepository().add(removed);
-                                      _loadJournals();
-                                    },
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          icon: Icons.delete,
-                          label: 'Hapus',
-                        ),
-                        SlidableAction(
-                          onPressed: (_) async {
-                            HapticFeedback.mediumImpact();
-                            final result = await Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => JournalEditorScreen(initialEntry: journal),
-                              ),
-                            );
-                            if (result == 'refresh') {
-                              _loadJournals();
-                            }
-                          },
-                          backgroundColor: accentColor,
-                          foregroundColor: Colors.white,
-                          icon: Icons.edit,
-                          label: 'Edit',
-                        ),
-                      ],
-                    ),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                      margin: const EdgeInsets.only(bottom: 32),
-                      decoration: BoxDecoration(
-                        color: isToday ? accentColor.withOpacity(0.18) : cardColor,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: moodColor.withOpacity(0.18),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                        border: Border(
-                          left: BorderSide(color: moodColor, width: 4),
-                        ),
-                      ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () async {
-                          HapticFeedback.lightImpact();
-                          await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => JournalDetailScreen(entry: journal),
-                            ),
-                          );
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.calendar_today, size: 13, color: moodColor.withOpacity(0.7)),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _formatDate(journal.date),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: moodColor.withOpacity(0.8),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  if (timeStr != null) ...[
-                                    const SizedBox(width: 8),
-                                    Icon(Icons.access_time, size: 13, color: moodColor.withOpacity(0.7)),
-                                    const SizedBox(width: 2),
-                                    Text(
-                                      timeStr,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: moodColor.withOpacity(0.8),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                title,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              if (snippet.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 2),
-                                  child: Text(
-                                    snippet,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: secondaryText.withOpacity(0.95),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    if (date.year == now.year && date.month == now.month && date.day == now.day) {
-      return 'Hari ini';
-    } else if (date.year == now.year && date.month == now.month && date.day == now.day - 1) {
-      return 'Kemarin';
-    } else {
-      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    try {
+      // Timeout untuk network requests
+      final list = await JournalRepository()
+          .getAll()
+          .timeout(const Duration(seconds: 30));
+      
+      if (!mounted) return;
+      
+      list.sort((a, b) => b.date.compareTo(a.date));
+      
+      setState(() {
+        _allJournals = list;
+        _loadingState = JournalLoadingState.loaded;
+        _errorMessage = null;
+      });
+      
+      // Clear cache when data updates
+      _widgetCache.clear();
+      
+    } catch (e) {
+      if (!mounted) return;
+      
+      setState(() {
+        _loadingState = JournalLoadingState.error;
+        _errorMessage = _getErrorMessage(e);
+      });
     }
   }
 
-  Widget _buildTipItem(IconData icon, String label, Color color) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(icon, color: color.withOpacity(0.8), size: 20),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: color.withOpacity(0.9),
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
+  /// Convert exceptions to user-friendly messages
+  String _getErrorMessage(dynamic error) {
+    if (error is TimeoutException) {
+      return 'Koneksi timeout. Periksa jaringan internet Anda.';
+    } else if (error.toString().contains('SocketException')) {
+      return 'Tidak dapat terhubung ke server. Periksa koneksi internet.';
+    } else if (error.toString().contains('FormatException')) {
+      return 'Data rusak. Coba refresh kembali.';
+    } else {
+      return 'Terjadi kesalahan: ${error.toString()}';
+    }
+  }
+
+  /// Retry loading with exponential backoff
+  Future<void> _retryLoad({int retryCount = 0}) async {
+    final delay = Duration(seconds: (retryCount + 1) * 2);
+    await Future.delayed(delay);
+    await _loadJournals();
   }
 
   @override
   Widget build(BuildContext context) {
-    const bgColor = Color(0xFF232526);
-    const cardColor = Color(0xFF2C2F34);
-    const accentColor = Color(0xFF1DB954);
-    const textColor = Colors.white;
-    const secondaryText = Color(0xFFB4B8C5);
+    const accentColor = EnhancedJournalColors.accentPrimary;
+    const textColor = EnhancedJournalColors.textPrimary;
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.auto_stories,
-                color: accentColor,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Text('Jurnal Saya'),
-          ],
-        ),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: EnhancedJournalColors.primaryGradient,
+      ),
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: textColor,
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: accentColor.withOpacity(0.2)),
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.insights, size: 20),
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => JournalAnalyticsScreen(journals: _allJournals),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(EnhancedJournalSpacing.xxl(context)),
+          child: AppBar(
+            title: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(EnhancedJournalSpacing.xs(context)),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                );
-              },
-              tooltip: 'Analitik Jurnal',
+                  child: Icon(
+                    Icons.auto_stories,
+                    color: accentColor,
+                    size: 24,
+                  ),
+                ),
+                SizedBox(width: EnhancedJournalSpacing.sm(context)),
+                Text(
+                  'Jurnal Saya',
+                  style: EnhancedJournalTypography.journalTitle(context).copyWith(
+                    color: textColor,
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            foregroundColor: textColor,
+            actions: [
+              // Analytics button
+              IconButton(
+                onPressed: () async {
+                  JournalMicroInteractions.lightTap();
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => JournalAnalyticsDashboard(
+                        journals: _allJournals,
+                      ),
+                    ),
+                  );
+                },
+                icon: Container(
+                  padding: EdgeInsets.all(EnhancedJournalSpacing.xs(context)),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.analytics_outlined,
+                    color: accentColor,
+                    size: 20,
+                  ),
+                ),
+                tooltip: 'Analitik Jurnal',
+              ),
+              SizedBox(width: EnhancedJournalSpacing.xs(context)),
+            ],
+          ),
+        ),
+        body: _buildBody(),
+        // Subtle FAB
+        floatingActionButton: JournalMicroInteractions.bounceOnTap(
+          onTap: () async {
+            JournalMicroInteractions.mediumTap();
+            final result = await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const StickyNoteJournalEditor(),
+              ),
+            );
+            if (result == true || result == 'refresh') {
+              _loadJournals();
+            }
+          },
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  EnhancedJournalColors.accentPrimary,
+                  EnhancedJournalColors.accentPrimary.withValues(alpha: 0.8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: EnhancedJournalColors.accentPrimary.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.edit_note_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      ),
+    );
+  }
+
+  /// Build body content based on current state
+  Widget _buildBody() {
+    const accentColor = EnhancedJournalColors.accentPrimary;
+    const secondaryText = EnhancedJournalColors.textSecondary;
+
+    switch (_loadingState) {
+      case JournalLoadingState.initial:
+      case JournalLoadingState.loading:
+        return _buildLoadingState(accentColor, secondaryText);
+        
+      case JournalLoadingState.error:
+        return _buildErrorState();
+        
+      case JournalLoadingState.refreshing:
+      case JournalLoadingState.loaded:
+        if (_allJournals.isEmpty) {
+          return _buildEmptyState();
+        }
+        return _buildTimelineState(accentColor);
+    }
+  }
+
+  Widget _buildLoadingState(Color accentColor, Color secondaryText) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: CircularProgressIndicator(
+              color: accentColor,
+              strokeWidth: 2.0,
+            ),
+          ),
+          SizedBox(height: EnhancedJournalSpacing.md(context)),
+          Text(
+            'Memuat jurnal...',
+            style: EnhancedJournalTypography.bodySmallStyle(context).copyWith(
+              color: secondaryText,
             ),
           ),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: accentColor))
-          : Column(
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red.withValues(alpha: 0.7),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Gagal Memuat Jurnal',
+              style: EnhancedJournalTypography.titleLargeStyle(context).copyWith(
+                color: EnhancedJournalColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage ?? 'Terjadi kesalahan yang tidak diketahui',
+              style: EnhancedJournalTypography.bodySmallStyle(context).copyWith(
+                color: EnhancedJournalColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Enhanced Search Component
-                EnhancedJournalSearch(
-                  allJournals: _allJournals,
-                  initialFilters: _currentFilters,
-                  onFiltersChanged: _onFiltersChanged,
+                ElevatedButton.icon(
+                  onPressed: () => _retryLoad(),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Coba Lagi'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: EnhancedJournalColors.accentPrimary,
+                    foregroundColor: Colors.white,
+                  ),
                 ),
-                
-                // Journal List or Empty State
-                Expanded(
-                  child: _filteredJournals.isEmpty
-                      ? _buildEmptyState(accentColor, secondaryText)
-                      : RefreshIndicator(
-                          color: accentColor,
-                          backgroundColor: bgColor,
-                          onRefresh: _loadJournals,
-                          child: AnimatedList(
-                            key: ValueKey(_filteredJournals.length),
-                            initialItemCount: _filteredJournals.length,
-                            padding: const EdgeInsets.fromLTRB(0, 12, 0, 80),
-                            itemBuilder: (context, i, animation) {
-                              final journal = _filteredJournals[i];
-                              final isFirst = i == 0;
-                              final isLast = i == _filteredJournals.length - 1;
-                              return _buildJournalCard(
-                                context, journal, i, animation, isFirst, isLast,
-                                accentColor, cardColor, textColor, secondaryText,
-                              );
-                            },
-                          ),
-                        ),
+                const SizedBox(width: 12),
+                TextButton.icon(
+                  onPressed: () => _loadJournals(isRefresh: true),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Refresh'),
                 ),
               ],
             ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Widget _buildEmptyState() {
+    return sticky_timeline.TimelineEmptyState(
+      onCreateFirst: () async {
+        final result = await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const StickyNoteJournalEditor(),
+          ),
+        );
+        if (result == true || result == 'refresh') {
+          _loadJournals();
+        }
+      },
+    );
+  }
+
+  Widget _buildTimelineState(Color accentColor) {
+    return RefreshIndicator(
+      color: accentColor,
+      onRefresh: () => _loadJournals(isRefresh: true),
+      child: StickyNoteTimeline(
+        journals: _allJournals,
+        onRefresh: () => _loadJournals(isRefresh: true),
+        onJournalTap: (journal) async {
+          HapticFeedback.lightImpact();
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => JournalDetailScreen(entry: journal),
+            ),
+          );
+        },
+        onJournalEdit: (journal) async {
+          final result = await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => StickyNoteJournalEditor(initialEntry: journal),
+            ),
+          );
+          if (result == true || result == 'refresh') {
+            _loadJournals();
+          }
+        },
+        onJournalDelete: (journal) async {
+          final confirmed = await _showDeleteConfirmation(journal);
+          if (confirmed == true) {
+            await _deleteJournal(journal);
+          }
+        },
+      ),
+    );
+  }
+
+  Future<bool?> _showDeleteConfirmation(JournalEntry journal) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: EnhancedJournalColors.cardBackground,
+        title: Text(
+          'Hapus Jurnal',
+          style: EnhancedJournalTypography.titleLargeStyle(context).copyWith(
+            color: EnhancedJournalColors.textPrimary,
+          ),
+        ),
+        content: Text(
+          'Yakin ingin menghapus jurnal ini? Tindakan ini tidak dapat dibatalkan.',
+          style: EnhancedJournalTypography.bodyMediumStyle(context),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Batal',
+              style: EnhancedJournalTypography.bodyMediumStyle(context).copyWith(
+                color: EnhancedJournalColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red.withValues(alpha: 0.8),
+            ),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteJournal(JournalEntry journal) async {
+    try {
+      await JournalRepository().delete(journal.id);
+      _loadJournals();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Jurnal berhasil dihapus'),
+            backgroundColor: EnhancedJournalColors.cardBackground,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menghapus jurnal: $e'),
+            backgroundColor: Colors.red.withValues(alpha: 0.8),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 }

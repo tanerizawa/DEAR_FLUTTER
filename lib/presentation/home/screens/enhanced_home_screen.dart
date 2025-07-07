@@ -11,7 +11,7 @@ class EnhancedHomeScreen extends StatefulWidget {
   State<EnhancedHomeScreen> createState() => _EnhancedHomeScreenState();
 }
 
-class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> 
+class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
 
@@ -27,7 +27,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFF1a1a1a), // Slightly darker background
       body: CustomScrollView(
@@ -56,26 +56,31 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
                           _getGreeting(),
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Montserrat',
-                          ),
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Montserrat',
+                              ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Bagaimana perasaan Anda hari ini?',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white70,
-                            fontFamily: 'Montserrat',
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: Colors.white70,
+                                fontFamily: 'Montserrat',
+                              ),
                         ),
                       ],
                     ),
@@ -96,20 +101,17 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                   icon: Icons.auto_awesome,
                   child: const EnhancedQuoteSection(),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Unified Media Section (Music + Radio)
                 _buildSection(
                   title: 'Media Player',
                   icon: Icons.library_music_rounded,
                   child: const UnifiedMediaSection(),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
-                // Footer
-                _buildFooter(),
               ]),
             ),
           ),
@@ -148,11 +150,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                 color: const Color(0xFF1DB954).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: const Color(0xFF1DB954),
-                size: 20,
-              ),
+              child: Icon(icon, color: const Color(0xFF1DB954), size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -167,41 +165,12 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             ),
           ],
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Section Content
         child,
       ],
-    );
-  }
-
-  Widget _buildFooter() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.favorite,
-            color: Color(0xFF1DB954),
-            size: 24,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Dibuat dengan ❤️ untuk keseharian yang lebih bermakna',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.white54,
-              fontStyle: FontStyle.italic,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
     );
   }
 }

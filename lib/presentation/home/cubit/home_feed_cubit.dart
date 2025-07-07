@@ -6,7 +6,6 @@ import 'package:dear_flutter/domain/repositories/home_repository.dart';
 import 'package:dear_flutter/domain/repositories/journal_repository.dart';
 import 'package:dear_flutter/services/audio_url_cache_service.dart';
 import 'package:dear_flutter/services/rate_limiting_service.dart';
-import 'package:dear_flutter/core/error/app_error_handler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter/foundation.dart';

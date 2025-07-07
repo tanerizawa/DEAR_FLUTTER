@@ -147,7 +147,7 @@ class AppErrorHandler {
         icon = Icons.error_outline;
         break;
       default:
-        backgroundColor = Colors.grey.shade600;
+        backgroundColor = Theme.of(context).colorScheme.surfaceContainer;
         icon = Icons.warning_outlined;
     }
     
